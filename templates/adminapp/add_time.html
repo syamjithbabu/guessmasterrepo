@@ -1,0 +1,48 @@
+{% extends 'adminapp/partials/base.html' %}
+{% load static %}
+{% block content %}
+<div id="main-content">
+    <div class="container-fluid">
+        <div class="block-header">
+            <div class="row">
+                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Add Game Time</h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item">Add Game Time</li>
+                    </ul>
+                </div>            
+             
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>Add Game Time</h2>
+                    </div>
+                    <div class="body" >
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="col-lg-4 col-md-12">
+                                <label>Start Time</label>
+                                <div class="input-group" data-date-autoclose="true">
+                                    <input type="time" name="start_time" class="form-control">
+                                </div>
+                                <label>End Time</label>
+                                <div class="input-group" data-date-autoclose="true">
+                                    <input type="time" name="end_time" class="form-control">
+                                </div>
+                                <br>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+        
+</div>
+    
+{% endblock %}
