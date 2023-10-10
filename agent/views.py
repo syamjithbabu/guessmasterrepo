@@ -324,6 +324,7 @@ def submit_data(request):
 
 def save_data(request,id):
     print(id)
+    print("hello")
     agent_obj = Agent.objects.get(user=request.user)
     try:
         agent_game_test = AgentGameTest.objects.filter(agent=agent_obj,time=id)
