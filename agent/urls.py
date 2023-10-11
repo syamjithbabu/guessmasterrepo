@@ -33,4 +33,6 @@ urlpatterns = [
     path('new-package',views.new_package,name="new_package"),
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
+    path('submit-data/',views.submit_data,name="submit_data"),
+    path('save-data/<int:id>',views.save_data,name="save_data"),
 ]
