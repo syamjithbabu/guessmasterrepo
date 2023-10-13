@@ -56,9 +56,9 @@
                             </div>
                             <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
                                 <div class="btn-group mr-2" role="group" aria-label="First group">
-                                    <button type="button" class="btn btn-primary" id="button1">1</button>
-                                    <button type="button" class="btn btn-warning" id="button2">2</button>
-                                    <button type="button" class="btn btn-danger" id="button3">3</button>
+                                    <button type="button" class="btn btn-secondary" id="button1">1</button>
+                                    <button type="button" class="btn btn-secondary" id="button2">2</button>
+                                    <button type="button" class="btn btn-secondary" id="button3">3</button>
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
                                     <input type="checkbox" name="checkbox2" required data-parsley-mincheck="2"
@@ -334,7 +334,7 @@
 
         newRow.innerHTML = `
         <td>${linkText}</td>
-        <td>${number}</td>
+        <td>${number.toString().padStart(2, '0')}</td>
         <td>${count}</td>
         <td>${result1}</td>
         <td>${result2}</td>
@@ -366,7 +366,7 @@
 
         console.log(startinput, endinput, stepinput)
 
-        const differences = generateDifference(startinput, endinput, stepinput);
+        const differences = generateDifferenceTwo(startinput, endinput, stepinput);
         console.log(differences, "differences");
 
         var tableBody = document.querySelector("#mainTable tbody");
@@ -407,7 +407,7 @@
 
 
     function generateDifference(startinput, endinput, stepinput) {
-        console.log(startinput, endinput, stepinput)
+        console.log(startinput, endinput, stepinput,"function")
         if (startinput > endinput || stepinput <= 0) {
             // Invalid input parameters
             return [];
@@ -417,7 +417,45 @@
 
         for (let i = startinput; i <= endinput; i += stepinput) {
             numbers.push(i);
+            console.log(numbers)
         }
+        
+
+        return numbers;
+    }
+
+    function generateDifferenceTwo(startinput, endinput, stepinput) {
+        console.log(startinput, endinput, stepinput,"function")
+        if (startinput > endinput || stepinput <= 0) {
+            // Invalid input parameters
+            return [];
+        }
+
+        let numbers = [];
+
+        for (let i = startinput; i <= endinput; i += stepinput) {
+            let paddedNumber = i.toString().padStart(2, '0');
+            numbers.push(paddedNumber);
+        }
+        
+
+        return numbers;
+    }
+
+    function generateDifferenceThree(startinput, endinput, stepinput) {
+        console.log(startinput, endinput, stepinput,"function")
+        if (startinput > endinput || stepinput <= 0) {
+            // Invalid input parameters
+            return [];
+        }
+
+        let numbers = [];
+
+        for (let i = startinput; i <= endinput; i += stepinput) {
+            let paddedNumber = i.toString().padStart(3, '0');
+            numbers.push(paddedNumber);
+        }
+        
 
         return numbers;
     }
@@ -429,7 +467,7 @@
 <script>
     // Define the getCombinations function outside of the click event listener
     function getCombinations(inputNumber) {
-        const numberStr = inputNumber.toString();
+        const numberStr = inputNumber.toString().padStart(3, '0');
         const result = [];
         if (numberStr.length !== 3) {
             return result;
@@ -466,10 +504,7 @@
         var linkText = "Super";
 
         if (isRChecked){
-            if (!isValidInputThree(start, end)) {
-                alert("Invalid input.");
-                return;
-                }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -572,10 +607,6 @@
         var start = parseFloat(document.getElementById("start").value);
         var end = parseFloat(document.getElementById("end").value);
         if (isRChecked){
-            if (!isValidInput(start, end)) {
-                alert("Invalid input.");
-                return;
-            }
             ["AB", "BC", "AC"].forEach(function (linkText) {
             createRowsForLinkR(linkText);
         });
@@ -603,11 +634,6 @@
 
         if (isRChecked){
 
-            if (!isValidInputThree(start, end)) {
-                alert("Invalid input.");
-                return;
-                }
-
             var tableBody = document.querySelector("#mainTable tbody");
 
             var start = parseFloat(startInput.value);
@@ -621,7 +647,7 @@
 
             console.log(startinput, endinput, stepinput)
 
-            var differences = generateDifference(startinput, endinput, stepinput);
+            var differences = generateDifferenceThree(startinput, endinput, stepinput);
             console.log(differences);
 
             differences.forEach(function (difference) {
@@ -677,7 +703,7 @@
             var superResult2 = (count * (amounts[linkTextSuper] + dcs[linkTextSuper])).toFixed(2);
             superRow.innerHTML = `
                 <td>${linkTextSuper}</td>
-                <td>${number}</td> <!-- Leave the combination cell empty -->
+                <td>${number.toString().padStart(3, '0')}</td> <!-- Leave the combination cell empty -->
                 <td>${count}</td>
                 <td>${superResult1}</td>
                 <td>${superResult2}</td>
@@ -694,7 +720,7 @@
             var boxResult2 = (count * (amounts[linkTextBox] + dcs[linkTextBox])).toFixed(2);
             boxRow.innerHTML = `
                 <td>${linkTextBox}</td>
-                <td>${number}</td> <!-- Leave the combination cell empty -->
+                <td>${number.toString().padStart(3, '0')}</td> <!-- Leave the combination cell empty -->
                 <td>${count}</td>
                 <td>${boxResult1}</td>
                 <td>${boxResult2}</td>
@@ -725,10 +751,7 @@
         var isRChecked = document.getElementById("R").checked;
 
         if (isRChecked){
-            if (!isValidInputThree(start, end)) {
-                alert("Invalid input.");
-                return;
-                }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -740,7 +763,7 @@
 
             console.log(startinput, endinput, stepinput)
 
-            const differences = generateDifference(startinput, endinput, stepinput);
+            const differences = generateDifferenceThree(startinput, endinput, stepinput);
             console.log(differences, "differences");
 
             var tableBody = document.querySelector("#mainTable tbody");
@@ -776,7 +799,7 @@
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
             newRow.innerHTML = `
                 <td>${linkText}</td>
-                <td>${number}</td>
+                <td>${number.toString().padStart(3, '0')}</td>
                 <td>${count}</td>
                 <td>${result1}</td>
                 <td>${result2}</td>
@@ -1085,10 +1108,7 @@
         var linkText = "AB";
 
         if (isRChecked){
-            if (!isValidInput(start, end)) {
-                alert("Invalid input.");
-                return;
-                }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -1103,7 +1123,8 @@
             const endinput = end;
             const stepinput = step;
 
-            const differences = generateDifference(startinput, endinput, stepinput);
+
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
             console.log(differences, "differences");
 
             var tableBody = document.querySelector("#mainTable tbody");
@@ -1137,7 +1158,7 @@
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
             newRow.innerHTML = `
                 <td>${linkText}</td>
-                <td>${number}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
                 <td>${count}</td>
                 <td>${result1}</td>
                 <td>${result2}</td>
@@ -1152,12 +1173,6 @@
         }
     });
 
-function isValidInput(start, end) {
-    if (isNaN(start) || isNaN(end) || start < 10 || start > 99 || end < 10 || end > 99 || start >= end) {
-        return false;
-    }
-    return true;
-}
 </script>
 
 <script>
@@ -1173,16 +1188,8 @@ function isValidInput(start, end) {
 
         var linkText = "BC";
 
-        if (!isValidInput(start, end)) {
-        alert("Invalid input.");
-        return;
-        }
-
         if (isRChecked){
-            if (!isValidInput(start, end)) {
-            alert("Invalid input.");
-            return;
-            }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -1197,7 +1204,7 @@ function isValidInput(start, end) {
             const endinput = end;
             const stepinput = step;
 
-            const differences = generateDifference(startinput, endinput, stepinput);
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
             console.log(differences, "differences");
 
             var tableBody = document.querySelector("#mainTable tbody");
@@ -1231,7 +1238,7 @@ function isValidInput(start, end) {
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
             newRow.innerHTML = `
                 <td>${linkText}</td>
-                <td>${number}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
                 <td>${count}</td>
                 <td>${result1}</td>
                 <td>${result2}</td>
@@ -1261,10 +1268,7 @@ function isValidInput(start, end) {
         var linkText = "AC";
 
         if (isRChecked){
-            if (!isValidInput(start, end)) {
-                alert("Invalid input.");
-                return;
-            }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -1279,7 +1283,7 @@ function isValidInput(start, end) {
             const endinput = end;
             const stepinput = step;
 
-            const differences = generateDifference(startinput, endinput, stepinput);
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
             console.log(differences, "differences");
 
             var tableBody = document.querySelector("#mainTable tbody");
@@ -1313,7 +1317,7 @@ function isValidInput(start, end) {
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
             newRow.innerHTML = `
                 <td>${linkText}</td>
-                <td>${number}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
                 <td>${count}</td>
                 <td>${result1}</td>
                 <td>${result2}</td>
@@ -1343,10 +1347,7 @@ function isValidInput(start, end) {
         var linkText = "Super";
 
         if(isRChecked){
-            if (!isValidInputThree(start, end)) {
-            alert("Invalid input.");
-            return;
-            }
+
             var start = parseFloat(startInput.value);
             var end = parseFloat(endInput.value);
             var step = parseFloat(stepInput.value);
@@ -1361,7 +1362,7 @@ function isValidInput(start, end) {
             const endinput = end;
             const stepinput = step;
 
-            const differences = generateDifference(startinput, endinput, stepinput);
+            const differences = generateDifferenceThree(startinput, endinput, stepinput);
             console.log(differences, "differences");
 
             var tableBody = document.querySelector("#mainTable tbody");
@@ -1395,7 +1396,7 @@ function isValidInput(start, end) {
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
             newRow.innerHTML = `
                 <td>${linkText}</td>
-                <td>${number}</td>
+                <td>${number.toString().padStart(3, '0')}</td>
                 <td>${count}</td>
                 <td>${result1}</td>
                 <td>${result2}</td>
