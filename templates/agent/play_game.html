@@ -10,6 +10,12 @@
         background-color: white;
         /* To make it appear above the content */
     }
+
+    /* Define a custom class for the selected button */
+    .selected-button {
+        background-color: #007bff; /* Change the background color to blue */
+        color: #fff; /* Change the text color to white for better contrast */
+    }
 </style>
 
 <div id="main-content">
@@ -39,15 +45,7 @@
                                     <div class="mb-3">
                                         <select class="form-control show-tick ms select2" data-placeholder="Select">
                                             {% for dealer in dealers %}
-                                            <option>{{dealer.user}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-6">
-                                    <div class="mb-3">
-                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                            {% for dealer in dealers %}
+                                            <option>Select Dealer</option>
                                             <option>{{dealer.user}}</option>
                                             {% endfor %}
                                         </select>
@@ -56,7 +54,7 @@
                             </div>
                             <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
                                 <div class="btn-group mr-2" role="group" aria-label="First group">
-                                    <button type="button" class="btn btn-secondary" id="button1">1</button>
+                                    <button type="button" class="btn btn-secondary selected-button" id="button1">1</button>
                                     <button type="button" class="btn btn-secondary" id="button2">2</button>
                                     <button type="button" class="btn btn-secondary" id="button3">3</button>
                                 </div>
@@ -334,6 +332,34 @@
 
         newRow.innerHTML = `
         <td>${linkText}</td>
+        <td>${number}</td>
+        <td>${count}</td>
+        <td>${result1}</td>
+        <td>${result2}</td>
+        <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+    `;
+
+        tableBody.appendChild(newRow);
+        updateTotal();
+        sendDataToDjango(linkText, number, count, result1, result2);
+    }
+
+    function createRowsForLinkTwo(linkText) {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+
+        if (isNaN(number) || isNaN(count)) {
+            console.log("Invalid input. Please enter valid numbers.");
+            return;
+        }
+
+        var tableBody = document.querySelector("#mainTable tbody");
+        var newRow = document.createElement("tr");
+        var result1 = (count * amounts[linkText]).toFixed(2);
+        var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+
+        newRow.innerHTML = `
+        <td>${linkText}</td>
         <td>${number.toString().padStart(2, '0')}</td>
         <td>${count}</td>
         <td>${result1}</td>
@@ -344,6 +370,49 @@
         tableBody.appendChild(newRow);
         updateTotal();
         sendDataToDjango(linkText, number, count, result1, result2);
+    }
+
+    function createRowsForLinkRTwo(linkText) {
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+
+        if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            console.log("Invalid input. Please enter valid numbers for conditional fields.");
+            return;
+        }
+
+        console.log("R input")
+
+        const startinput = start;
+        const endinput = end;
+        const stepinput = step;
+
+        console.log(startinput, endinput, stepinput)
+
+        const differences = generateDifferenceTwo(startinput, endinput, stepinput);
+        console.log(differences, "differences");
+
+        var tableBody = document.querySelector("#mainTable tbody");
+
+        differences.forEach(function (difference) {
+            var allRow = document.createElement("tr");
+            var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+            var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+            tableBody.appendChild(allRow);
+            updateTotal();
+            sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+        })
     }
 
     function createRowsForLinkR(linkText) {
@@ -366,7 +435,7 @@
 
         console.log(startinput, endinput, stepinput)
 
-        const differences = generateDifferenceTwo(startinput, endinput, stepinput);
+        const differences = generateDifference(startinput, endinput, stepinput);
         console.log(differences, "differences");
 
         var tableBody = document.querySelector("#mainTable tbody");
@@ -464,8 +533,8 @@
 
 </script>
 
+<!-- get combinations -->
 <script>
-    // Define the getCombinations function outside of the click event listener
     function getCombinations(inputNumber) {
         const numberStr = inputNumber.toString().padStart(3, '0');
         const result = [];
@@ -473,7 +542,6 @@
             return result;
         }
 
-        // Generate all combinations with unique digits
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 for (let k = 0; k < 3; k++) {
@@ -489,9 +557,740 @@
 
         return result;
     }
+</script>
+<!-- get combinations -->
+
+<!-- all for 1 start -->
+<script>
+    document.getElementById("ALL1").addEventListener("click", function () {
+        var isRChecked = document.getElementById("R").checked;
+
+        if (isRChecked) {
+            ["A", "B", "C"].forEach(function (linkText) {
+                createRowsForLinkR(linkText);
+            });
+            updateTotal();
+        }
+        else {
+            ["A", "B", "C"].forEach(function (linkText) {
+                createRowsForLink(linkText);
+            });
+            updateTotal();
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+<!-- all for 1 end -->
+
+<!-- all for 2 start -->
+<script>
+    document.getElementById("ALL2").addEventListener("click", function () {
+        var isRChecked = document.getElementById("R").checked;
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        if (isRChecked){
+            ["AB", "BC", "AC"].forEach(function (linkText) {
+            createRowsForLinkRTwo(linkText);
+        });
+        updateTotal();
+        }
+        else{
+        ["AB", "BC", "AC"].forEach(function (linkText) {
+            createRowsForLinkTwo(linkText);
+        });
+        updateTotal();
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+<!-- all for 2 end -->
+
+<!-- 1 number game start -->
+<script>
+    document.getElementById("A").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var linkText = "A"; // Set the linkText to "Box"
+
+        var isRChecked = document.getElementById("R").checked;
+
+        if (isRChecked) {
+            // Capture inputs for "start," "end," "step," and "count"
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                document.getElementById("start").value = "";
+                document.getElementById("end").value = "";
+                document.getElementById("step").value = "";
+                document.getElementById("count").value = "";
+                return;
+            }
+
+            console.log("R input")
+
+            if (start >= end) {
+                alert("Start must be less than end.");
+                document.getElementById("start").value = "";
+                document.getElementById("end").value = "";
+                document.getElementById("step").value = "";
+                document.getElementById("count").value = "";
+                return;
+            }
+
+            if (step <= 0) {
+                alert("Step must be greater than 0.");
+                document.getElementById("start").value = "";
+                document.getElementById("end").value = "";
+                document.getElementById("step").value = "";
+                document.getElementById("count").value = "";
+                return;
+            }
+
+            if (countConditional <= 0) {
+                alert("Count must be greater than 0.");
+                document.getElementById("start").value = "";
+                document.getElementById("end").value = "";
+                document.getElementById("step").value = "";
+                document.getElementById("count").value = "";
+                return;
+            }
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            const differences = generateDifference(startinput, endinput, stepinput);
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                    <td>${linkText}</td>
+                    <td>${difference}</td> <!-- Display the combination in this cell -->
+                    <td>${countConditional}</td>
+                    <td>${allResult1}</td>
+                    <td>${allResult2}</td>
+                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                    `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText, difference, countConditional, allResult1, allResult2);
+            })
+
+        } else {
+            // Capture inputs for "number" and "count"
+            var number = parseFloat(numberInput.value);
+            var count = parseFloat(countInput.value);
+
+            if (count <= 0) {
+                alert("Count must be greater than 0.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
+
+            if (isNaN(number) || isNaN(count)) {
+                alert("Invalid input. Please enter valid numbers for default fields.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
+            console.log("not R input")
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                        <td>${linkText}</td>
+                        <td>${number}</td>
+                        <td>${count}</td>
+                        <td>${result1}</td>
+                        <td>${result2}</td>
+                        <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                    `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText, number, count, result1, result2);
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+
+<script>
+    document.getElementById("B").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var linkText = "B"; // Set the linkText to "Box"
+        console.log(linkText)
+
+        console.log(start, end, step, countConditional)
+
+        var isRChecked = document.getElementById("R").checked;
+        console.log(isRChecked, "True")
+
+        if (isRChecked) {
+            // Capture inputs for "start," "end," "step," and "count"
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            console.log("R input")
+            console.log(start, end, step, countConditional)
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            console.log("R input")
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            console.log(startinput, endinput, stepinput)
+
+            const differences = generateDifference(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+
+        } else {
+            // Capture inputs for "number" and "count"
+            var number = parseFloat(numberInput.value);
+            var count = parseFloat(countInput.value);
+
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers for default fields.");
+                return;
+            }
+            console.log("not R input")
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                    <td>${linkText}</td>
+                    <td>${number}</td>
+                    <td>${count}</td>
+                    <td>${result1}</td>
+                    <td>${result2}</td>
+                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+
+<script>
+    document.getElementById("C").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var linkText = "C"; // Set the linkText to "Box"
+        console.log(linkText)
+
+        console.log(start, end, step, countConditional)
+
+        var isRChecked = document.getElementById("R").checked;
+        console.log(isRChecked, "True")
+
+        if (isRChecked) {
+            // Capture inputs for "start," "end," "step," and "count"
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            console.log("R input")
+            console.log(start, end, step, countConditional)
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            console.log("R input")
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            console.log(startinput, endinput, stepinput)
+
+            const differences = generateDifference(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+
+        } else {
+            // Capture inputs for "number" and "count"
+            var number = parseFloat(numberInput.value);
+            var count = parseFloat(countInput.value);
+
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers for default fields.");
+                return;
+            }
+            console.log("not R input")
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                    <td>${linkText}</td>
+                    <td>${number}</td>
+                    <td>${count}</td>
+                    <td>${result1}</td>
+                    <td>${result2}</td>
+                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+<!-- 1 number game end -->
+
+<!-- 2 numbers game start -->
+<script>
+    document.getElementById("AB").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var isRChecked = document.getElementById("R").checked;
+
+        var linkText = "AB";
+
+        if (isRChecked){
+
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
 
 
-    document.getElementById("ButtonBox").addEventListener("click", function () {
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+        }
+        else{
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers.");
+                return;
+            }
+
+            // Create a new row for "Box"
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
+                <td>${count}</td>
+                <td>${result1}</td>
+                <td>${result2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+            `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+
+</script>
+
+<script>
+    document.getElementById("BC").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var isRChecked = document.getElementById("R").checked;
+
+        var linkText = "BC";
+
+        if (isRChecked){
+
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+        }
+        else{
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers.");
+                return;
+            }
+
+            // Create a new row for "Box"
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
+                <td>${count}</td>
+                <td>${result1}</td>
+                <td>${result2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+            `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+
+<script>
+    document.getElementById("AC").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var isRChecked = document.getElementById("R").checked;
+
+        var linkText = "AC";
+
+        if (isRChecked){
+
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+        }
+        else{
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers.");
+                return;
+            }
+
+            // Create a new row for "Box"
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${number.toString().padStart(2, '0')}</td>
+                <td>${count}</td>
+                <td>${result1}</td>
+                <td>${result2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+            `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+</script>
+<!-- 2 numbers game end -->
+
+<!-- 3 numbers game start -->
+<script>
+    document.getElementById("Super").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
+        var start = parseFloat(document.getElementById("start").value);
+        var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+        var isRChecked = document.getElementById("R").checked;
+
+        var linkText = "Super";
+
+        if(isRChecked){
+
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+                console.log("Invalid input. Please enter valid numbers for conditional fields.");
+                return;
+            }
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            const differences = generateDifferenceThree(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${difference}</td> <!-- Display the combination in this cell -->
+                <td>${countConditional}</td>
+                <td>${allResult1}</td>
+                <td>${allResult2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+        }
+        else{
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers.");
+                return;
+            }
+
+            // Create a new row for "Box"
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${number.toString().padStart(3, '0')}</td>
+                <td>${count}</td>
+                <td>${result1}</td>
+                <td>${result2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+            `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal()
+            sendDataToDjango(linkText,number,count,result1,result2)
+        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
+    });
+
+</script>
+
+<script>
+        document.getElementById("ButtonBox").addEventListener("click", function () {
         var number = parseFloat(document.getElementById("numberInput").value);
         var count = parseFloat(document.getElementById("countInput").value);
         var start = parseFloat(document.getElementById("start").value);
@@ -578,46 +1377,97 @@
                 sendDataToDjango(linkText,combination,count,allResult1,allResult2)
             });
             }
-    });
-
-</script>
-
-<script>
-    document.getElementById("ALL1").addEventListener("click", function () {
-        var isRChecked = document.getElementById("R").checked;
-
-        if (isRChecked) {
-            ["A", "B", "C"].forEach(function (linkText) {
-                createRowsForLinkR(linkText);
-            });
-            updateTotal();
-        }
-        else {
-            ["A", "B", "C"].forEach(function (linkText) {
-                createRowsForLink(linkText);
-            });
-            updateTotal();
-        }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
     });
 </script>
 
 <script>
-    document.getElementById("ALL2").addEventListener("click", function () {
-        var isRChecked = document.getElementById("R").checked;
+    document.getElementById("KBox").addEventListener("click", function () {
+        var number = parseFloat(document.getElementById("numberInput").value);
+        var count = parseFloat(document.getElementById("countInput").value);
         var start = parseFloat(document.getElementById("start").value);
         var end = parseFloat(document.getElementById("end").value);
+        var step = parseFloat(document.getElementById("step").value);
+        var countConditional = parseFloat(document.getElementById("count").value);
+
+
+        var linkText = "Box"; // Set the linkText to "Box"
+
+        var isRChecked = document.getElementById("R").checked;
+
         if (isRChecked){
-            ["AB", "BC", "AC"].forEach(function (linkText) {
-            createRowsForLinkR(linkText);
-        });
-        updateTotal();
+
+            var start = parseFloat(startInput.value);
+            var end = parseFloat(endInput.value);
+            var step = parseFloat(stepInput.value);
+            var countConditional = parseFloat(countInput2.value);
+
+            const startinput = start;
+            const endinput = end;
+            const stepinput = step;
+
+            console.log(startinput, endinput, stepinput)
+
+            const differences = generateDifferenceThree(startinput, endinput, stepinput);
+            console.log(differences, "differences");
+
+            var tableBody = document.querySelector("#mainTable tbody");
+
+            differences.forEach(function (difference) {
+                var allRow = document.createElement("tr");
+                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
+                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
+                allRow.innerHTML = `
+                    <td>${linkText}</td>
+                    <td>${difference}</td> <!-- Display the combination in this cell -->
+                    <td>${countConditional}</td>
+                    <td>${allResult1}</td>
+                    <td>${allResult2}</td>
+                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                    `;
+                tableBody.appendChild(allRow);
+                updateTotal();
+                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
+            })
+
         }
+
         else{
-        ["AB", "BC", "AC"].forEach(function (linkText) {
-            createRowsForLink(linkText);
-        });
-        updateTotal();
+            if (isNaN(number) || isNaN(count)) {
+                console.log("Invalid input. Please enter valid numbers.");
+                return;
+            }
+
+            // Create a new row for "Box"
+            var newRow = document.createElement("tr");
+            var result1 = (count * amounts[linkText]).toFixed(2);
+            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
+            newRow.innerHTML = `
+                <td>${linkText}</td>
+                <td>${number.toString().padStart(3, '0')}</td>
+                <td>${count}</td>
+                <td>${result1}</td>
+                <td>${result2}</td>
+                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+            `;
+
+            // Add the new row to the table
+            var tableBody = document.querySelector("#mainTable tbody");
+            tableBody.appendChild(newRow);
+            updateTotal();
+            sendDataToDjango(linkText,number,count,result1,result2)
         }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
     });
 </script>
 
@@ -732,707 +1582,39 @@
             updateTotal();
             sendDataToDjango(linkTextBox,number,count,boxResult1,boxResult2)
         }
+        document.getElementById("numberInput").value = "";
+        document.getElementById("countInput").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        document.getElementById("step").value = "";
+        document.getElementById("count").value = "";
     });
 </script>
-
-
-<script>
-    document.getElementById("KBox").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-
-        var linkText = "Box"; // Set the linkText to "Box"
-
-        var isRChecked = document.getElementById("R").checked;
-
-        if (isRChecked){
-
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            console.log(startinput, endinput, stepinput)
-
-            const differences = generateDifferenceThree(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                    <td>${linkText}</td>
-                    <td>${difference}</td> <!-- Display the combination in this cell -->
-                    <td>${countConditional}</td>
-                    <td>${allResult1}</td>
-                    <td>${allResult2}</td>
-                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                    `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-
-        }
-
-        else{
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers.");
-                return;
-            }
-
-            // Create a new row for "Box"
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${number.toString().padStart(3, '0')}</td>
-                <td>${count}</td>
-                <td>${result1}</td>
-                <td>${result2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-            `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal();
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-        });
-</script>
-
-<script>
-    document.getElementById("A").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var linkText = "A"; // Set the linkText to "Box"
-        console.log(linkText)
-
-        console.log(start, end, step, countConditional)
-
-        var isRChecked = document.getElementById("R").checked;
-        console.log(isRChecked, "True")
-
-        if (isRChecked) {
-            // Capture inputs for "start," "end," "step," and "count"
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            console.log("R input")
-            console.log(start, end, step, countConditional)
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            console.log("R input")
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            console.log(startinput, endinput, stepinput)
-
-            const differences = generateDifference(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                    <td>${linkText}</td>
-                    <td>${difference}</td> <!-- Display the combination in this cell -->
-                    <td>${countConditional}</td>
-                    <td>${allResult1}</td>
-                    <td>${allResult2}</td>
-                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                    `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText, difference, countConditional, allResult1, allResult2);
-            })
-
-        } else {
-            // Capture inputs for "number" and "count"
-            var number = parseFloat(numberInput.value);
-            var count = parseFloat(countInput.value);
-
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers for default fields.");
-                return;
-            }
-            console.log("not R input")
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                        <td>${linkText}</td>
-                        <td>${number}</td>
-                        <td>${count}</td>
-                        <td>${result1}</td>
-                        <td>${result2}</td>
-                        <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                    `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText, number, count, result1, result2);
-        }
-    });
-</script>
-
-<script>
-    document.getElementById("B").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var linkText = "B"; // Set the linkText to "Box"
-        console.log(linkText)
-
-        console.log(start, end, step, countConditional)
-
-        var isRChecked = document.getElementById("R").checked;
-        console.log(isRChecked, "True")
-
-        if (isRChecked) {
-            // Capture inputs for "start," "end," "step," and "count"
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            console.log("R input")
-            console.log(start, end, step, countConditional)
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            console.log("R input")
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            console.log(startinput, endinput, stepinput)
-
-            const differences = generateDifference(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-
-        } else {
-            // Capture inputs for "number" and "count"
-            var number = parseFloat(numberInput.value);
-            var count = parseFloat(countInput.value);
-
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers for default fields.");
-                return;
-            }
-            console.log("not R input")
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                    <td>${linkText}</td>
-                    <td>${number}</td>
-                    <td>${count}</td>
-                    <td>${result1}</td>
-                    <td>${result2}</td>
-                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-</script>
-
-<script>
-    document.getElementById("C").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var linkText = "C"; // Set the linkText to "Box"
-        console.log(linkText)
-
-        console.log(start, end, step, countConditional)
-
-        var isRChecked = document.getElementById("R").checked;
-        console.log(isRChecked, "True")
-
-        if (isRChecked) {
-            // Capture inputs for "start," "end," "step," and "count"
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            console.log("R input")
-            console.log(start, end, step, countConditional)
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            console.log("R input")
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            console.log(startinput, endinput, stepinput)
-
-            const differences = generateDifference(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-
-        } else {
-            // Capture inputs for "number" and "count"
-            var number = parseFloat(numberInput.value);
-            var count = parseFloat(countInput.value);
-
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers for default fields.");
-                return;
-            }
-            console.log("not R input")
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                    <td>${linkText}</td>
-                    <td>${number}</td>
-                    <td>${count}</td>
-                    <td>${result1}</td>
-                    <td>${result2}</td>
-                    <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-</script>
-
-<script>
-    document.getElementById("AB").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var isRChecked = document.getElementById("R").checked;
-
-        var linkText = "AB";
-
-        if (isRChecked){
-
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-
-            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-        }
-        else{
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers.");
-                return;
-            }
-
-            // Create a new row for "Box"
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${number.toString().padStart(2, '0')}</td>
-                <td>${count}</td>
-                <td>${result1}</td>
-                <td>${result2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-            `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-
-</script>
-
-<script>
-    document.getElementById("BC").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var isRChecked = document.getElementById("R").checked;
-
-        var linkText = "BC";
-
-        if (isRChecked){
-
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-        }
-        else{
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers.");
-                return;
-            }
-
-            // Create a new row for "Box"
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${number.toString().padStart(2, '0')}</td>
-                <td>${count}</td>
-                <td>${result1}</td>
-                <td>${result2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-            `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-</script>
-
-<script>
-    document.getElementById("AC").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var isRChecked = document.getElementById("R").checked;
-
-        var linkText = "AC";
-
-        if (isRChecked){
-
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            const differences = generateDifferenceTwo(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-        }
-        else{
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers.");
-                return;
-            }
-
-            // Create a new row for "Box"
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${number.toString().padStart(2, '0')}</td>
-                <td>${count}</td>
-                <td>${result1}</td>
-                <td>${result2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-            `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-</script>
-
-<script>
-    document.getElementById("Super").addEventListener("click", function () {
-        var number = parseFloat(document.getElementById("numberInput").value);
-        var count = parseFloat(document.getElementById("countInput").value);
-        var start = parseFloat(document.getElementById("start").value);
-        var end = parseFloat(document.getElementById("end").value);
-        var step = parseFloat(document.getElementById("step").value);
-        var countConditional = parseFloat(document.getElementById("count").value);
-
-        var isRChecked = document.getElementById("R").checked;
-
-        var linkText = "Super";
-
-        if(isRChecked){
-
-            var start = parseFloat(startInput.value);
-            var end = parseFloat(endInput.value);
-            var step = parseFloat(stepInput.value);
-            var countConditional = parseFloat(countInput2.value);
-
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                console.log("Invalid input. Please enter valid numbers for conditional fields.");
-                return;
-            }
-
-            const startinput = start;
-            const endinput = end;
-            const stepinput = step;
-
-            const differences = generateDifferenceThree(startinput, endinput, stepinput);
-            console.log(differences, "differences");
-
-            var tableBody = document.querySelector("#mainTable tbody");
-
-            differences.forEach(function (difference) {
-                var allRow = document.createElement("tr");
-                var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
-                var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-                allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-                tableBody.appendChild(allRow);
-                updateTotal();
-                sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
-            })
-        }
-        else{
-            if (isNaN(number) || isNaN(count)) {
-                console.log("Invalid input. Please enter valid numbers.");
-                return;
-            }
-
-            // Create a new row for "Box"
-            var newRow = document.createElement("tr");
-            var result1 = (count * amounts[linkText]).toFixed(2);
-            var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            newRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${number.toString().padStart(3, '0')}</td>
-                <td>${count}</td>
-                <td>${result1}</td>
-                <td>${result2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-            `;
-
-            // Add the new row to the table
-            var tableBody = document.querySelector("#mainTable tbody");
-            tableBody.appendChild(newRow);
-            updateTotal()
-            sendDataToDjango(linkText,number,count,result1,result2)
-        }
-    });
-
-function isValidInputThree(start, end) {
-    if (isNaN(start) || isNaN(end) || start < 100 || start > 999 || end < 100 || end > 999 || start >= end) {
-        return false;
-    }
-    return true;
-}
-</script>
+<!-- 3 numbers game end -->
 
 <script>
     document.getElementById("button1").addEventListener("click", function () {
+        document.getElementById("button1").classList.add("selected-button");
+        document.getElementById("button2").classList.remove("selected-button");
+        document.getElementById("button3").classList.remove("selected-button");
         document.getElementById("tabSet1").classList.add("show", "active");
         document.getElementById("tabSet2").classList.remove("show", "active");
         document.getElementById("tabSet3").classList.remove("show", "active");
     });
 
     document.getElementById("button2").addEventListener("click", function () {
+        document.getElementById("button1").classList.remove("selected-button");
+        document.getElementById("button2").classList.add("selected-button");
+        document.getElementById("button3").classList.remove("selected-button");
         document.getElementById("tabSet1").classList.remove("show", "active");
         document.getElementById("tabSet2").classList.add("show", "active");
         document.getElementById("tabSet3").classList.remove("show", "active");
     });
 
     document.getElementById("button3").addEventListener("click", function () {
+        document.getElementById("button1").classList.remove("selected-button");
+        document.getElementById("button2").classList.remove("selected-button");
+        document.getElementById("button3").classList.add("selected-button");
         document.getElementById("tabSet1").classList.remove("show", "active");
         document.getElementById("tabSet2").classList.remove("show", "active");
         document.getElementById("tabSet3").classList.add("show", "active");

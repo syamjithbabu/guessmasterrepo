@@ -2770,9 +2770,9 @@ html.fullscreen-bg #wrapper {
 }
 
 .nav-tabs-new>li>a.active {
-    border: 1px solid #49c5b6 !important;
-    background: #49c5b6;
-    color: #fff
+    border: 1px solid #eee !important;
+    background: #ffffff;
+    color: #777
 }
 
 .nav-tabs-new2 {
