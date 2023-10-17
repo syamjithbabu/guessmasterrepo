@@ -2,16 +2,20 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
+import pytz
 from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
 from adminapp.models import PlayTime, AgentPackage
-from .models import DealerPackage, AgentGameTest, AgentGame
+from .models import DealerPackage, AgentGameTest, AgentGame, AgentBill
+from dealer.models import DealerBill
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from website.decorators import dealer_required, agent_required
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
+from collections import OrderedDict
+from django.db.models import Sum
 
 
 # Create your views here.
@@ -112,7 +116,16 @@ def results(request):
     return render(request,'agent/results.html')
 
 def sales_report(request):
-    return render(request,'agent/sales_report.html')
+    agent_obj = Agent.objects.get(user=request.user)
+    dealers = Dealer.objects.filter(agent=agent_obj).all()
+    times = PlayTime.objects.filter().all()
+    my_games = AgentGame.objects.filter().all()
+    context = {
+        'dealers' : dealers,
+        'times' : times,
+        'my_games' : my_games
+    }
+    return render(request,'agent/sales_report.html',context)
 
 def daily_report(request):
     return render(request,'agent/daily_report.html')
@@ -136,27 +149,87 @@ def balance_report(request):
     return render(request,'agent/balance_report.html') 
 
 def edit_bill(request):
-    return render(request,'agent/edit_bill.html')
+    agent_obj = Agent.objects.get(user=request.user)
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    try:
+        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
+        dealers = Dealer.objects.filter(agent=agent_obj).all()
+        times = PlayTime.objects.filter().all()
+    except:
+        pass
+    if request.method == 'POST':
+        search_dealer = request.POST.get('dealer-select')
+        search_time = request.POST.get('time-select')
+        print(search_dealer,search_time)
+        bill_search = DealerBill.objects.filter(dealer=search_dealer,time_id=search_time,date=current_date).all()
+        context = {
+            'dealers': dealers,
+            'times' : times,
+            'bills': bill_search
+        }
+        return render(request,'agent/edit_bill.html',context)
+    else:
+        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
+        context = {
+            'dealers': dealers,
+            'times' : times,
+            'bills':bills
+        }
+        return render(request,'agent/edit_bill.html',context)
+
+def bill_search_dropdown_dealer(request):
+    print("this is working")
+    agent_obj = Agent.objects.get(user=request.user)
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    if request.method == 'POST':
+        search_dealer = request.POST.get('select_dealer')
+        search_time = request.POST.get('time-select')
+        print(search_dealer,search_time)
+        bill_search = DealerBill.objects.filter(dealer=search_dealer,time_id=search_time,date=current_date).all()
+        context = {
+            'bills':bill_search
+        }
+        return render(request,'agent/edit_bill.html',context)
+    else:
+        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
+        return render(request,'agent/edit_bill.html',context)
+        
+
 
 def change_password(request):
     return render(request,'agent/change_password.html')
 
 def play_game(request,id):
-    print(id)
     agent_package = []
     time = PlayTime.objects.get(id=id)
     print(time.end_time)
     agent_obj = Agent.objects.get(user=request.user)
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    print(current_date)
     if AgentPackage.objects.filter(agent=agent_obj).exists():
         agent_package = AgentPackage.objects.get(agent=agent_obj)
         print(agent_package.single_rate)
     else:
         messages.info(request,"There is no package for this user!")
     dealers = Dealer.objects.filter(agent=agent_obj).all()
+    try:
+        rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date)
+        total_c_amount = sum(row.c_amount for row in rows)
+        total_d_amount = sum(row.d_amount for row in rows)
+        total_count = sum(row.count for row in rows)
+    except:
+        pass
     context = {
         'time' : time,
         'dealers' : dealers,
-        'agent_package' : agent_package
+        'agent_package' : agent_package,
+        'rows' : rows,
+        'total_c_amount': total_c_amount,
+        'total_d_amount': total_d_amount,
+        'total_count': total_count,
     }
     return render(request,'agent/play_game.html',context)
 
@@ -280,15 +353,26 @@ def delete_package(request,id):
     package.delete()
     return redirect('agent:package')
 
+def agent_game_test_delete(request,id):
+    row = get_object_or_404(AgentGameTest,id=id)
+    row.delete()
+    return JsonResponse({'status':'success'})
+
+def agent_game_test_update(request,id):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        edited_count = data.get('editedCount')
+        print(edited_count)
+        AgentGameTest.objects.filter(id=id).update(count=edited_count)
+    return JsonResponse({'status':'success'})
+
 @csrf_exempt
 def submit_data(request):
-    print("This function is working")
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
     agent_obj = Agent.objects.get(user=request.user)
     if request.method == 'POST':
-        # Parse the JSON data sent from the JavaScript code
-        data = json.loads(request.body.decode('utf-8'))
-
-        # Extract the data from the JSON
+        data = json.loads(request.body, object_pairs_hook=OrderedDict)
         link_text = data.get('linkText')
         value1 = data.get('value1')
         value2 = data.get('value2')
@@ -296,13 +380,10 @@ def submit_data(request):
         value4 = data.get('value4')
         timeId = data.get('timeId')
 
+        print(data)
+
         time = get_object_or_404(PlayTime,id=timeId)
-
-        print(link_text,value1,value2,value3,value4)
-
-        print(agent_obj)
-        # Save the data to your database model
-        # Example: Assuming you have a model named AgentGameTest
+        
         agent_game_test = AgentGameTest(
             agent=agent_obj,
             time=time,
@@ -313,23 +394,22 @@ def submit_data(request):
             c_amount=value4
         )
         agent_game_test.save()
+        print(agent_game_test.id,"id")
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'success'})
 
-        # Respond with a success message or any other response data
-        response_data = {'message': 'Data saved successfully'}
-        return JsonResponse(response_data)
+def save_data(request, id):
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    print(current_date)
 
-    # Handle other cases or errors here
-    response_data = {'message': 'Invalid request'}
-    return JsonResponse(response_data, status=400)
-
-def save_data(request,id):
-    print(id)
-    print("hello")
     agent_obj = Agent.objects.get(user=request.user)
+    play_time_instance = PlayTime.objects.get(id=id)
+
     try:
-        agent_game_test = AgentGameTest.objects.filter(agent=agent_obj,time=id)
+        agent_game_test = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date)
+
         for test_record in agent_game_test:
-            # Create a new AgentGame record with the same data
             agent_game_record = AgentGame(
                 agent=test_record.agent,
                 time=test_record.time,
@@ -340,9 +420,51 @@ def save_data(request,id):
                 d_amount=test_record.d_amount,
                 c_amount=test_record.c_amount
             )
-            # Save the new record
             agent_game_record.save()
-        agent_game_test.delete()
+
+        agent_test_game_delete = AgentGameTest.objects.filter(agent=agent_obj)
+        agent_test_game_delete.delete()
+
+        agent_game_records = AgentGame.objects.filter(
+            agent=agent_obj,
+            time_id=id,
+            date=current_date
+        )
+
+        if not agent_game_records.exists():
+            return redirect('agent:index')
+
+        total_c_amount = agent_game_records.aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        total_d_amount = agent_game_records.aggregate(total_d_amount=Sum('d_amount'))['total_d_amount'] or 0
+        total_count = agent_game_records.aggregate(total_count=Sum('count'))['total_count'] or 0
+
+        print(total_c_amount, "@@@@@@")
+
+        try:
+            # Check if an AgentBill already exists for the same date, time_id, and agent
+            existing_bill = AgentBill.objects.filter(agent=agent_obj, time_id=play_time_instance, date=current_date).first()
+
+            if existing_bill:
+                existing_bill.total_c_amount = total_c_amount
+                existing_bill.total_d_amount = total_d_amount
+                existing_bill.total_count = total_count
+                existing_bill.save()
+            else:
+                # Create a new AgentBill record
+                bill = AgentBill(
+                    agent=agent_obj,
+                    time_id=play_time_instance,
+                    date=current_date,
+                    total_c_amount=total_c_amount,
+                    total_d_amount=total_d_amount,
+                    total_count=total_count
+                )
+                bill.save()
+                print("New Bill created successfully")
+        except Exception as e:
+            print(f"Error: {str(e)}")
+
     except:
         pass
+
     return redirect('agent:index')

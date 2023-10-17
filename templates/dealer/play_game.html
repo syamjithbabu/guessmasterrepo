@@ -1,4 +1,4 @@
-{% extends 'agent/partials/base.html' %}
+{% extends 'dealer/partials/base.html' %}
 {% load static %}
 {% block content %}
 
@@ -66,7 +66,7 @@
                         <h2>{{time.end_time}}</h2>
                     </div>
                     <form method="POST">
-                        <a href="{% url 'agent:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
+                        <a href="{% url 'dealer:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
                             <span class="sr-only">Save</span>
                             <i class="fa fa-save"></i>
                         </a>
@@ -74,12 +74,7 @@
                             <div class="row clearfix">
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
-                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                            {% for dealer in dealers %}
-                                            <option>Select Dealer</option>
-                                            <option>{{dealer.user}}</option>
-                                            {% endfor %}
-                                        </select>
+                                        <input type="text">
                                     </div>
                                 </div>
                             </div>
@@ -2054,7 +2049,7 @@
 
         console.log(data);
 
-        fetch('/agent/submit-data/', {
+        fetch('/dealer/submit-data/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

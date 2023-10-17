@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import AgentGameTest,AgentGame
+from . models import AgentGameTest,AgentGame,AgentBill
 
 # Register your models here.
 
@@ -10,3 +10,5 @@ class AgentGameTestAdmin(admin.ModelAdmin):
 @admin.register(AgentGame)
 class AgentGameAdmin(admin.ModelAdmin):
     list_display = ('agent', 'time', 'date', 'LSK', 'number', 'count', 'd_amount', 'c_amount')
+
+admin.site.register(AgentBill)

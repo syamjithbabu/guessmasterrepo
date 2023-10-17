@@ -28,56 +28,26 @@
                                 
                                 <div class="body">
                                     <div class="row clearfix">
-                                         <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="tax-id" class="control-label">Date</label>
-                                                <input type="date" value="2017-06-01" class="form-control">
-                                            </div> 
-                                        </div> -->
-                                        
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                               <div class="form-group">
-                                                   <label for="tax-id" class="control-label">Date</label>
-                                                   <input type="date" value="2017-06-01" class="form-control">
-                                               </div> 
-                                           </div>
-                                     <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label"> All Dealer</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    
-<!-- 
                                         <div class="col-lg-2 col-md-6 col-sm-12">
                                             <div class="form-group">
-                                                <label for="ssn" class="control-label">  click </label>
-                                                <br><button type="button" class="btn btn-primary">GO</button>
-                                               
+                                                <label for="dealer-select" class="control-label">Select Dealer</label>
+                                                <form method="POST">
+                                                {% csrf_token %}
+                                                <select class="form-control" name="dealer-select" data-placeholder="Select">
+                                                    <option value="{{ request.user }}">Myself</option>
+                                                    {% for dealer in dealers %}
+                                                        <option value="{{ dealer.id }}">{{ dealer.user }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <select class="form-control" name="time-select" data-placeholder="Select">
+                                                    {% for time in times %}
+                                                        <option value="{{ time.id }}">{{ time.end_time }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="submit">Search</button>
+                                                </form>
                                             </div>
-                                        </div> -->
+                                        </div>
                                       
                                     </div>
                                    
@@ -88,59 +58,31 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                     <th>date</th>
-                                                     <th> Dealer</th>
-                                                     <th> Bill</th>
-                                                     <th> Count </th>
-                                                     <th> S Amount </th>
-                                                     <th> C Amount </th>
-                                                     <th> #</th>
-                                                     
-                                                    
+                                                     <th>Date</th>
+                                                     <th>User</th>
+                                                     <th>Bill</th>
+                                                     <th>Count </th>
+                                                     <th>S Amount </th>
+                                                     <th>C Amount </th>
+                                                     <th>#</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
+                                            <tbody id="bill-table">
+                                                {% for bill in bills %}
+                                                <tr data-dealer="{{ bill.agent.user }}">
+                                                    <td>{{bill.date}}</td>
+                                                    <td>{{bill.agent}}</td>
+                                                    <td>{{bill.id}}</td>
+                                                    <td>{{bill.total_count}}</td>
+                                                    <td>{{bill.total_d_amount}}</td>
+                                                    <td>{{bill.total_c_amount}}</td>
                                                     <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                  
                                                 </tr>
-
+                                                {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
                                    
-                                </div>
-                                <div class="body">
-                                     <div class=" row clearfix">
-                                        
-                                <div class="col-lg-3 col--md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">Count</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                                
-                                    <div class="col-lg-3 col-md-6 col-sm-12">
-                                       <div class="form-group">
-                                           <label for="tax-id" class="control-label">A Amount</label>
-                                           <input type="number"  class="form-control">
-                                       </div> 
-                                   </div>
-                                   <div class="col-lg-3 col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">C Amount</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                              
-                                
-                            </div>
                                 </div>
                                 
                             </div>
@@ -154,4 +96,27 @@
         
     </div>
 </div>
+
+<script>
+    document.getElementById("dealer-select").addEventListener('click', function () {
+        const dealerSelect = document.getElementById('dealer-select');
+        const billTable = document.querySelectorAll('[data-dealer]');
+
+        console.log(dealerSelect)
+
+        dealerSelect.addEventListener('change', function () {
+            const selectedDealer = dealerSelect.value;
+
+            billTable.forEach(function (row) {
+                if (selectedDealer === row.getAttribute('data-dealer') || selectedDealer === '{{ request.user }}') {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+});
+
+</script>
+
 {% endblock %} 

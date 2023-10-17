@@ -35,4 +35,9 @@ urlpatterns = [
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
     path('submit-data/',views.submit_data,name="submit_data"),
     path('save-data/<int:id>',views.save_data,name="save_data"),
+
+    path('delete-test-row/<int:id>',views.agent_game_test_delete,name="agent_game_test_delete"),
+    path('update-test-row/<int:id>',views.agent_game_test_update,name="agent_game_test_update"),
+
+    path('bills-search',views.bill_search_dropdown_dealer,name="bills_search")
 ]

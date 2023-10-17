@@ -16,7 +16,8 @@ urlpatterns = [
     path('count-salesreport',views.count_salereport,name="count_salereport"),
     path('winning_countreport',views.winning_countreport,name="winning_countreport"),
     path('balance-report',views.balance_report,name="balance_report"),
-
-
+    path('play-game/<int:id>',views.play_game,name="play_game"),
+    path('submit-data/',views.submit_data,name="submit_data"),
+    path('save-data/<int:id>',views.save_data,name="save_data"),
 
 ]
