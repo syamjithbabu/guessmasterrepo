@@ -204,6 +204,7 @@ def delete_bill(request,id):
         games = AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date).all()
     else:
         games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
+        #vamika
     print(games)
     context = {
         'bill' : bill,
