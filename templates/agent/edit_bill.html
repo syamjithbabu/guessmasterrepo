@@ -19,9 +19,6 @@
         <div class="row clearfix">
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-                    <div class="header">
-                        <h2>Edit Bill</h2>
-                    </div>
                     <div class="body">
                         <div class="col-lg-12">
                             <div class="card">
@@ -30,21 +27,29 @@
                                     <div class="row clearfix">
                                         <div class="col-lg-2 col-md-6 col-sm-12">
                                             <div class="form-group">
-                                                <label for="dealer-select" class="control-label">Select Dealer</label>
+                                                
                                                 <form method="POST">
                                                 {% csrf_token %}
+                                                <div class="row">
+                                                <div class="col-6">
+                                                <label for="dealer-select" class="control-label">Select Dealer</label>
                                                 <select class="form-control" name="dealer-select" data-placeholder="Select">
-                                                    <option value="{{ request.user }}">Myself</option>
+                                                    <option value="{{ request.user.id }}">Myself</option>
                                                     {% for dealer in dealers %}
                                                         <option value="{{ dealer.id }}">{{ dealer.user }}</option>
                                                     {% endfor %}
                                                 </select>
+                                                </div>  
+                                                <div class="col-6">
+                                                <label for="time-select" class="control-label">Select Time</label>
                                                 <select class="form-control" name="time-select" data-placeholder="Select">
                                                     {% for time in times %}
                                                         <option value="{{ time.id }}">{{ time.end_time }}</option>
                                                     {% endfor %}
                                                 </select>
-                                                <button type="submit">Search</button>
+                                                </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary mt-3">Search</button>
                                                 </form>
                                             </div>
                                         </div>

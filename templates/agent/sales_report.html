@@ -25,7 +25,7 @@
 
                     <div class="body">
                         <ul class="nav nav-tabs-new2">
-                            <div class="col-lg-2 col-md-6 col-sm-12">
+                            <div class="col-6">
                                 <div class="form-group">
                                     <label for="tax-id" class="control-label">All Dealer</label>
                                     <div class="mb-3">
@@ -34,6 +34,21 @@
                                             <option></option>
                                             {% for dealer in dealers %}
                                             <option>{{dealer.user}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="tax-id" class="control-label">Select Time</label>
+                                    <div class="mb-3">
+
+                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
+                                            <option></option>
+                                            {% for time in times %}
+                                            <option>{{time.end_time}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -55,20 +70,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                <div class="form-group">
-                                    <label for="tax-id" class="control-label">Select Time</label>
-                                    <div class="mb-3">
-
-                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                            <option></option>
-                                            {% for time in times %}
-                                            <option>{{time.end_time}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+                        
 
                         </ul>
 
