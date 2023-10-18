@@ -31,15 +31,3 @@ class DealerGame(models.Model):
 
     def __str__(self):
         return str(self.dealer)
-    
-class DealerBill(models.Model):
-    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
-    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
-    time_id = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
-    date = models.DateField()
-    total_c_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    total_d_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    total_count = models.DecimalField(max_digits=10, decimal_places=0)
-
-    def __str__(self):
-        return f'Bill for {self.dealer} on {self.date}'

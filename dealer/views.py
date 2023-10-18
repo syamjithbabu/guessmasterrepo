@@ -5,9 +5,9 @@ import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
 from adminapp.models import PlayTime
-from agent.models import DealerPackage
+from agent.models import DealerPackage,Bill
 from website.models import Dealer
-from dealer.models import DealerGame,DealerGameTest,DealerBill
+from dealer.models import DealerGame,DealerGameTest
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from pytz import timezone as pytz_timezone
@@ -174,7 +174,7 @@ def save_data(request, id):
 
         try:
             # Check if an AgentBill already exists for the same date, time_id, and agent
-            existing_bill = DealerBill.objects.filter(agent=agent_obj,dealer=dealer_obj, time_id=play_time_instance, date=current_date).first()
+            existing_bill = Bill.objects.filter(user=dealer_obj.user, time_id=play_time_instance, date=current_date).first()
 
             if existing_bill:
                 existing_bill.total_c_amount = total_c_amount
@@ -183,9 +183,8 @@ def save_data(request, id):
                 existing_bill.save()
             else:
                 # Create a new AgentBill record
-                bill = DealerBill(
-                    agent=agent_obj,
-                    dealer=dealer_obj,
+                bill = Bill(
+                    user=dealer_obj.user,
                     time_id=play_time_instance,
                     date=current_date,
                     total_c_amount=total_c_amount,

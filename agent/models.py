@@ -68,8 +68,8 @@ class AgentGame(models.Model):
     def __str__(self):
         return str(self.agent)
     
-class AgentBill(models.Model):
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
+class Bill(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_id = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField()
     total_c_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -77,4 +77,4 @@ class AgentBill(models.Model):
     total_count = models.DecimalField(max_digits=10, decimal_places=0)
 
     def __str__(self):
-        return f'Bill for {self.agent} on {self.date}'
+        return f'Bill for {self.user} on {self.date}'

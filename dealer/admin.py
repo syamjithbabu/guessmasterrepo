@@ -1,5 +1,5 @@
 from django.contrib import admin
-from dealer.models import DealerGameTest,DealerGame,DealerBill
+from dealer.models import DealerGameTest,DealerGame
 
 # Register your models here.
 
@@ -10,5 +10,3 @@ class DealerGameTestAdmin(admin.ModelAdmin):
 @admin.register(DealerGame)
 class DealerGameAdmin(admin.ModelAdmin):
     list_display = ('dealer', 'time', 'date', 'LSK', 'number', 'count', 'd_amount', 'c_amount')
-
-admin.site.register(DealerBill)

@@ -7,8 +7,8 @@ from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
 from adminapp.models import PlayTime, AgentPackage
-from .models import DealerPackage, AgentGameTest, AgentGame, AgentBill
-from dealer.models import DealerBill
+from .models import DealerPackage, AgentGameTest, AgentGame, Bill
+from dealer.models import DealerGame
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from website.decorators import dealer_required, agent_required
@@ -16,6 +16,8 @@ from django.utils import timezone
 from pytz import timezone as pytz_timezone
 from collections import OrderedDict
 from django.db.models import Sum
+from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 
 # Create your views here.
@@ -150,53 +152,64 @@ def balance_report(request):
 
 def edit_bill(request):
     agent_obj = Agent.objects.get(user=request.user)
+    print(agent_obj.user,"agent id")
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    print(current_time)
     try:
-        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
-        dealers = Dealer.objects.filter(agent=agent_obj).all()
-        times = PlayTime.objects.filter().all()
+        matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
+        print(matching_play_times.id)
     except:
         pass
     if request.method == 'POST':
         search_dealer = request.POST.get('dealer-select')
-        search_time = request.POST.get('time-select')
-        print(search_dealer,search_time)
-        bill_search = DealerBill.objects.filter(dealer=search_dealer,time_id=search_time,date=current_date).all()
+        print(search_dealer,"the user id")
+        if search_dealer == 'all':
+            return redirect('agent:edit_bill')
+        else:
+            pass
+        bill_search = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).all()
+        totals = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+        dealers = Dealer.objects.filter(agent=agent_obj).all()
+        print(bill_search,"search bill")
         context = {
             'dealers': dealers,
-            'times' : times,
-            'bills': bill_search
+            'bills': bill_search,
+            'totals' : totals
         }
         return render(request,'agent/edit_bill.html',context)
     else:
-        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
+        bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).all()
+        totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+        dealers = Dealer.objects.filter(agent=agent_obj).all()
+        print(agent_obj.user,"agent id")
         context = {
-            'dealers': dealers,
-            'times' : times,
-            'bills':bills
+            'bills':bills,
+            'dealers' : dealers,
+            'totals' : totals
         }
         return render(request,'agent/edit_bill.html',context)
 
-def bill_search_dropdown_dealer(request):
-    print("this is working")
-    agent_obj = Agent.objects.get(user=request.user)
-    ist = pytz_timezone('Asia/Kolkata')
-    current_date = timezone.now().astimezone(ist).date()
-    if request.method == 'POST':
-        search_dealer = request.POST.get('select_dealer')
-        search_time = request.POST.get('time-select')
-        print(search_dealer,search_time)
-        bill_search = DealerBill.objects.filter(dealer=search_dealer,time_id=search_time,date=current_date).all()
-        context = {
-            'bills':bill_search
-        }
-        return render(request,'agent/edit_bill.html',context)
+def delete_bill(request,id):
+    print(id)
+    bill = Bill.objects.get(id=id)
+    user_obj = bill.user
+    print(user_obj)
+    time_id = bill.time_id
+    print(time_id,"time")
+    date = bill.date
+    print(date,"date")
+    if AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date):
+        games = AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date).all()
     else:
-        bills = AgentBill.objects.filter(agent=agent_obj,date=current_date).all()
-        return render(request,'agent/edit_bill.html',context)
-        
-
+        games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
+    print(games)
+    context = {
+        'bill' : bill,
+        'games' : games
+    }
+    return render(request,'agent/delete_bill.html',context)     
 
 def change_password(request):
     return render(request,'agent/change_password.html')
@@ -442,7 +455,7 @@ def save_data(request, id):
 
         try:
             # Check if an AgentBill already exists for the same date, time_id, and agent
-            existing_bill = AgentBill.objects.filter(agent=agent_obj, time_id=play_time_instance, date=current_date).first()
+            existing_bill = Bill.objects.filter(user=agent_obj.user, time_id=play_time_instance, date=current_date).first()
 
             if existing_bill:
                 existing_bill.total_c_amount = total_c_amount
@@ -451,8 +464,8 @@ def save_data(request, id):
                 existing_bill.save()
             else:
                 # Create a new AgentBill record
-                bill = AgentBill(
-                    agent=agent_obj,
+                bill = Bill(
+                    user=agent_obj.user,
                     time_id=play_time_instance,
                     date=current_date,
                     total_c_amount=total_c_amount,

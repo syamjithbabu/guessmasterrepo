@@ -1,6 +1,29 @@
 {% extends 'agent/partials/base.html' %}
 {% load static %}
 {% block content %}
+<style>
+    .table-cell {
+        border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
+        text-align: center;
+}
+
+    .nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th, .td{
+        text-align: center;
+    }
+</style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
@@ -26,28 +49,20 @@
                                 <div class="body">
                                     <div class="row clearfix">
                                         <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                
+                                            <div class="form-group"> 
                                                 <form method="POST">
                                                 {% csrf_token %}
                                                 <div class="row">
-                                                <div class="col-6">
+                                                <div class="col-lg-6 col-12">
                                                 <label for="dealer-select" class="control-label">Select Dealer</label>
                                                 <select class="form-control" name="dealer-select" data-placeholder="Select">
+                                                    <option value="all">All</option>
                                                     <option value="{{ request.user.id }}">Myself</option>
                                                     {% for dealer in dealers %}
-                                                        <option value="{{ dealer.id }}">{{ dealer.user }}</option>
+                                                        <option value="{{ dealer.user.id }}">{{ dealer.user }}</option>
                                                     {% endfor %}
                                                 </select>
                                                 </div>  
-                                                <div class="col-6">
-                                                <label for="time-select" class="control-label">Select Time</label>
-                                                <select class="form-control" name="time-select" data-placeholder="Select">
-                                                    {% for time in times %}
-                                                        <option value="{{ time.id }}">{{ time.end_time }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                </div>
                                                 </div>
                                                 <button type="submit" class="btn btn-primary mt-3">Search</button>
                                                 </form>
@@ -75,19 +90,18 @@
                                             <tbody id="bill-table">
                                                 {% for bill in bills %}
                                                 <tr data-dealer="{{ bill.agent.user }}">
-                                                    <td>{{bill.date}}</td>
-                                                    <td>{{bill.agent}}</td>
-                                                    <td>{{bill.id}}</td>
-                                                    <td>{{bill.total_count}}</td>
-                                                    <td>{{bill.total_d_amount}}</td>
-                                                    <td>{{bill.total_c_amount}}</td>
-                                                    <td>2</td>
+                                                    <td class="table-cell">{{bill.date}}</td>
+                                                    <td class="table-cell">{{bill.user}}</td>
+                                                    <td class="table-cell">{{bill.id}}</td>
+                                                    <td class="table-cell">{{bill.total_count}}</td>
+                                                    <td class="table-cell">{{bill.total_d_amount}}</td>
+                                                    <td class="table-cell">{{bill.total_c_amount}}</td>
+                                                    <td class="table-cell"><a href="{% url 'agent:delete_bill' bill.id %}">Edit</a></td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
-                                   
                                 </div>
                                 
                             </div>
@@ -102,26 +116,24 @@
     </div>
 </div>
 
-<script>
-    document.getElementById("dealer-select").addEventListener('click', function () {
-        const dealerSelect = document.getElementById('dealer-select');
-        const billTable = document.querySelectorAll('[data-dealer]');
+<nav class="nav">
+            <table>
+                <thead>
+                    <tr>
+                         <th class="th">Total Count</th>
+                         <th class="th">A.Amount</th>
+                         <th class="th">C.Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td">{{totals.total_count}}</td>
+                        <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
+                        <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+</nav>
 
-        console.log(dealerSelect)
-
-        dealerSelect.addEventListener('change', function () {
-            const selectedDealer = dealerSelect.value;
-
-            billTable.forEach(function (row) {
-                if (selectedDealer === row.getAttribute('data-dealer') || selectedDealer === '{{ request.user }}') {
-                    row.style.display = 'table-row';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-});
-
-</script>
 
 {% endblock %} 

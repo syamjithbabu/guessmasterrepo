@@ -1,0 +1,141 @@
+{% extends 'agent/partials/base.html' %}
+{% load static %}
+{% block content %}
+
+
+
+<div id="main-content">
+    <div class="container-fluid">
+        <div class="block-header">
+            <div class="row">
+                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Delete Bill </h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item">Delete Bill</li>
+                    </ul>
+                </div>                 
+            </div>
+        </div>
+        
+        <div class="row clearfix">
+            <div class="col-lg-12">
+<div class="card">
+    <div class="header">
+        <h6>Bill ID : {{bill.id}}</h6>
+        <h6>Date : {{bill.date}}</h6>
+        <h6>User : {{bill.user}}</h6>
+        <button type="button" onclick="packageDelete(('{{ package.id }}'))" data-type="confirm" class="btn btn-danger js-sweetalert" title="Delete"><i class="fa fa-trash-o"></i></button>
+    </div>
+    <div class="body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Game</th>                                    
+                        <th>Number</th>                                   
+                        <th>Count</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        {% for game in games %}
+                    <tr>
+                        
+                        <td>{{game.LSK}}</td>
+                        <td>{{game.number}}</td> 
+                        <td>{{game.count}}</td>                                  
+                        <td>
+                            <button type="button" onclick="packageDelete(('{{ package.id }}'))" data-type="confirm" class="btn btn-danger js-sweetalert" title="Delete"><i class="fa fa-trash-o"></i></button>
+                        </td>
+                       
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    function packageDelete(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this package!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    swal("Poof! This package has been deleted!", {
+                        icon: "success",
+                    });
+                    setTimeout(function () {
+                        window.location.href = "/agent/delete-package/" + id
+                    }, 1000);
+                } else {
+                    swal("It is safe!");
+                }
+            });
+    }
+
+
+</script>
+
+<script>
+    function dealerban(id) {
+        swal({
+            title: "Are you sure?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    swal("This user has been banned!", {
+                        icon: "success",
+                    });
+                    setTimeout(function () {
+                        window.location.href = "/agent/ban-agent/" + id
+                    }, 1000);
+                } else {
+                    swal("It is safe!");
+                }
+            });
+    }
+
+
+</script>
+
+<script>
+    function removeBan(id) {
+        swal({
+            title: "Are you sure?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    swal("This user's ban removed!", {
+                        icon: "success",
+                    });
+                    setTimeout(function () {
+                        window.location.href = "/agent/remove-ban/" + id
+                    }, 1000);
+                } else {
+                    swal("It is safe!");
+                }
+            });
+    }
+
+
+</script>
+
+{% endblock %}
