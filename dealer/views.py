@@ -172,30 +172,7 @@ def save_data(request, id):
 
         print(total_c_amount, "@@@@@@")
 
-        try:
-            # Check if an AgentBill already exists for the same date, time_id, and agent
-            existing_bill = Bill.objects.filter(user=dealer_obj.user, time_id=play_time_instance, date=current_date).first()
-
-            if existing_bill:
-                existing_bill.total_c_amount = total_c_amount
-                existing_bill.total_d_amount = total_d_amount
-                existing_bill.total_count = total_count
-                existing_bill.save()
-            else:
-                # Create a new AgentBill record
-                bill = Bill(
-                    user=dealer_obj.user,
-                    time_id=play_time_instance,
-                    date=current_date,
-                    total_c_amount=total_c_amount,
-                    total_d_amount=total_d_amount,
-                    total_count=total_count
-                )
-                bill.save()
-                print("New Bill created successfully")
-        except Exception as e:
-            print(f"Error: {str(e)}")
-
+        bill = Bill.objects.create(user=dealer_obj.user,time_id=play_time_instance,date=current_date,dealer_games=dealer_game_record,total_c_amount=total_c_amount,total_d_amount=total_d_amount,total_count=total_count)
     except:
         pass
 

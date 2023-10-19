@@ -1,6 +1,7 @@
 from django.db import models
 from website.models import Dealer,User
 from adminapp.models import Agent,PlayTime
+from dealer.models import DealerGame
 
 # Create your models here.
 
@@ -72,6 +73,8 @@ class Bill(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_id = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField()
+    agent_games = models.ForeignKey(AgentGame,on_delete=models.CASCADE,null=True)
+    dealer_games = models.ForeignKey(DealerGame,on_delete=models.CASCADE,null=True)
     total_c_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_d_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_count = models.DecimalField(max_digits=10, decimal_places=0)
