@@ -98,6 +98,15 @@
                                                     <td class="table-cell">{{bill.total_c_amount}}</td>
                                                     <td class="table-cell"><a href="{% url 'agent:delete_bill' bill.id %}">Edit</a></td>
                                                 </tr>
+                                                <tr>
+                                                    <td>#</td>
+                                                    <td>{{bill.agent_games.LSK}}</td>
+                                                    <td>#</td>
+                                                    <td>{{bill.agent_games.number}}</td>
+                                                    <td>#</td>
+                                                    <td>{{bill.agent_games.count}}</td>
+                                                    <td>Delete</td>
+                                                </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>

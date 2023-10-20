@@ -60,14 +60,13 @@
                                     <div class="form-group">
                                         <label for="tax-id" class="control-label">Select Dealer</label>
                                         <div class="mb-3">
-                                            <select class="form-control show-tick" data-placeholder="Select"
-                                                name="select-dealer" id="agent">
+                                            <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="agent">
                                                 <option value="all">All</option>
-                                                <option value="{{request.user.id}}">Myself</option>
+                                                <option value="{{ request.user }}">Myself</option>
                                                 {% for dealer in dealers %}
-                                                <option value="{{dealer.user.id}}">{{dealer.user}}</option>
+                                                <option value="{{ dealer.user.id }}">{{ dealer.user }}</option>
                                                 {% endfor %}
-                                            </select>
+                                             </select>
                                         </div>
                                     </div>
                                 </div>
@@ -168,7 +167,7 @@
                             {% else %}
                             {% endif %}
                             {% if dealer_bills %}
-                            <div class="table-responsive" style="padding-bottom: 50px;">
+                            <div class="table-responsive">
                                 <table class="table m-b-0">
                                     <thead>
                                         <tr>
@@ -204,6 +203,7 @@
                             </div>
                             {% else %}
                             {% endif %}
+                            <div  style="padding-top: 50px;"></div>
                         </div>
                     </div>
                 </div>
@@ -277,6 +277,7 @@
     document.getElementById('from-date').value = getCurrentDate();
     document.getElementById('to-date').value = getCurrentDate();
 </script>
+
 
 
     {% endblock %}
