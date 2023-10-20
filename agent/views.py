@@ -214,19 +214,31 @@ def sales_report(request):
             'agent_bills' : agent_bills,
             'dealer_bills' : dealer_bills,
             'totals' : totals,
-            'selected_dealer' : select_dealer
+            'selected_dealer' : select_dealer,
+            'selected_time' : select_time,
+            'selected_from' : from_date,
+            'selected_to' : to_date,
         }
         return render(request, 'agent/sales_report.html', context)
     else:
+        print("this is working")
         agent_bills = Bill.objects.filter(date=current_date,user=agent_obj.user.id).all()
+        print(agent_bills)
         dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date)
         totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+        select_dealer = 'all'
+        select_time = 'all'
+        from_date = current_date
+        to_date = current_date
+        print(from_date,to_date)
         context = {
             'dealers' : dealers,
             'times' : times,
             'agent_bills' : agent_bills,
             'dealer_bills' : dealer_bills,
-            'totals' : totals
+            'totals' : totals,
+            'selected_dealer' : select_dealer,
+            'selected_time' : select_time,
         }
     return render(request,'agent/sales_report.html',context)
 
@@ -515,14 +527,15 @@ def submit_data(request):
 def save_data(request, id):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
-    print(current_date)
-
     agent_obj = Agent.objects.get(user=request.user)
     play_time_instance = PlayTime.objects.get(id=id)
 
     try:
-        agent_game_test = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date)
+        # Filter AgentGameTest records for the agent and the specific time
+        agent_game_test = AgentGameTest.objects.filter(agent=agent_obj, time=play_time_instance, date=current_date)
 
+        # Create AgentGame records based on AgentGameTest
+        agent_game_records = []
         for test_record in agent_game_test:
             agent_game_record = AgentGame(
                 agent=test_record.agent,
@@ -534,26 +547,34 @@ def save_data(request, id):
                 d_amount=test_record.d_amount,
                 c_amount=test_record.c_amount
             )
-            agent_game_record.save()
+            agent_game_records.append(agent_game_record)
 
-        agent_test_game_delete = AgentGameTest.objects.filter(agent=agent_obj)
-        agent_test_game_delete.delete()
+        # Save the AgentGame records
+        AgentGame.objects.bulk_create(agent_game_records)
 
-        agent_game_records = AgentGame.objects.filter(
-            agent=agent_obj,
-            time_id=id,
-            date=current_date
-        )
+        # Delete the AgentGameTest records
+        agent_game_test.delete()
 
-        if not agent_game_records.exists():
-            return redirect('agent:index')
+        # Check if there are AgentGame records
+        if agent_game_records:
+            # Calculate total values
+            total_c_amount = sum([record.c_amount for record in agent_game_records])
+            total_d_amount = sum([record.d_amount for record in agent_game_records])
+            total_count = sum([record.count for record in agent_game_records])
 
-        total_c_amount = agent_game_records.aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-        total_d_amount = agent_game_records.aggregate(total_d_amount=Sum('d_amount'))['total_d_amount'] or 0
-        total_count = agent_game_records.aggregate(total_count=Sum('count'))['total_count'] or 0
+            # Create the Bill record
+            bill = Bill.objects.create(
+                user=agent_obj.user,
+                time_id=play_time_instance,
+                date=current_date,
+                total_c_amount=total_c_amount,
+                total_d_amount=total_d_amount,
+                total_count=total_count,
+            )
+            # Add related AgentGame records to the Bill
+            bill.agent_games.add(*agent_game_records)
 
-        print(total_c_amount, "@@@@@@")
-        bill = Bill.objects.create(user=agent_obj.user,time_id=play_time_instance,date=current_date,agent_games=agent_game_record,total_c_amount=total_c_amount,total_d_amount=total_d_amount,total_count=total_count)
-    except:
-        pass
+    except Exception as e:
+        print(e)
+
     return redirect('agent:index')

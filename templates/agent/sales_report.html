@@ -64,7 +64,7 @@
                                                 <option value="all">All</option>
                                                 <option value="{{ request.user }}">Myself</option>
                                                 {% for dealer in dealers %}
-                                                <option value="{{ dealer.user.id }}">{{ dealer.user }}</option>
+                                                <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
                                                 {% endfor %}
                                              </select>
                                         </div>
@@ -76,7 +76,7 @@
                                         <label for="tax-id" class="control-label">Select Time</label>
                                         <div class="mb-3">
                                             <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                name="select-time">
+                                                name="select-time" id="time">
                                                 <option value="all">All Times</option>
                                                 {% for time in times %}
                                                 <option value="{{time.id}}">{{time.end_time}}</option>
@@ -152,14 +152,16 @@
                                                 <td>{{bill.total_d_amount}}</td>
                                                 <td>{{bill.total_c_amount}}</td>
                                             </tr>
+                                            {% for game in bill.agent_games.all %}
                                             <tr class="expand-row" style="display: none;">
                                                 <td>#</td>
-                                                <td>{{bill.agent_games.LSK}}</td>
-                                                <td>{{bill.agent_games.number}}</td>
-                                                <td>{{bill.agent_games.count}}</td>
-                                                <td>{{bill.agent_games.d_amount}}</td>
-                                                <td>{{bill.agent_games.c_amount}}</td>
+                                                <td>{{game.LSK}}</td>
+                                                <td>{{game.number}}</td>
+                                                <td>{{game.count}}</td>
+                                                <td>{{game.d_amount}}</td>
+                                                <td>{{game.c_amount}}</td>
                                             </tr>
+                                            {% endfor %}
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -189,14 +191,16 @@
                                                 <td>{{bill.total_d_amount}}</td>
                                                 <td>{{bill.total_c_amount}}</td>
                                             </tr>
+                                            {% for game in bill.dealer_games.all %}
                                             <tr class="expand-row" style="display: none;">
                                                 <td>#</td>
-                                                <td>{{bill.dealer_games.LSK}}</td>
-                                                <td>{{bill.dealer_games.number}}</td>
-                                                <td>{{bill.dealer_games.count}}</td>
-                                                <td>{{bill.dealer_games.d_amount}}</td>
-                                                <td>{{bill.dealer_games.c_amount}}</td>
+                                                <td>{{game.LSK}}</td>
+                                                <td>{{game.number}}</td>
+                                                <td>{{game.count}}</td>
+                                                <td>{{game.d_amount}}</td>
+                                                <td>{{game.c_amount}}</td>
                                             </tr>
+                                            {% endfor %}
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -273,9 +277,28 @@
         return `${year}-${month}-${day}`;
     }
 
-    // Set the default value for the "From" and "To" date inputs
-    document.getElementById('from-date').value = getCurrentDate();
-    document.getElementById('to-date').value = getCurrentDate();
+    if "{{selected_from}}" and "{{selected_to}}":
+        document.getElementById('from-date').value = "{{selected_from}}";
+        document.getElementById('to-date').value = "{{selected_to}}";
+    else:
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+        var selectTime = document.getElementById("time");
+        var selectFrom = document.getElementById("from-date");
+        var selectTo = document.getElementById("to-date")
+
+        // Set the selected value based on the selected_dealer variable
+        selectDealer.value = "{{ selected_dealer }}";
+        selectTime.value = "{{ selected_time }}";
+    });
 </script>
 
 
