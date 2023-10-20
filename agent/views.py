@@ -137,6 +137,7 @@ def sales_report(request):
         lsk_value = []
         agent_bills = []
         dealer_bills = []
+        agent_games = []
         totals = []
         if lsk == 'a_b_c':
             lsk_value = ['A','B','C']
