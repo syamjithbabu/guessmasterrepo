@@ -145,24 +145,24 @@
                                     <tbody>
                                         {% for bill in agent_bills %}
                                             <tr>
-                                                <td>{{bill.date}}</td>
-                                                <td>{{bill.user}}</td>
-                                                <td>{{bill.id}}</td>
-                                                <td>{{bill.total_count}}</td>
-                                                <td>{{bill.total_d_amount}}</td>
-                                                <td>{{bill.total_c_amount}}</td>
+                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.user }}</td>
+                                                <td>{{ bill.id }}</td>
+                                                <td>{{ bill.total_count }}</td>
+                                                <td>{{ bill.total_d_amount }}</td>
+                                                <td>{{ bill.total_c_amount }}</td>
                                             </tr>
-                                            {% for game in bill.agent_games.all %}
-                                            <tr class="expand-row" style="display: none;">
-                                                <td>#</td>
-                                                <td>{{game.LSK}}</td>
-                                                <td>{{game.number}}</td>
-                                                <td>{{game.count}}</td>
-                                                <td>{{game.d_amount}}</td>
-                                                <td>{{game.c_amount}}</td>
-                                            </tr>
+                                                {% for game in bill.agent_games.all %}
+                                                <tr class="expand-row" style="display: none;">
+                                                    <td>#</td>
+                                                    <td>{{ game.LSK }}</td>
+                                                    <td>{{ game.number }}</td>
+                                                    <td>{{ game.count }}</td>
+                                                    <td>{{ game.d_amount }}</td>
+                                                    <td>{{ game.c_amount }}</td>
+                                                </tr>
+                                                {% endfor %}
                                             {% endfor %}
-                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -277,15 +277,19 @@
         return `${year}-${month}-${day}`;
     }
 
-    if "{{selected_from}}" and "{{selected_to}}":
-        document.getElementById('from-date').value = "{{selected_from}}";
-        document.getElementById('to-date').value = "{{selected_to}}";
-    else:
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
         document.getElementById('from-date').value = getCurrentDate();
         document.getElementById('to-date').value = getCurrentDate();
-
-
+    }
 </script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

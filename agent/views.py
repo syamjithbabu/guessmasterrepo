@@ -1,3 +1,4 @@
+from audioop import reverse
 import json
 from django.http import JsonResponse
 from django.shortcuts import render,redirect,get_object_or_404
@@ -159,8 +160,10 @@ def sales_report(request):
                         totals = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
                 else:
                     if lsk != 'all':
-                        agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,agent_games__LSK__in=lsk_value).all()
-                        totals = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,agent_games__LSK__in=lsk_value).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+                        if lsk != 'all':
+                            agent_games = AgentGame.objects.filter(LSK__in=lsk_value)
+                            agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games), date__range=[from_date, to_date], user=agent_obj.user.id).all()
+                            totals = Bill.objects.filter(Q(date__range=[from_date, to_date], user=agent_obj.user.id, agent_games__in=agent_games)).aggregate(total_count=Sum('total_count'), total_c_amount=Sum('total_c_amount'), total_d_amount=Sum('total_d_amount'))
                     else:
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id).all()
                         totals = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
@@ -218,6 +221,8 @@ def sales_report(request):
             'selected_time' : select_time,
             'selected_from' : from_date,
             'selected_to' : to_date,
+            'selected_lsk' : lsk,
+            'agent_games' : agent_games
         }
         return render(request, 'agent/sales_report.html', context)
     else:
@@ -228,9 +233,6 @@ def sales_report(request):
         totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
         select_dealer = 'all'
         select_time = 'all'
-        from_date = current_date
-        to_date = current_date
-        print(from_date,to_date)
         context = {
             'dealers' : dealers,
             'times' : times,
@@ -323,6 +325,18 @@ def delete_bill(request,id):
         'games' : games
     }
     return render(request,'agent/delete_bill.html',context)     
+
+def deleting_bill(request,id):
+    bill = get_object_or_404(Bill,id=id)
+    print(bill,"deleting bill")
+    bill.delete()
+    return redirect('agent:index')
+
+def delete_row(request,id,bill_id):
+    print(id,"this row")
+    row_delete = get_object_or_404(AgentGame,id=id)
+    row_delete.delete()
+    return redirect('agent:delete_bill',id=bill_id)
 
 def change_password(request):
     return render(request,'agent/change_password.html')

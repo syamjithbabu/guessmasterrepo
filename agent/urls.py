@@ -39,6 +39,8 @@ urlpatterns = [
     path('delete-test-row/<int:id>',views.agent_game_test_delete,name="agent_game_test_delete"),
     path('update-test-row/<int:id>',views.agent_game_test_update,name="agent_game_test_update"),
 
-    path('delete-bill/<int:id>',views.delete_bill,name="delete_bill")
+    path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
+    path('deleting-bill/<int:id>',views.delete_bill,name="deleting_bill"),
+    path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row")
 
 ]
