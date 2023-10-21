@@ -144,7 +144,7 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in agent_bills %}
-                                            <tr>
+                                            <tr class="main-row">
                                                 <td>{{ bill.date }}</td>
                                                 <td>{{ bill.user }}</td>
                                                 <td>{{ bill.id }}</td>
@@ -154,7 +154,7 @@
                                             </tr>
                                             {% for game in bill.agent_games.all %}
                                                 {% if game in agent_games %}
-                                                    <tr class="expand-row" style="display: none;">
+                                                    <tr class="expand-row grouped-row" style="display: none;">
                                                         <td>#</td>
                                                         <td>{{ game.LSK }}</td>
                                                         <td>{{ game.number }}</td>
@@ -186,24 +186,26 @@
                                     <tbody>
                                         {% for bill in dealer_bills %}
                                             <tr>
-                                                <td>{{bill.date}}</td>
-                                                <td>{{bill.user}}</td>
-                                                <td>{{bill.id}}</td>
-                                                <td>{{bill.total_count}}</td>
-                                                <td>{{bill.total_d_amount}}</td>
-                                                <td>{{bill.total_c_amount}}</td>
+                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.user }}</td>
+                                                <td>{{ bill.id }}</td>
+                                                <td>{{ bill.total_count }}</td>
+                                                <td>{{ bill.total_d_amount }}</td>
+                                                <td>{{ bill.total_c_amount }}</td>
                                             </tr>
                                             {% for game in bill.dealer_games.all %}
-                                            <tr class="expand-row" style="display: none;">
-                                                <td>#</td>
-                                                <td>{{game.LSK}}</td>
-                                                <td>{{game.number}}</td>
-                                                <td>{{game.count}}</td>
-                                                <td>{{game.d_amount}}</td>
-                                                <td>{{game.c_amount}}</td>
-                                            </tr>
+                                                {% if game in dealer_games %}
+                                                    <tr class="expand-row" style="display: none;">
+                                                        <td>#</td>
+                                                        <td>{{ game.LSK }}</td>
+                                                        <td>{{ game.number }}</td>
+                                                        <td>{{ game.count }}</td>
+                                                        <td>{{ game.d_amount }}</td>
+                                                        <td>{{ game.c_amount }}</td>
+                                                    </tr>
+                                                {% endif %}
                                             {% endfor %}
-                                        {% endfor %}
+                                            {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -299,14 +301,22 @@
         var selectDealer = document.getElementById("agent");
         var selectTime = document.getElementById("time");
         var selectFrom = document.getElementById("from-date");
-        var selectTo = document.getElementById("to-date")
+        var selectTo = document.getElementById("to-date");
+        var radioInputs = document.getElementsByName("select-lsk");
 
         // Set the selected value based on the selected_dealer variable
         selectDealer.value = "{{ selected_dealer }}";
         selectTime.value = "{{ selected_time }}";
+        selected_lsk = "{{ selected_lsk }}";
+        for (var i = 0; i < radioInputs.length; i++) {
+            if (radioInputs[i].value === selected_lsk) {
+                radioInputs[i].checked = true;
+                break; // Exit the loop once the correct radio input is found
+            }
+        }
+
     });
 </script>
-
 
 
     {% endblock %}
