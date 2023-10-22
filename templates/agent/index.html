@@ -23,7 +23,7 @@
                     <div class="body">
                         <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
                         <div class="content">
-                            <h5 class="number">{{ time.end_time }}</h5>
+                            <h5 class="number">{{ time.game_time }}</h5>
                             {% if is_available %}
                             <p>Game is available!</p>
                             {% else %}
@@ -41,7 +41,7 @@
                     <div class="body">
                         <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
                         <div class="content">
-                            <h5 class="number">{{ time.end_time }}</h5>
+                            <h5 class="number">{{ time.game_time }}</h5>
                             {% if is_available %}
                             <p>Game is available!</p>
                             {% else %}

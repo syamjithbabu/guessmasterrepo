@@ -6,6 +6,7 @@ from website.models import Agent,User
 class PlayTime(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
+    game_time = models.TimeField()
 
     def __str__(self):
         return str(self.start_time)
