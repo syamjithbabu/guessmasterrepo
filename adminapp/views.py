@@ -7,6 +7,11 @@ from website.models import User,Agent,Dealer
 from .models import PlayTime, AgentPackage
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
+from pytz import timezone as pytz_timezone
+from django.utils import timezone
+from agent.models import Bill
+from django.db.models import Sum
+from django.db.models import Q
 
 # Create your views here.
 
@@ -253,7 +258,8 @@ def add_time(request):
         start_time = request.POST.get('start_time')
         print(start_time)
         end_time = request.POST.get('end_time')
-        set_time = PlayTime.objects.create(start_time=start_time,end_time=end_time)
+        game_time = request.POST.get('game_time')
+        set_time = PlayTime.objects.create(game_time=game_time,start_time=start_time,end_time=end_time)
         set_time.save()
         return redirect('adminapp:change_time')
     return render(request,'adminapp/add_time.html')
@@ -302,10 +308,47 @@ def winningcount_report(request):
     return render(request,'adminapp/winningcount_report.html')
 
 def blocked_numbers(request):
+
+
     return render(request,'adminapp/blocked_numbers.html')
 
 def edit_bill(request):
-    return render(request,'adminapp/edit_bill.html')
+    bill = Agent.objects.all()
+    bill_agent = bill
+    bill= Dealer.objects.all()
+    bill_dealer=bill
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    print(current_time)
+    bill_search = {}
+    totals = {}
+
+    try:
+        matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
+        print(matching_play_times.id)
+    except:
+        pass
+    if request.method == 'POST':
+        search_select = request.POST.get('select')
+        print(search_select,"the user id")
+        if search_select == 'all':
+            return redirect('adminapp:edit_bill')
+        else :
+        
+        
+            bill_search = Bill.objects.filter(user=search_select,date=current_date,time_id=matching_play_times.id).all()
+            totals = Bill.objects.filter(user=search_select,date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            print(bill_search,"search bill")
+            print(totals,"get total")
+            print(bill_search,"search bill")
+    context = {
+        'bills': bill_search,
+        'totals' : totals,
+        'bill_dealer':bill_dealer,
+    }   
+    
+    return render(request,'adminapp/edit_bill.html',context)
 
 def payment_report(request):
     return render(request,'adminapp/payment_report.html')

@@ -25,11 +25,15 @@
                         <form method="POST">
                             {% csrf_token %}
                             <div class="col-lg-4 col-md-12">
-                                <label>Start Time</label>
+                                <label>Game Time</label>
+                                <div class="input-group" data-date-autoclose="true">
+                                    <input type="time" name="game_time" class="form-control">
+                                </div>
+                                <label>Opening Time</label>
                                 <div class="input-group" data-date-autoclose="true">
                                     <input type="time" name="start_time" class="form-control">
                                 </div>
-                                <label>End Time</label>
+                                <label>Closing Time</label>
                                 <div class="input-group" data-date-autoclose="true">
                                     <input type="time" name="end_time" class="form-control">
                                 </div>

@@ -1,6 +1,29 @@
 {% extends 'dealer/partials/base.html' %}
 {% load static %}
 {% block content %}
+<style>
+    .table-cell {
+        border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
+        text-align: center;
+}
+
+    .nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th, .td{
+        text-align: center;
+    }
+</style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
@@ -28,48 +51,15 @@
                                 
                                 <div class="body">
                                     <div class="row clearfix">
-                                         <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="tax-id" class="control-label">Date</label>
-                                                <input type="date" value="2017-06-01" class="form-control">
-                                            </div> 
-                                        </div> -->
                                         
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                               <div class="form-group">
-                                                   <label for="tax-id" class="control-label">Date</label>
-                                                   <input type="date" value="2017-06-01" class="form-control">
-                                               </div> 
-                                           </div>
+                                        
+ 
                                      <div class="col-lg-2 col-md-6 col-sm-12">
                                         <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer Name</label>
-                                            <input  class="form-control">
+                                            <label for="tax-id"  name="dealer"   style="font-size: larger;"  class="control-label"> Dealer  : {{request.user}}</label>
                                         </div>
                                     </div>
-                                    <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer</label>
-                                            <div class="mb-3">
                                                 
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    
-<!-- 
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="ssn" class="control-label">  click </label>
-                                                <br><button type="button" class="btn btn-primary">GO</button>
-                                               
-                                            </div>
-                                        </div> -->
                                       
                                     </div>
                                    
@@ -80,60 +70,36 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                     <th>date</th>
-                                                     <th> Dealer</th>
-                                                     <th> Bill</th>
-                                                     <th> Count </th>
-                                                     <th> S Amount </th>
-                                                     <th> C Amount </th>
-                                                     <th> #</th>
+                                                    <th>Date</th>
+                                                    <th>User</th>
+                                                    <th>Bill</th>
+                                                    <th>Count </th>
+                                                    <th>S Amount </th>
+                                                    <th>C Amount </th>
+                                                    <th>#</th>
                                                      
                                                     
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                  
+                                            <tbody id="bill-table">
+                                                {% for bill in bills %}
+                                                <!-- hello -->
+                                                <tr data-dealer="{{ bill.dealer.user }}">
+                                                    <td class="table-cell">{{bill.date}}</td>
+                                                    <td class="table-cell">{{bill.user}}</td>
+                                                    <td class="table-cell">{{bill.id}}</td>
+                                                    <td class="table-cell">{{bill.total_count}}</td>
+                                                    <td class="table-cell">{{bill.total_d_amount}}</td>
+                                                    <td class="table-cell">{{bill.total_c_amount}}</td>
+                                                    <td class="table-cell"><a href="{% url 'dealer:delete_bill' bill.id %}">Edit</a></td>
                                                 </tr>
-
+                                                {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
                                    
                                 </div>
-                                <div class="body">
-                                     <div class=" row clearfix">
-                                        
-                                <div class="col-lg-3 col--md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">Count</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                                
-                                    <div class="col-lg-3 col-md-6 col-sm-12">
-                                       <div class="form-group">
-                                           <label for="tax-id" class="control-label">A Amount</label>
-                                           <input type="number"  class="form-control">
-                                       </div> 
-                                   </div>
-                                   <div class="col-lg-3 col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">C Amount</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                              
-                                
-                            </div>
-                                </div>
+                           
                                 
                             </div>
                            
@@ -146,4 +112,22 @@
         
     </div>
 </div>
+<nav class="nav">
+    <table>
+        <thead>
+            <tr>
+                 <th class="th">Total Count</th>
+                 <th class="th">A.Amount</th>
+                 <th class="th">C.Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td">{{totals.total_count}}</td>
+                <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
+                <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
 {% endblock %} 

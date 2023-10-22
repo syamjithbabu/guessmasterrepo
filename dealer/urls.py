@@ -19,5 +19,9 @@ urlpatterns = [
     path('play-game/<int:id>',views.play_game,name="play_game"),
     path('submit-data/',views.submit_data,name="submit_data"),
     path('save-data/<int:id>',views.save_data,name="save_data"),
+    path('edit-bill',views.edit_bill,name="edit_bill"),
+    path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
+    path('deleting-bill/<int:id>',views.deleting_bill,name="deleting_bill"),
+    path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row")
 
 ]
