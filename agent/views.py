@@ -7,7 +7,7 @@ import pytz
 from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
-from adminapp.models import PlayTime, AgentPackage
+from adminapp.models import PlayTime, AgentPackage,Result
 from .models import DealerPackage, AgentGameTest, AgentGame, Bill
 from dealer.models import DealerGame
 from django.contrib import messages
@@ -114,7 +114,23 @@ def booking(request):
     return render(request,'agent/booking.html')
 
 def results(request):
-    return render(request,'agent/results.html')
+    times = PlayTime.objects.filter().all()
+    results = Result.objects.filter().last()
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        results = Result.objects.filter(date=date,time=time).last()
+        context = {
+            'times' : times,
+            'results' : results,
+            'selected_date' : date,
+        }
+        return render(request,'adminapp/view_results.html',context)
+    context = {
+        'times' : times,
+        'results' : results
+    }
+    return render(request,'agent/results.html',context)
 
 def sales_report(request):
     print("Sales report function")

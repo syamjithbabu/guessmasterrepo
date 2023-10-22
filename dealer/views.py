@@ -4,7 +4,7 @@ from django.shortcuts import render,get_object_or_404,redirect
 import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
-from adminapp.models import PlayTime
+from adminapp.models import PlayTime, Result
 from agent.models import DealerPackage,Bill
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
@@ -41,7 +41,23 @@ def booking(request):
     return render(request,'dealer/booking.html')
 
 def result(request):
-    return render(request,'dealer/results.html')
+    times = PlayTime.objects.filter().all()
+    results = Result.objects.filter().last()
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        results = Result.objects.filter(date=date,time=time).last()
+        context = {
+            'times' : times,
+            'results' : results,
+            'selected_date' : date,
+        }
+        return render(request,'adminapp/view_results.html',context)
+    context = {
+        'times' : times,
+        'results' : results
+    }
+    return render(request,'dealer/results.html',context)
 
 def edit_bill(request):
     dealer_obj = Dealer.objects.get(user=request.user)

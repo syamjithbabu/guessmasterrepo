@@ -19,7 +19,7 @@ urlpatterns = [
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
     path('add-result',views.add_result,name="add_result"),
-    path('view-results',views.results,name="view_results"),
+    path('republish-results',views.republish_results,name="republish_results"),
     path('sales-report',views.sales_report,name="sales_report"),
     path('add-time',views.add_time,name="add_time"),
     path('change-time',views.change_time,name="change_time"),
@@ -35,6 +35,7 @@ urlpatterns = [
     path('payment_report',views.payment_report,name="payment_report"),
     path('change_password',views.change_password,name="change_password"),
     path('settings',views.settings,name="settings"),
+    path('view-results',views.view_results,name="view_results")
 
 
 
