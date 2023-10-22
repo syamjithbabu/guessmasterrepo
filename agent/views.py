@@ -163,7 +163,7 @@ def sales_report(request):
                         print(agent_games)
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time,agent_games__in=agent_games).distinct()
                         print(agent_bills)
-                        totals = AgentGame.objects.filter(date__range=[from_date, to_date],time_id=select_time,agent=agent_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                        totals = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,agent=agent_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                         for bill in agent_bills:
                             for game in bill.agent_games.filter(LSK__in=lsk_value):
                                 print("Game Count of",bill.id," is" , game.count)
@@ -369,8 +369,8 @@ def sales_report(request):
         return render(request, 'agent/sales_report.html', context)
     else:
         print("this is working")
-        agent_games = AgentGame.objects.filter().all()
-        dealer_games = DealerGame.objects.filter().all()
+        agent_games = AgentGame.objects.filter(agent=agent_obj).all()
+        dealer_games = DealerGame.objects.filter(dealer__agent=agent_obj).all()
         agent_bills = Bill.objects.filter(date=current_date,user=agent_obj.user.id).all()
         print(agent_bills)
         dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date)

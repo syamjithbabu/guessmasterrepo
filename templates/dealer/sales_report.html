@@ -2,338 +2,263 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .expand-row{
+        background-color: rgb(46, 206, 255);
+    }
+</style>
+
+<style>
+    .table-cell {
+        border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
+        text-align: center;
+}
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th, .td{
+        text-align: center;
+    }
+</style>
 
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Sales Report</h2>
+                <div class="col-lg-5 col-md-8 col-sm-12">
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                                class="fa fa-arrow-left"></i></a> Sales Report</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'dealer:index' %}"><i class="icon-home"></i></a></li>                            
-                        <!-- <li class="breadcrumb-item">Pages</li> -->
+                        <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>
                         <li class="breadcrumb-item active">Sales Report</li>
                     </ul>
-                </div>            
-               
+                </div>
+
             </div>
         </div>
 
         <div class="row clearfix">
             <div class="col-md-12">
                 <div class="card">
-                 
-                    <div class="body">
-                        <ul class="nav nav-tabs-new2">
-                            
-            
-                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                               
-                                              
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div> 
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <li>
-                                                    <label class="fancy-checkbox">
-                                                        <input type="checkbox"><span>Expand</span></label>
-                                                </li>
-                                                    </div> 
-                                                </div>
-                                               
-                        </ul>
-                     
-                        <ul class="nav nav-tabs-new2">
-                            <li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#Home-new2">All </a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Profile-new2">A/B/C</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new3">AB/AC/BC</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new4">SUPER</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new5">BOX</a></li>
 
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane show active" id="Home-new2">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>DEALER Name</th>
-                                                        <th>Bill</th>
-                                                        <th>Count</th>
-                                                        <th>S.Amount</th>
-                                                        <th>C.Amount</th>
-                                                    </tr>
-                                                </thead>
-                                                
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td>$320,800</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Garrett Winters</td>
-                                                        <td>Accountant</td>
-                                                        <td>Tokyo</td>
-                                                        <td>63</td>
-                                                        <td>2011/07/25</td>
-                                                        <td>$170,750</td>
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
+                    <div class="body">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <ul class="nav nav-tabs-new2">
+
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="tax-id" class="control-label">Select Time</label>
+                                        <div class="mb-3">
+                                            <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                name="select-time" id="time">
+                                                <option value="all">All Times</option>
+                                                {% for time in times %}
+                                                <option value="{{time.id}}">{{time.game_time}}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                     </div>
+                                </div>
+
+
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <label for="tax-id" class="control-label">From</label>
+                                        <input type="date" class="form-control" id="from-date" name="from-date">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <label for="tax-id" class="control-label">To</label>
+                                        <input type="date" class="form-control" id="to-date" name="to-date">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="fancy-radio"><input name="select-lsk" value="all" type="radio" checked><span><i></i>ALL</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="a_b_c" type="radio"><span><i></i>A/B/C</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="ab_bc_ac" type="radio"><span><i></i>AB/BC/AC</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="super" type="radio"><span><i></i>Super</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="box" type="radio"><span><i></i>Box</span></label>
                                 </div>
                                 
-                            </div>
-                            
-                            <div class="tab-pane" id="Profile-new2">
-                               
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>AGENT/DEALER Name</th>
-                                                        <th>Bill</th>
-                                                        <th>Count</th>
-                                                        <th>S.Amount</th>
-                                                        <th>C.Amount</th>
-                                                    </tr>
-                                                </thead>
-                                             
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td>$320,800</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Garrett Winters</td>
-                                                        <td>Accountant</td>
-                                                        <td>Tokyo</td>
-                                                        <td>63</td>
-                                                        <td>2011/07/25</td>
-                                                        <td>$170,750</td>
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Search</button>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new3">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>AGENT/DEALER Name</th>
-                                                        <th>Bill</th>
-                                                        <th>Count</th>
-                                                        <th>S.Amount</th>
-                                                        <th>C.Amount</th>
-                                                    </tr>
-                                                </thead>
-                                              
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td>$320,800</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Garrett Winters</td>
-                                                        <td>Accountant</td>
-                                                        <td>Tokyo</td>
-                                                        <td>63</td>
-                                                        <td>2011/07/25</td>
-                                                        <td>$170,750</td>
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new4">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>AGENT/DEALER Name</th>
-                                                        <th>Bill</th>
-                                                        <th>Count</th>
-                                                        <th>S.Amount</th>
-                                                        <th>C.Amount</th>
-                                                    </tr>
-                                                </thead>
-                                               
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td>$320,800</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Garrett Winters</td>
-                                                        <td>Accountant</td>
-                                                        <td>Tokyo</td>
-                                                        <td>63</td>
-                                                        <td>2011/07/25</td>
-                                                        <td>$170,750</td>
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new5">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive ">
-                                            
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable  printcontent">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>AGENT/DEALER Name</th>
-                                                        <th>Bill</th>
-                                                        <th>Count</th>
-                                                        <th>S.Amount</th>
-                                                        <th>C.Amount</th>
-                                                    </tr>
-                                                </thead>
-                                              
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td>$320,800</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Garrett Winters</td>
-                                                        <td>Accountant</td>
-                                                        <td>Tokyo</td>
-                                                        <td>63</td>
-                                                        <td>2011/07/25</td>
-                                                        <td>$170,750</td>
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                                
-                                            </table>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                
-                            </div>
-                            <div class="body">
-                                <div class=" row clearfix">
-                                   
-                           <div class="col-lg-3 col--md-6 col-sm-12">
-                               <div class="form-group">
-                                   <label for="tax-id" class="control-label">COUNT</label>
-                                   <input type="number"  class="form-control">
-                               </div> 
-                           </div>
-                           
-                               <div class="col-lg-3 col-md-6 col-sm-12">
-                                  <div class="form-group">
-                                      <label for="tax-id" class="control-label">A Amount</label>
-                                      <input type="number"  class="form-control">
-                                  </div> 
-                              </div>
-                              <div class="col-lg-3 col-md-6 col-sm-12">
-                               <div class="form-group">
-                                   <label for="tax-id" class="control-label">C Amount</label>
-                                   <input type="number"  class="form-control">
-                               </div> 
-                           </div>
-                        
-                           
-                       </div>
-                           </div>
+                                <label class="control-inline fancy-checkbox ml-auto">
+                                    <input type="checkbox" name="checkbox2" id="expand-button">
+                                    <span>Expand</span>
+                                </label>
+                            </ul>
+                        </form>
                     </div>
-                    </div>             
+                </div>
             </div>
         </div>
+
+        <div class="container-fluid">
+            <div class="row clearfix">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="body">
+                            {% if dealer_bills %}
+                            <div class="table-responsive">
+                                <table class="table m-b-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Dealer</th>
+                                            <th>Bill</th>
+                                            <th>Count</th>
+                                            <th>S.Amt</th>
+                                            <th>C.Amt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for bill in dealer_bills %}
+                                            <tr>
+                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.user }}</td>
+                                                <td>{{ bill.id }}</td>
+                                                <td>{{ bill.total_count }}</td>
+                                                <td>{{ bill.total_d_amount }}</td>
+                                                <td>{{ bill.total_c_amount }}</td>
+                                            </tr>
+                                            {% for game in bill.dealer_games.all %}
+                                                {% if game in dealer_games %}
+                                                    <tr class="expand-row" style="display: none;">
+                                                        <td>#</td>
+                                                        <td>{{ game.LSK }}</td>
+                                                        <td>{{ game.number }}</td>
+                                                        <td>{{ game.count }}</td>
+                                                        <td>{{ game.d_amount }}</td>
+                                                        <td>{{ game.c_amount }}</td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            {% endif %}
+                            <div  style="padding-top: 50px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-</div>
 
-<script>
-    function printcontent()
-    {
-      
-        var divToPrint=document.getElementById("printcontent");
-        newWin= window.open("");
-        newWin.document.write(divToPrint.outerHTML);
-        newWin.document.close();
-        newWin.print();
-        //newWin.close();
-    }
+    <nav class="navbar-bottom">
+        <table>
+            <thead>
+                <tr>
+                     <th class="th">Total Count</th>
+                     <th class="th">A.Amount</th>
+                     <th class="th">C.Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="td">{{totals.total_count}}</td>
+                    <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
+                    <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+</nav>
 
-    document.querySelector("#button").addEventListener("click", function(){
-      printcontent();
-    });
-    
+
+    <script>
+        function printcontent() {
+
+            var divToPrint = document.getElementById("printcontent");
+            newWin = window.open("");
+            newWin.document.write(divToPrint.outerHTML);
+            newWin.document.close();
+            newWin.print();
+            //newWin.close();
+        }
+
+        document.querySelector("#button").addEventListener("click", function () {
+            printcontent();
+        });
+
     </script>
 
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#expand-button").change(function() {
+            if (this.checked) {
+                $(".expand-row").show(); // Show the row when the checkbox is checked
+            } else {
+                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+            }
+        });
+    });
+</script>
 
-{% endblock %}
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectTime = document.getElementById("time");
+        var selectFrom = document.getElementById("from-date");
+        var selectTo = document.getElementById("to-date");
+        var radioInputs = document.getElementsByName("select-lsk");
+
+        // Set the selected value based on the selected_dealer variable
+        selectTime.value = "{{ selected_time }}";
+        selected_lsk = "{{ selected_lsk }}";
+        for (var i = 0; i < radioInputs.length; i++) {
+            if (radioInputs[i].value === selected_lsk) {
+                radioInputs[i].checked = true;
+                break; // Exit the loop once the correct radio input is found
+            }
+        }
+
+    });
+</script>
+
+
+    {% endblock %}
