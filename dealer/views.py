@@ -104,8 +104,13 @@ def delete_row(request,id,bill_id):
 
 
 def sales_report(request):
-    print("Sales report function")
-    dealer_obj = Dealer.objects.get(user=request.user)
+    print("Daily report function")
+    dealer_bills={}
+    totals={}
+    select_dealer={}
+    select_time={}
+    dealer_games={}
+    dealer_obj = Dealer.objects.filter(user=request.user).all()
     print(dealer_obj)
     times = PlayTime.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -113,11 +118,9 @@ def sales_report(request):
     print(current_date)
     if request.method == 'POST':
         select_time = request.POST.get('select-time')
+        lsk = request.POST.get('select-lsk')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
-        lsk = request.POST.get('select-lsk')
-        print(from_date,"fromdate")
-        print(to_date,"todate")
         lsk_value = []
         dealer_bills = []
         totals = []
@@ -187,8 +190,12 @@ def sales_report(request):
             'dealer_games' : dealer_games,
             'totals' : totals,
             'selected_time' : select_time,
-        }
+            'dealer_games' : dealer_games
+    }
     return render(request,'dealer/sales_report.html',context)
+
+
+
 
 def daily_report(request):
     return render(request,'dealer/daily_report.html')
