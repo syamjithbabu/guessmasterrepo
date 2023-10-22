@@ -369,8 +369,8 @@ def sales_report(request):
         return render(request, 'agent/sales_report.html', context)
     else:
         print("this is working")
-        agent_games = AgentGame.objects.filter(agent=agent_obj).all()
-        dealer_games = DealerGame.objects.filter(dealer__agent=agent_obj).all()
+        agent_games = AgentGame.objects.filter(date=current_date,agent=agent_obj).all()
+        dealer_games = DealerGame.objects.filter(date=current_date,dealer__agent=agent_obj).all()
         agent_bills = Bill.objects.filter(date=current_date,user=agent_obj.user.id).all()
         print(agent_bills)
         dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date)

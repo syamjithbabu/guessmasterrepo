@@ -107,10 +107,9 @@ def sales_report(request):
     print("Daily report function")
     dealer_bills={}
     totals={}
-    select_dealer={}
     select_time={}
     dealer_games={}
-    dealer_obj = Dealer.objects.filter(user=request.user).all()
+    dealer_obj = Dealer.objects.get(user=request.user)
     print(dealer_obj)
     times = PlayTime.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -180,7 +179,7 @@ def sales_report(request):
             'selected_lsk' : lsk,
         }
     else:
-        dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj)
+        dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all()
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
         totals = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         select_time = 'all'
@@ -191,7 +190,7 @@ def sales_report(request):
             'totals' : totals,
             'selected_time' : select_time,
             'dealer_games' : dealer_games
-    }
+        }
     return render(request,'dealer/sales_report.html',context)
 
 
