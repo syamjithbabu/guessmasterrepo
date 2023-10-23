@@ -309,9 +309,8 @@ def winningcount_report(request):
 
 def blocked_numbers(request):
 
-    banned_agents = Agent.objects.filter(user__is_active=False).all()
-    print(banned_agents)
-    return render(request,'adminapp/blocked_numbers.html',{'banned_agents': banned_agents})
+
+    return render(request,'adminapp/blocked_numbers.html')
 
 def edit_bill(request):
     bill = Agent.objects.all()
