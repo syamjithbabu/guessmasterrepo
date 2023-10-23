@@ -52,7 +52,7 @@ def result(request):
             'results' : results,
             'selected_date' : date,
         }
-        return render(request,'adminapp/view_results.html',context)
+        return render(request,'dealer/results.html',context)
     context = {
         'times' : times,
         'results' : results
