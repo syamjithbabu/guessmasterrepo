@@ -497,7 +497,17 @@ def countsales_report(request):
     return render(request,'adminapp/countsales_report.html') 
 
 def winning_report(request):
-    return render(request,'adminapp/winning_report.html') 
+    times = PlayTime.objects.filter().all()
+    print(times)
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    agents = Agent.objects.filter().all()
+    results = Result.objects.filter(date=current_date).all()
+    context = {
+        'times' : times,
+        'agents' : agents
+    }
+    return render(request,'adminapp/winning_report.html',context) 
 
 def winningcount_report(request):
     return render(request,'adminapp/winningcount_report.html')

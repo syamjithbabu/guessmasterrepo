@@ -114,18 +114,21 @@ def booking(request):
     return render(request,'agent/booking.html')
 
 def results(request):
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
     times = PlayTime.objects.filter().all()
-    results = Result.objects.filter().last()
+    results = Result.objects.filter(date=current_date).last()
     if request.method == 'POST':
         date = request.POST.get('date')
         time = request.POST.get('time')
-        results = Result.objects.filter(date=date,time=time).last()
+        results = Result.objects.filter(date=date,time=time)
         context = {
             'times' : times,
             'results' : results,
             'selected_date' : date,
+            'selected_time' : time,
         }
-        return render(request,'adminapp/view_results.html',context)
+        return render(request,'agent/results.html',context)
     context = {
         'times' : times,
         'results' : results

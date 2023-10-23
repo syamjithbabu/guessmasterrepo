@@ -2,6 +2,12 @@
 {% load static %}
 {% block content %}
 
+<style>
+    th, td{
+        text-align: center;
+    }
+</style>
+
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
@@ -10,7 +16,7 @@
                     <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
                                 class="fa fa-arrow-left"></i></a> View Result</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
+                        <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a>
                         </li>
                         <li class="breadcrumb-item">View Result</li>
                     </ul>
@@ -80,6 +86,56 @@
                                 <tr class="l-blue">
                                     <td>Fifth</td>
                                     <td>{{results.fifth}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="body table-responsive">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <td>{{results.field1}}</td>
+                                    <td>{{results.field2}}</td>
+                                    <td>{{results.field3}}</td>
+                                    <td>{{results.field4}}</td>
+                                    <td>{{results.field5}}</td>
+                                    <td>{{results.field6}}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{results.field7}}</td>
+                                    <td>{{results.field8}}</td>
+                                    <td>{{results.field9}}</td>
+                                    <td>{{results.field10}}</td>
+                                    <td>{{results.field11}}</td>
+                                    <td>{{results.field12}}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{results.field13}}</td>
+                                    <td>{{results.field14}}</td>
+                                    <td>{{results.field15}}</td>
+                                    <td>{{results.field16}}</td>
+                                    <td>{{results.field17}}</td>
+                                    <td>{{results.field18}}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{results.field19}}</td>
+                                    <td>{{results.field20}}</td>
+                                    <td>{{results.field21}}</td>
+                                    <td>{{results.field22}}</td>
+                                    <td>{{results.field23}}</td>
+                                    <td>{{results.field24}}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{results.field25}}</td>
+                                    <td>{{results.field26}}</td>
+                                    <td>{{results.field27}}</td>
+                                    <td>{{results.field28}}</td>
+                                    <td>{{results.field29}}</td>
+                                    <td>{{results.field30}}</td>
                                 </tr>
                             </tbody>
                         </table>
