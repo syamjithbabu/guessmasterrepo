@@ -4,10 +4,11 @@ from website.decorators import dealer_required, agent_required, admin_required
 from website.forms import LoginForm,UserUpdateForm
 from website.forms import AgentRegistration
 from website.models import User,Agent,Dealer
-from .models import PlayTime, AgentPackage
+from .models import PlayTime, AgentPackage, Result
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from pytz import timezone as pytz_timezone
+import pytz
 from django.utils import timezone
 from agent.models import Bill
 from django.db.models import Sum
@@ -245,6 +246,56 @@ def delete_package(request,id):
 def add_result(request):
     timings = PlayTime.objects.filter().all()
     print(timings)
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        play_time = PlayTime.objects.get(id=time)
+        first = request.POST.get('first')
+        second = request.POST.get('second')
+        third = request.POST.get('third')
+        fourth = request.POST.get('fourth')
+        fifth = request.POST.get('fifth')
+        field1 = request.POST.get('field1')
+        field2 = request.POST.get('field2')
+        field3 = request.POST.get('field3')
+        field4 = request.POST.get('field4')
+        field5 = request.POST.get('field5')
+        field6 = request.POST.get('field6')
+        field7 = request.POST.get('field7')
+        field8 = request.POST.get('field8')
+        field9 = request.POST.get('field9')
+        field10 = request.POST.get('field10')
+        field11 = request.POST.get('field11')
+        field12 = request.POST.get('field12')
+        field13 = request.POST.get('field13')
+        field14 = request.POST.get('field14')
+        field15 = request.POST.get('field15')
+        field16 = request.POST.get('field16')
+        field17 = request.POST.get('field17')
+        field18 = request.POST.get('field18')
+        field19 = request.POST.get('field19')
+        field20 = request.POST.get('field20')
+        field21 = request.POST.get('field21')
+        field22 = request.POST.get('field22')
+        field23 = request.POST.get('field23')
+        field24 = request.POST.get('field24')
+        field25 = request.POST.get('field25')
+        field26 = request.POST.get('field26')
+        field27 = request.POST.get('field27')
+        field28 = request.POST.get('field28')
+        field29 = request.POST.get('field29')
+        field30 = request.POST.get('field30')
+        already_result_check = Result.objects.filter(date=date,time=time)
+        if already_result_check:
+            messages.info(request, "Result already published on this date and time!")
+            context = {
+                'timings' : timings
+            }
+            return render(request,'adminapp/add_result.html',context)
+        else:
+            result = Result.objects.create(date=date,time=play_time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
+            result.save()
+            messages.info(request, "Result published!")
     context = {
         'timings' : timings
     }
@@ -289,8 +340,152 @@ def change_game_time(request,id):
 def monitor(request):
     return render(request,'adminapp/monitor.html')
 
-def results(request):
-    return render(request,'adminapp/results.html')
+def republish_results(request):
+    times = PlayTime.objects.filter().all()
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    last_result = Result.objects.filter(date=current_date).last()
+    time = last_result.time
+    if last_result:
+        field_values = {
+            'first': last_result.first,
+            'second': last_result.second,
+            'third': last_result.third,
+            'fourth': last_result.fourth,
+            'fifth': last_result.fifth,
+            'feild1': last_result.field1,
+            'feild2': last_result.field2,
+            'feild3': last_result.field3,
+            'feild4': last_result.field4,
+            'feild5': last_result.field5,
+            'feild6': last_result.field6,
+            'feild7': last_result.field7,
+            'feild8': last_result.field8,
+            'feild9': last_result.field9,
+            'feild10': last_result.field10,
+            'feild11': last_result.field11,
+            'feild12': last_result.field12,
+            'feild13': last_result.field13,
+            'feild14': last_result.field14,
+            'feild15': last_result.field15,
+            'feild16': last_result.field16,
+            'feild17': last_result.field17,
+            'feild18': last_result.field18,
+            'feild19': last_result.field19,
+            'feild20': last_result.field20,
+            'feild21': last_result.field21,
+            'feild22': last_result.field22,
+            'feild23': last_result.field23,
+            'feild24': last_result.field24,
+            'feild25': last_result.field25,
+            'feild26': last_result.field26,
+            'feild27': last_result.field27,
+            'feild28': last_result.field28,
+            'feild29': last_result.field29,
+            'feild30': last_result.field30,
+        }
+    else:
+        field_values = {
+            'first': '',
+            'second': '',
+            'third': '',
+            'fourth': '',
+            'fifth': '',
+            'field1': '',
+            'field2': '',
+            'field3': '',
+            'field4': '',
+            'field5': '',
+            'field6': '',
+            'field7': '',
+            'field8': '',
+            'field9': '',
+            'field10': '',
+            'field11': '',
+            'field12': '',
+            'field13': '',
+            'field14': '',
+            'field15': '',
+            'field16': '',
+            'field17': '',
+            'field18': '',
+            'field19': '',
+            'field20': '',
+            'field21': '',
+            'field22': '',
+            'field23': '',
+            'field24': '',
+            'field25': '',
+            'field26': '',
+            'field27': '',
+            'field28': '',
+            'field29': '',
+            'field30': '',
+        }
+    if request.method == 'POST':
+        first = request.POST.get('first')
+        second = request.POST.get('second')
+        third = request.POST.get('third')
+        fourth = request.POST.get('fourth')
+        fifth = request.POST.get('fifth')
+        field1 = request.POST.get('field1')
+        field2 = request.POST.get('field2')
+        field3 = request.POST.get('field3')
+        field4 = request.POST.get('field4')
+        field5 = request.POST.get('field5')
+        field6 = request.POST.get('field6')
+        field7 = request.POST.get('field7')
+        field8 = request.POST.get('field8')
+        field9 = request.POST.get('field9')
+        field10 = request.POST.get('field10')
+        field11 = request.POST.get('field11')
+        field12 = request.POST.get('field12')
+        field13 = request.POST.get('field13')
+        field14 = request.POST.get('field14')
+        field15 = request.POST.get('field15')
+        field16 = request.POST.get('field16')
+        field17 = request.POST.get('field17')
+        field18 = request.POST.get('field18')
+        field19 = request.POST.get('field19')
+        field20 = request.POST.get('field20')
+        field21 = request.POST.get('field21')
+        field22 = request.POST.get('field22')
+        field23 = request.POST.get('field23')
+        field24 = request.POST.get('field24')
+        field25 = request.POST.get('field25')
+        field26 = request.POST.get('field26')
+        field27 = request.POST.get('field27')
+        field28 = request.POST.get('field28')
+        field29 = request.POST.get('field29')
+        field30 = request.POST.get('field30')
+        result = Result.objects.update(date=current_date,time=time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
+        messages.info(request, "Result re-published!")
+        return redirect('adminapp:index')
+    context = {
+        'timings' : times,
+        'result' : last_result,
+        'field_values' : field_values
+    }
+    return render(request,'adminapp/republish_results.html',context)
+
+def view_results(request):
+    times = PlayTime.objects.filter().all()
+    results = Result.objects.filter().last()
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        results = Result.objects.filter(date=date,time=time).last()
+        context = {
+            'times' : times,
+            'results' : results,
+            'selected_date' : date,
+        }
+        return render(request,'adminapp/view_results.html',context)
+    context = {
+        'times' : times,
+        'results' : results
+    }
+    return render(request,'adminapp/view_results.html',context)
 
 def daily_report(request):
     return render(request,'adminapp/dailyreport.html')

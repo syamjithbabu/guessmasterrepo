@@ -6,84 +6,136 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Search Results</h2>
+                <div class="col-lg-5 col-md-8 col-sm-12">
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                                class="fa fa-arrow-left"></i></a> View Result</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="i{% url 'agent:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Pages</li>
-                        <li class="breadcrumb-item active">Search Results</li>
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
+                        </li>
+                        <li class="breadcrumb-item">View Result</li>
                     </ul>
-                </div>            
-               
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="body">
+                <form method="POST">
+                {% csrf_token %}
+                <div class="row clearfix">
+                    <div class="col-md-6 col-6">
+                        <div class="form-group">
+                            <label for="date" class="control-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date">
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-6">
+                        <div class="form-group">
+                            <label for="time" class="control-label">Time</label>
+                            <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                name="time" id="time">
+                                <option value="all">All Times</option>
+                                {% for time in times %}
+                                <option value="{{time.id}}">{{time.game_time}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6 col-6">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="card">
+                    <div class="body table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Position</th>
+                                    <th>Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="l-pink">
+                                    <td>First</td>
+                                    <td>{{results.first}}</td>
+                                </tr>
+                                <tr class="l-turquoise">
+                                    <td>Second</td>
+                                    <td>{{results.second}}</td>
+                                </tr>
+                                <tr class="l-parpl">
+                                    <td>Third</td>
+                                    <td>{{results.third}}</td>
+                                </tr>
+                                <tr class="l-blue">
+                                    <td>Fourth</td>
+                                    <td>{{results.fourth}}</td>
+                                </tr>
+                                <tr class="l-blue">
+                                    <td>Fifth</td>
+                                    <td>{{results.fifth}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row clearfix">
-            <div class="col-md-12">
-              
-                <div class="tab-content padding-0">
-                    <div class="tab-pane card active" id="Web">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="header">
-                                    <!-- <h2>Basic Example 8</h2> -->
-                                </div>
-                                <div class="body">
-                                    <div class="table-responsive">
-                                        <table class="table center-aligned-table">
-                                            <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>First Price</th>
-                                                <th>Second Price</th>
-                                                <th>Third Price</th>
-                                                <th>Fourth Price</th>
-                                                <th>Fifth Price</th>
-                                                <th>complement</th>
-                                                
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                         
-                                            <tr>
-                                                <td>5/3/2020</td>
-                                                <td>8</td>
-                                                <td>8 </td>
-                                                <td>7</td>
-                                                <td>7</td>
-                                                <td>8 </td>
-                                                <td>7</td>
-                                                <!-- <td><label class="badge">Approved</label></td>
-                                                <td><a href="javascript:void(0);" class="btn btn-success btn-sm">View Order</a></td>
-                                                <td><button class="btn btn-danger btn-sm"><i class="icon-trash"></i></button></td> -->
-                                            </tr>
-                                            
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                      
-                      
-                    </div>
-                    <div class="tab-pane card" id="Images">
-                        <div class="body text-center">
-                            <div class="not_found">
-                                <h4 class="m-b-0">Sorry No result found.</h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane card" id="Videos">
-                        <div class="body text-center">
-                            <div class="not_found">
-                                <h4 class="m-b-0">Sorry No result found.</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>                
-            </div>
-        </div>
     </div>
-</div>
-{% endblock %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        // Get the current date in the format "YYYY-MM-DD"
+        function getCurrentDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        var selectedDate = "{{selected_date}}";
+        console.log(selectedDate)
+        // Check if selected_from and selected_to are defined
+        if (selectedDate) {
+            document.getElementById('date').value = selectedDate;
+        } else {
+            document.getElementById('date').value = getCurrentDate();
+        }
+    </script>
+
+    <script>
+        var inputs = document.querySelectorAll('.auto-focus');
+
+        inputs.forEach(function (input, index) {
+            input.addEventListener('input', function () {
+                var value = input.value;
+
+                if (value.length === 3) {
+                    // Move focus to the next input field
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                }
+            });
+        });
+    </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var selectTime = document.getElementById("time");
+        selectTime.value = "{{ results.time.id }}";
+    })
+</script>
+
+
+
+
+    {% endblock %}

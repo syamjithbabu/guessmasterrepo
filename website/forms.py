@@ -15,7 +15,7 @@ class LoginForm(UserCreationForm):
     )
     password1 = forms.CharField(
         label="Password",
-        widget=TextInput(attrs={"class": "form-control", "name": "password1", "type": "password", "placeholder": "Password", "required": "required", "autocomplete": "off"}),
+        widget=TextInput(attrs={"class": "form-control", "name": "password1", "type": "password", "placeholder": "Password must be 4 charecters", "required": "required", "autocomplete": "off"}),
     )
     password2 = forms.CharField(
         label="Confirm Password",
@@ -32,7 +32,7 @@ class UserUpdateForm(forms.ModelForm):
     )
     password1 = forms.CharField(
         label="Password",
-        widget=forms.TextInput(attrs={"class": "form-control", "name": "password1", "type": "password", "placeholder": "Password", "required": "required", "autocomplete": "off"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "name": "password1", "type": "password", "placeholder": "Password must be 4 charecters", "required": "required", "autocomplete": "off"}),
     )
     password2 = forms.CharField(
         label="Confirm Password",

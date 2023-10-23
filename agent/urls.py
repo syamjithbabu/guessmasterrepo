@@ -24,7 +24,6 @@ urlpatterns = [
     path('add-collection',views.add_collection,name="add_collection"),
     path('balance-report',views.balance_report,name="balance_report"),
     path('edit-bill',views.edit_bill,name="edit_bill"),
-    path('change-password',views.change_password,name="change_password"),
 
     path('play-game/<int:id>',views.play_game,name="play_game"),
 
@@ -41,6 +40,11 @@ urlpatterns = [
 
     path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
     path('deleting-bill/<int:id>',views.deleting_bill,name="deleting_bill"),
-    path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row")
+    path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row"),
+
+
+
+    path('change-password',views.change_password,name="change_password"),
+
 
 ]

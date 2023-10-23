@@ -7,10 +7,10 @@
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Add Result</h2>
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> View & Republish Result</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Add Result</li>
+                        <li class="breadcrumb-item">View & Republish Result</li>
                     </ul>
                 </div>            
             </div>
@@ -35,17 +35,6 @@
                                     <input type="date" class="form-control" id="date" name="date">
                                 </div>
                             </div>
-                            <div class="col-md-6 col-6">
-                                <div class="mb-3">
-                                    <label>Time</label>
-                                    <select name="time" class="form-control show-tick ms select2" data-placeholder="Select">
-                                        {% for time in timings %}
-                                        <option value="{{ time.id }}">{{time.game_time}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -66,35 +55,35 @@
                                 <tr>
                                     <td>First</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" required name="first" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" value="{{ field_values.first }}" class="auto-focus" required name="first" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                     
                                 </tr>
                                 <tr>
                                     <td>Second</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" name="second" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" value="{{ field_values.second }}" class="auto-focus" name="second" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                     
                                 </tr>
                                 <tr>
                                     <td>Third</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" name="third" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" value="{{ field_values.third }}" class="auto-focus" name="third" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                     
                                 </tr>
                                 <tr>
                                     <td>Fourth</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" name="fourth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" value="{{ field_values.fourth }}" class="auto-focus" name="fourth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                     
                                 </tr>
                                 <tr>
                                     <td>Fifth</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" name="fifth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" value="{{ field_values.fifth }}" class="auto-focus" name="fifth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                 </tr>
                             </tbody>
@@ -107,215 +96,215 @@
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field1" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field1 }}" name="field1" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field2" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field2 }}" name="field2" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field3" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field3 }}" name="field3" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field4" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field4 }}" name="field4" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field5" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field5 }}" name="field5" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field6" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field6 }}" name="field6" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field7" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field7 }}" name="field7" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field8" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field8 }}" name="field8" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field9" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field9 }}" name="field9" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field10" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field10 }}" name="field10" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field11" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field11 }}" name="field11" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field12" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field12 }}" name="field12" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field13" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field13 }}" name="field13" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field14" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field14 }}" name="field14" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field15" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field15 }}" name="field15" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field16" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field16 }}" name="field16" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field17" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field17 }}" name="field17" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field18" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field18 }}" name="field18" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field19" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field19 }}" name="field19" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field20" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field20 }}" name="field20" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field21" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field21 }}" name="field21" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field22" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field22}}" name="field22" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field23" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field23 }}" name="field23" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field24" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field24 }}" name="field24" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field25" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field25 }}" name="field25" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field26" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field26 }}" name="field26" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field27" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field27 }}" name="field27" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field28" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field28 }}" name="field28" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field29" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field29 }}" name="field29" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
             <div class="col-2"  style="padding:0px">
                 <div class="mb-3">
                     <div class="form-group">
-                        <input type="number" name="field30" class="form-control auto-focus">
+                        <input type="number" value="{{ field_values.field30 }}" name="field30" class="form-control auto-focus">
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary mb-3">Publish</button>
+        <button type="submit" class="btn btn-primary mb-3">Re-Publish</button>
         </form>
 </div>
 
