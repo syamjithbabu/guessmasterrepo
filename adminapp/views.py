@@ -4,6 +4,8 @@ from website.decorators import dealer_required, agent_required, admin_required
 from website.forms import LoginForm,UserUpdateForm
 from website.forms import AgentRegistration
 from website.models import User,Agent,Dealer
+from agent.models import AgentGame
+from dealer.models import DealerGame
 from .models import PlayTime, AgentPackage, Result
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
@@ -501,11 +503,11 @@ def winning_report(request):
     print(times)
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
     agents = Agent.objects.filter().all()
-    results = Result.objects.filter(date=current_date).all()
     context = {
         'times' : times,
-        'agents' : agents
+        'agents' : agents,
     }
     return render(request,'adminapp/winning_report.html',context) 
 

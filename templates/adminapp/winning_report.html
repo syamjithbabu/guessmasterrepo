@@ -99,31 +99,29 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                     <th> B</th>
-                                                     <th> U</th>
-                                                     <th> T</th>
-                                                     <th> PN</th>
-                                                     <th> C</th>
-                                                     <th> PP</th>
-                                                     <th> SU</th>
-                                                     <th> RS</th>
-                                                     <th> Net</th>
+                                                     <th class="th">B</th>
+                                                     <th class="th">U</th>
+                                                     <th class="th">T</th>
+                                                     <th class="th">PN</th>
+                                                     <th class="th">C</th>
+                                                     <th class="th">PP</th>
+                                                     <th class="th">SU</th>
+                                                     <th class="th">RS</th>
+                                                     <th class="th">Net</th>
                                                     
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                    <td>500</td>
-
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                    <td>500</td>
-                                                   
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>
+                                                    <td class="td">500</td>                                                  
                                                 </tr>
 
                                             </tbody>
@@ -148,9 +146,10 @@
     <table>
         <thead>
             <tr>
-                 <th class="th">Total Count</th>
-                 <th class="th">A.Amount</th>
-                 <th class="th">C.Amount</th>
+                 <th class="th">COUNT</th>
+                 <th class="th">TOTAL</th>
+                 <th class="th">COMM</th>
+                 <th class="th">NET</th>
             </tr>
         </thead>
         <tbody>
@@ -158,6 +157,7 @@
                 <td class="td">{{totals.total_count}}</td>
                 <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
                 <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+                <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
             </tr>
         </tbody>
     </table>
