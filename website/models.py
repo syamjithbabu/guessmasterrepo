@@ -23,3 +23,5 @@ class Dealer(models.Model):
 
     def __str__(self):
         return str(self.dealer_name)
+    
+    

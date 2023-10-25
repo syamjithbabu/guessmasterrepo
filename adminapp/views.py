@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from website.decorators import dealer_required, agent_required, admin_required
@@ -321,12 +322,13 @@ def change_time(request):
     except:
         pass
     context = {
-        'times' : times
+        'times' : times,
     }
     return render(request,'adminapp/change_time.html',context)
 
 def change_game_time(request,id):
     time = get_object_or_404(PlayTime,id=id)
+
     print(time)
     if request.method == 'POST':
         start_time = request.POST.get('start_time')
