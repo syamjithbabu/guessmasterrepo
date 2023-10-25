@@ -309,6 +309,7 @@ def winning_report(request):
     dealer_obj = Dealer.objects.get(user=request.user)
     winnings = []
     totals = []
+    #anu
     aggregated_winnings = []
     if request.method == 'POST':
         from_date = request.POST.get('from-date')
