@@ -1,154 +1,152 @@
 {% extends 'dealer/partials/base.html' %}
 {% load static %}
 {% block content %}
+
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+        background-color: rgb(221, 221, 221);
+    }
+    .td3{
+        text-align: center;
+        background-color: rgb(255, 255, 255);
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+
+</style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>  Winning Report </h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'dealer:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
                         <li class="breadcrumb-item">Winning Report</li>
                     </ul>
-                </div>            
-             
+                </div> 
             </div>
         </div>
 
-        <div class="row clearfix">
+        <div class="row clearfix" style="padding-bottom: 50px;">
+            <form method="POST">
+                {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-                    <div class="header">
-                        <h2>Winning Report</h2>
-                    </div>
                     <div class="body">
                         <div class="col-lg-12">
                             <div class="card">
                                 
                                 <div class="body">
                                     <div class="row clearfix">
-                                         <div class="col-lg-2 col-md-6 col-sm-12">
+                                        <div class="col-md-6 col-6">
                                             <div class="form-group">
-                                                <label for="tax-id" class="control-label">Date</label>
-                                                <input type="date" value="2017-06-01" class="form-control">
-                                            </div> 
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
+                                            </div>
                                         </div>
-                                        
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                               <div class="form-group">
-                                                   <label for="tax-id" class="control-label">Date</label>
-                                                   <input type="date" value="2017-06-01" class="form-control">
-                                               </div> 
-                                           </div>
-                                           <div class="col-lg-2 col-md-6 col-sm-12">
+                                        <div class="col-md-6 col-6">
                                             <div class="form-group">
-                                                <li>
-                                            <label class="fancy-checkbox">
-                                                <input type="checkbox"><span>Summary</span></label>
-                                        </li>
-                                            </div> 
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
+                                            </div>
                                         </div>
-                                  
-                                    <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                    name="time" id="time">
+                                                    <option value="all">All Times</option>
+                                                    {% for time in times %}
+                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    {% endfor %}
                                                 </select>
                                             </div>
                                         </div>
-                                    </div> -->
-                                    
-
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="ssn" class="control-label">  click </label>
-                                                <br><button type="button" class="btn btn-primary">GO</button>
-                                               
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">                                               
+                                                    <button type="submit" class="btn btn-primary">Search</button>
+                                                </div>
                                             </div>
-                                        </div>
-                                      
+                                    <div class="col-md-6 col-6">
+                                        <label class="control-inline fancy-checkbox ml-auto">
+                                            <input type="checkbox" name="checkbox2" id="summary-button">
+                                            <span>Summary</span>
+                                        </label>
+                                    </div> 
+                                    
+                                    
+                                    </div>
+                                                                        
                                     </div>
                                    
                                  </div>
                                 
                                 <div class="body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered table-striped table-hover  js-exportable">
+                                        <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                    <th> B</th>
-                                                    <th> U</th>
-                                                    <th> T</th>
-                                                    <th> PN</th>
-                                                    <th> C</th>
-                                                    <th> PP</th>
-                                                    <th> SU</th>
-                                                    <th> RS</th>
-                                                    <th> Net</th>
-                                                   
+                                                     <th class="th">B</th>
+                                                     <th class="th">U</th>
+                                                     <th class="th">T</th>
+                                                     <th class="th">PN</th>
+                                                     <th class="th">C</th>
+                                                     <th class="th">PP</th>
+                                                     <th class="th">SU</th>
+                                                     <th class="th">RS</th>
+                                                     <th class="th">Net</th>
+                                                    
                                                 </tr>
                                             </thead>
-                                        
-                                            <tbody>
+                                            <tbody class="not-summary">
+                                                {% for winning in winnings %}
                                                 <tr>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                    <var><var>
-                                                        <td>2</td>
-                                                        <td>2</td>
-                                                   
-                                                    <td>2</td>
-                                                    <td>2</td>
-                                                   
-                                                    <td>2</td>
-                                                       
+                                                    <td class="td2">{{winning.bill}}</td>
+                                                    <td class="td3">{{winning.dealer}}</td>
+                                                    <td class="td2">{{winning.LSK}}</td>
+                                                    <td class="td3">{{winning.number}}</td>
+                                                    <td class="td2">{{winning.count}}</td>
+                                                    <td class="td3">{{winning.position}}</td>
+                                                    <td class="td2">{{winning.commission}}</td>
+                                                    <td class="td3">{{winning.prize}}</td>
+                                                    <td class="td2">{{winning.total}}</td>                                                  
                                                 </tr>
-                                             
+                                                {% endfor %}
+                                            </tbody>
+                                            <tbody style="display: none;" class="summary-row">
+                                                {% for winning in aggr %}
+                                                <tr>
+                                                    <td class="td2">{{winning.bill}}</td>
+                                                    <td class="td3">{{winning.dealer}}</td>
+                                                    <td class="td2">{{winning.LSK}}</td>
+                                                    <td class="td3">{{winning.number}}</td>
+                                                    <td class="td2">{{winning.total_count}}</td>
+                                                    <td class="td3">{{winning.position}}</td>
+                                                    <td class="td2">{{winning.total_commission|floatformat:2}}</td>
+                                                    <td class="td3">{{winning.total_prize|floatformat:2}}</td>
+                                                    <td class="td2">{{winning.total_net|floatformat:2}}</td>                                                  
+                                                </tr>
+                                                {% endfor %}
                                             </tbody>
                                         </table>
-                                        </div>
+                                    </div>
                                    
-                                   
-                                </div>
-                                <div class="body">
-                                     <div class=" row clearfix">
-                                        
-                                <div class="col-lg-3 col--md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">COUNT</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                                
-                                    <div class="col-lg-3 col-md-6 col-sm-12">
-                                       <div class="form-group">
-                                           <label for="tax-id" class="control-label">TOTAL</label>
-                                           <input type="number"  class="form-control">
-                                       </div> 
-                                   </div>
-                                   <div class="col-lg-3 col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">COMM</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                                <div class="col-lg-3 col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">NET</label>
-                                        <input type="number"  class="form-control">
-                                    </div> 
-                                </div>
-                                
-                            </div>
                                 </div>
                                 
                             </div>
@@ -158,8 +156,80 @@
                     </div>
                 </div>
             </div>
+        </form>
         </div>
         
     </div>
 </div>
+
+<nav class="navbar-bottom">
+    <table>
+        <thead>
+            <tr>
+                 <th class="th1">COUNT</th>
+                 <th class="th1">COMM</th>
+                 <th class="th1">TOTAL</th>
+                 <th class="th1">NET</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td1">{{totals.total_count}}</td>
+                <td class="td1">{{totals.total_commission|floatformat:2 }}</td>
+                <td class="td1">{{totals.total_rs|floatformat:2 }}</td>
+                <td class="td1">{{totals.total_net|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#summary-button").change(function() {
+            if (this.checked) {
+                $(".summary-row").show(); // Show the row when the checkbox is checked
+                $(".not-summary").hide();
+            } else {
+                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".not-summary").show(); 
+            }
+        });
+    });
+</script>
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+        var selectTime = document.getElementById("time");
+
+        // Set the selected value based on the selected_dealer variable
+        selectDealer.value = "{{ selected_agent }}";
+        selectTime.value = "{{ selected_time }}";
+
+    });
+</script>
 {% endblock %} 
