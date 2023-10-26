@@ -7,7 +7,7 @@ import pytz
 from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
-from adminapp.models import PlayTime, AgentPackage,Result
+from adminapp.models import PlayTime, AgentPackage,Result,Winning
 from .models import DealerPackage, AgentGameTest, AgentGame, Bill
 from dealer.models import DealerGame
 from django.contrib import messages
@@ -20,7 +20,7 @@ from django.db.models import Sum
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.forms import PasswordChangeForm
-
+from django.db.models import F
 
 # Create your views here.
 @login_required
@@ -680,7 +680,90 @@ def daily_report(request):
     return render(request,'agent/daily_report.html',context)
 
 def winning_report(request):
-    return render(request,'agent/winning_report.html') 
+    times = PlayTime.objects.filter().all()
+    print(times)
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    agent_obj = Agent.objects.get(user=request.user)
+    winnings = []
+    totals = []
+    aggregated_winnings = []
+    if request.method == 'POST':
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        select_time = request.POST.get('time')
+        print(from_date,to_date,select_time)
+        if select_time != 'all':
+            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date__range=[from_date, to_date],time=select_time)
+            print(winnings)
+            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+                total_count=Sum('count'),
+                total_commission=Sum('commission'),
+                total_prize=Sum('prize'),
+                total_net=Sum('total'),
+                agent=F('agent__agent_name'),
+                dealer=F('dealer__dealer_name'),
+                position=F('position'),
+            )
+            totals = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            context = {
+                'times' : times,
+                'winnings' : winnings,
+                'totals' : totals,
+                'aggr' : aggregated_winnings,
+                'selected_time' : select_time,
+                'selected_from' : from_date,
+                'selected_to' : to_date,
+            }
+            return render(request,'agent/winning_report.html',context)
+        else:
+            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date__range=[from_date, to_date])
+            print(winnings)
+            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+                total_count=Sum('count'),
+                total_commission=Sum('commission'),
+                total_prize=Sum('prize'),
+                total_net=Sum('total'),
+                agent=F('agent__agent_name'),
+                dealer=F('dealer__dealer_name'),
+                position=F('position'),
+            )
+            totals = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            context = {
+                'times' : times,
+                'winnings' : winnings,
+                'totals' : totals,
+                'aggr' : aggregated_winnings,
+                'selected_time' : 'all',
+                'selected_from' : from_date,
+                'selected_to' : to_date,
+            }
+            return render(request,'agent/winning_report.html',context)
+    else:
+        try:
+            matching_play_times = Winning.objects.filter().last()
+            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date=current_date,time=matching_play_times.time)
+            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+                total_count=Sum('count'),
+                total_commission=Sum('commission'),
+                total_prize=Sum('prize'),
+                total_net=Sum('total'),
+                agent=F('agent__agent_name'),
+                dealer=F('dealer__dealer_name'),
+                position=F('position'),
+            )
+            totals = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date=current_date,time=matching_play_times.time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+        except:
+            pass
+        context = {
+            'times' : times,
+            'winnings' : winnings,
+            'totals' : totals,
+            'aggr' : aggregated_winnings,
+            'selected_time' : matching_play_times.time.id,
+        }
+        return render(request,'agent/winning_report.html',context) 
 
 def count_salereport(request):
     return render(request,'agent/count_salereport.html') 
@@ -736,7 +819,7 @@ def edit_bill(request):
             'dealers' : dealers,
             'totals' : totals
         }
-        return render(request,'agent/edit_bill.html',context)
+    return render(request,'agent/edit_bill.html',context)
 
 def delete_bill(request,id):
     print(id)
@@ -1024,16 +1107,14 @@ def save_data(request, id):
 
     return redirect('agent:index')
 
-
-
-
 def change_password(request):
-    if request.method== "POST":
-         form= PasswordChangeForm(user=request.user,data=request.POST)
-         if form.is_valid():
-             form.save()
-             messages.success(request,"your password changed")
-             return redirect("website:login")
+    if request.method == "POST":
+        form = PasswordChangeForm(user=request.user,data=request.POST)
+        if form.is_valid():
+            form.save()
+            print("password changed")
+            messages.success(request,"your password changed")
+            return redirect("website:login")
     else:
         form= PasswordChangeForm(user=request.user)
     return render(request,'agent/change_password.html',{'form':form})

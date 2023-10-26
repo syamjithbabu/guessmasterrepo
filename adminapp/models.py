@@ -1,5 +1,5 @@
 from django.db import models
-from website.models import Agent,User
+from website.models import Agent,User,Dealer
 
 # Create your models here.
 
@@ -89,3 +89,21 @@ class Result(models.Model):
 
     def __str__(self):
         return f'Result for {self.time} on {self.date}'
+    
+class Winning(models.Model):
+    date = models.DateField()
+    time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
+    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    dealer = models.ForeignKey(Dealer,on_delete=models.CASCADE,null=True)
+    bill = models.CharField(max_length=100)
+    number = models.CharField(max_length=3)
+    LSK = models.CharField(max_length=100)
+    count = models.IntegerField()
+    position = models.CharField(max_length=10)
+    prize = models.DecimalField(max_digits=10, decimal_places=2)
+    commission = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return str(self.date)
+
