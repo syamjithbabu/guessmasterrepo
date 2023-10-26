@@ -387,6 +387,7 @@ def add_result(request):
                                     box_first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         agent_package = AgentPackage.objects.get(agent=game.agent)
+                        print(date,time,game.agent.user.id,game.id)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
@@ -819,6 +820,7 @@ def winning_report(request):
                 }
             return render(request,'adminapp/winning_report.html',context)
         else:
+            print("time is all")
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date])
                 print(winnings)
@@ -844,7 +846,7 @@ def winning_report(request):
                     'selected_to' : to_date,
                 }
             else:
-                winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
+                winnings = Winning.objects.filter(date__range=[from_date, to_date])
                 print(winnings)
                 aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
                     total_count=Sum('count'),
@@ -855,7 +857,7 @@ def winning_report(request):
                     dealer=F('dealer__dealer_name'),
                     position=F('position'),
                 )
-                totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                totals = Winning.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
                 context = {
                     'times' : times,
                     'agents' : agents,
