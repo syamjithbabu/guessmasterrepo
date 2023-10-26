@@ -831,14 +831,9 @@ def countwise_report(request):
     return render(request,'adminapp/countwise_report.html',context)
 
 def countsales_report(request):
-    ist = pytz.timezone('Asia/Kolkata')
-    times = PlayTime.objects.filter().all()
-    current_date = timezone.now().astimezone(ist).date()
-    current_time = timezone.now().astimezone(ist).time()
+    
 
-
-
-    return render(request,'adminapp/countsales_report.html') 
+    return render(request,'adminapp/countsales_report.html',context) 
 
 def winning_report(request):
     times = PlayTime.objects.filter().all()
@@ -987,7 +982,89 @@ def winning_report(request):
 
 
 def winningcount_report(request):
-    return render(request,'adminapp/winningcount_report.html')
+    times = PlayTime.objects.filter().all()
+    agents = Agent.objects.filter().all()
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    winnings = Winning.objects.filter(date=current_date).all()
+    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+    if request.method == 'POST':
+        select_time = request.POST.get('time')
+        select_agent = request.POST.get('select-agent')
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        if select_time != 'all':
+            if select_agent != 'all':
+                winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
+                totals = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agents' : agents,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : select_time,
+                    'selected_agent' : select_agent,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'adminapp/winningcount_report.html',context)
+            else:
+                winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
+                totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agents' : agents,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : select_time,
+                    'selected_agent' : 'all',
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'adminapp/winningcount_report.html',context)
+        else:
+            if select_agent != 'all':
+                winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date])
+                totals = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agents' : agents,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : 'all',
+                    'selected_agent' : select_agent,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'adminapp/winningcount_report.html',context)
+            else:
+                winnings = Winning.objects.filter(date__range=[from_date, to_date])
+                totals = Winning.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agents' : agents,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : 'all',
+                    'selected_agent' : 'all',
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'adminapp/winningcount_report.html',context)
+    context = {
+        'times' : times,
+        'agents' : agents,
+        'winnings' : winnings,
+        'totals' : totals,
+        'selected_agent' : 'all',
+        'selected_time' : 'all'
+    }
+    return render(request,'adminapp/winningcount_report.html',context)
 
 def blocked_numbers(request):
     return render(request,'adminapp/blocked_numbers.html')

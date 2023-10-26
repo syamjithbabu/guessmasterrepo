@@ -63,9 +63,12 @@
                                     <div class="col-lg-2 col-md-6 col-sm-12">
                                         <div class="form-group">
                                             <label for="tax-id" class="control-label">Agent</label>
-                                            <select name="agent" class="form-control show-tick ms select2" data-placeholder="Select">
-                                                {% for agent in agents %}
+                                            <select name="select" class="form-control show-tick ms select2" data-placeholder="Select">
+                                                {% for agent in agent %}
                                                 <option value="{{ agent.id }}">{{agent.user}}</option>
+                                                {% for dealer in dealer %}
+                                                <option value="{{ dealer.id }}">{{dealer.user}}</option>
+                                                {% endfor %}
                                                 {% endfor %}
                                             </select>
                                         </div>
