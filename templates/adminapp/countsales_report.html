@@ -2,105 +2,101 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
 
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+        background-color: rgb(221, 221, 221);
+    }
+    .td3{
+        text-align: center;
+        background-color: rgb(255, 255, 255);
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+
+</style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Count Sales Report</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <!-- <li class="breadcrumb-item">Pages</li> -->
-                        <li class="breadcrumb-item active">Count Sales Report</li>
+                        <li class="breadcrumb-item">Count Sales Report</li>
                     </ul>
-                </div>            
-               
+                </div> 
             </div>
         </div>
 
-        <div class="row clearfix">
+        <div class="row clearfix" style="padding-bottom: 50px;">
+            <form method="POST">
+                {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-                    <div class="header">
-                        <!-- <h2></h2> -->
-                    </div>
                     <div class="body">
                         <div class="col-lg-12">
                             <div class="card">
                                 
                                 <div class="body">
                                     <div class="row clearfix">
-                                         <!-- <div class="col-lg-2 col-md-6 col-sm-12">
+                                        <div class="col-md-6 col-6">
                                             <div class="form-group">
-                                                <div class="body search">
-                                                    <div class="input-group ">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text"><i class="icon-magnifier"></i></span>
-                                                        </div>
-                                                        <input type="text" class="form-control" placeholder="Search...">                                    
-                                                    </div>
-                                                </div>
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
                                             </div>
-                                        </div> -->
-                                      
-
-
-                                                   
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="tax-id" class="control-label">Date</label>
-                                                <input type="date" value="2017-06-01" class="form-control">
-                                            </div>  
                                         </div>
-                                        
-                                    <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label">Agent</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                    name="select-agent" id="agent">
+                                                    <option value="all">All Agents</option>
+                                                    {% for agent in agents %}
+                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
+                                                    {% endfor %}
                                                 </select>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-2 col-md-6 col-sm-12">
-                                        <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                    name="time" id="time">
+                                                    <option value="all">All Times</option>
+                                                    {% for time in times %}
+                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    {% endfor %}
                                                 </select>
                                             </div>
                                         </div>
-                                    </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">                                               
+                                                <button type="submit" class="btn btn-primary">Search</button>
+                                            </div>
+                                        </div>
                                     
-<!--                                     
-                                    <div class="col-lg-2 col-md-6 col-sm-12" >
-                                        <div class="form-group">
-                                            
-                                            <label class="fancy-checkbox"  > <br></label>
-                                                <input type="checkbox" name="checkbox">
-                                                <span><i class=" m-r-5"></i>Show Winnng Price Deatails</span>
-                                           
-                                        </div>
-                                    </div> -->
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="ssn" class="control-label">  click </label>
-                                                <br><button type="button" class="btn btn-primary">GO</button>
-                                               
-                                            </div>
-                                        </div>
-                                      
+                                    </div>
+                                                                        
                                     </div>
                                    
                                  </div>
@@ -110,53 +106,117 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                    
-                                                    
-                                                    <th> Position Count </th>
-                                                    <th>Count</th>
-                                                    <th> Amount</th>
+                                                     <th class="th">Positon</th>
+                                                     <th class="th">Count</th>
+                                                     <th class="th">Amount</th>
                                                     
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>agent/dealer</td>
-                                                    <td><span>4</span></td>
-                                                    <td><span class="text-info">600 </span></td>
-                                                   
-                                                </tr>
+                                            <tbody class="not-summary">
 
+                                                <tr>
+                                                    <td class="td2">Super</td>
+                                                    <td class="td3">{{super_totals.total_count}}</td>
+                                                    <td class="td2">{{super_totals.total_amount}}</td>                                                  
+                                                </tr>
+                                                <tr>
+                                                    <td class="td2">Box</td>
+                                                    <td class="td3">{{box_totals.total_count}}</td>
+                                                    <td class="td2">{{box_totals.total_amount}}</td>                                                  
+                                                </tr>
+                                                <tr>
+                                                    <td class="td2">Single</td>
+                                                    <td class="td3">{{single_totals.total_count}}</td>
+                                                    <td class="td2">{{single_totals.total_amount}}</td>                                                  
+                                                </tr>
+                                                <tr>
+                                                    <td class="td2">Double</td>
+                                                    <td class="td3">{{double_totals.total_count}}</td>
+                                                    <td class="td2">{{double_totals.total_amount}}</td>                                                  
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div class=" row text-right">
-                                        
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="tax-id" class="control-label"></label>
-                                                <input type="text" placeholder="NET COUNT" class="form-control">
-                                            </div>  
-                                            
-                                        </div>
-                                        <div class="col-lg-2 col-md-6 col-sm-12">
-                                            <div class="form-group">
-                                                <label for="tax-id" class="control-label"></label>
-                                                <input type="text" placeholder="NET AMOUNT" class="form-control">
-                                            </div>  
-                                        </div>
-                                        
-                                    </div>
+                                   
                                 </div>
+                                
                             </div>
-                            
+                           
                         </div>
                     </div>
                     </div>
                 </div>
             </div>
+        </form>
+        </div>
+        
     </div>
 </div>
 
+<nav class="navbar-bottom">
+    <table>
+        <thead>
+            <tr>
+                 <th class="th1">TOTAL COUNT</th>
+                 <th class="th1">TOTAL AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td1">{{totals.net_count}}</td>
+                <td class="td1">{{totals.net_amount}}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#summary-button").change(function() {
+            if (this.checked) {
+                $(".summary-row").show(); // Show the row when the checkbox is checked
+                $(".not-summary").hide();
+            } else {
+                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".not-summary").show(); 
+            }
+        });
+    });
+</script>
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
-{% endblock %}
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var selectTime = document.getElementById("time");
+        var selectAgent = document.getElementById("agent")
+        // Set the selected value based on the selected_dealer variable
+        selectTime.value = "{{ selected_time }}";
+        selectAgent.value = "{{ selected_agent }}"
+        
+
+    });
+</script>
+{% endblock %} 
