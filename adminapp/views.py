@@ -1097,7 +1097,6 @@ def countwise_report(request):
     return render(request,'adminapp/countwise_report.html',context)
 
 def countsales_report(request):
-<<<<<<< HEAD
     times = PlayTime.objects.filter().all()
     agents = Agent.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -1328,10 +1327,6 @@ def countsales_report(request):
         'double_totals' : double_totals,
         'totals' : totals,
     }
-=======
-    
-
->>>>>>> 4844acfbda5aad60e6aeb3f78509a55cd2d342cc
     return render(request,'adminapp/countsales_report.html',context) 
 
 def winning_report(request):
