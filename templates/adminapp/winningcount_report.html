@@ -70,7 +70,7 @@
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="time" id="time">
+                                                    name="select-agent" id="agent">
                                                     <option value="all">All Agents</option>
                                                     {% for agent in agents %}
                                                     <option value="{{agent.user.id}}">{{agent.user}}</option>
@@ -91,11 +91,6 @@
                                         </div>
                                     <div class="col-md-6 col-6">
                                         <div class="form-group">                                               
-                                                <button type="button" class="btn btn-primary">Download</button>
-                                            </div>
-                                        </div>
-                                    <div class="col-md-6 col-6">
-                                        <div class="form-group">                                               
                                                 <button type="submit" class="btn btn-primary">Search</button>
                                             </div>
                                         </div>
@@ -111,25 +106,18 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                     <th class="th">Particular</th>
-                                                     <th class="th">Number</th>
+                                                     <th class="th">Positon</th>
                                                      <th class="th">Count</th>
+                                                     <th class="th">Amount</th>
                                                     
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
-                                                {% for game in agent_games %}
+                                                {% for winning in winnings %}
                                                 <tr>
-                                                    <td class="td2">{{game.LSK}}</td>
-                                                    <td class="td3">{{game.number}}</td>
-                                                    <td class="td2">{{game.count}}</td>                                                  
-                                                </tr>
-                                                {% endfor %}
-                                                {% for game in dealer_games %}
-                                                <tr>
-                                                    <td class="td2">{{game.LSK}}</td>
-                                                    <td class="td3">{{game.number}}</td>
-                                                    <td class="td2">{{game.count}}</td>                                                  
+                                                    <td class="td2">{{winning.position}}</td>
+                                                    <td class="td3">{{winning.count}}</td>
+                                                    <td class="td2">{{winning.prize}}</td>                                                  
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -156,11 +144,13 @@
         <thead>
             <tr>
                  <th class="th1">TOTAL COUNT</th>
+                 <th class="th1">TOTAL AMOUNT</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{total_count.total_count}}</td>
+                <td class="td1">{{totals.total_count}}</td>
+                <td class="td1">{{totals.total_prize}}</td>
             </tr>
         </tbody>
     </table>
@@ -206,17 +196,12 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        var radioInputs = document.getElementsByName("select-lsk");
         var selectTime = document.getElementById("time");
+        var selectAgent = document.getElementById("agent")
         // Set the selected value based on the selected_dealer variable
         selectTime.value = "{{ selected_time }}";
-        selected_lsk = "{{ selected_lsk }}";
-        for (var i = 0; i < radioInputs.length; i++) {
-            if (radioInputs[i].value === selected_lsk) {
-                radioInputs[i].checked = true;
-                break; // Exit the loop once the correct radio input is found
-            }
-        }
+        selectAgent.value = "{{ selected_agent }}"
+        
 
     });
 </script>
