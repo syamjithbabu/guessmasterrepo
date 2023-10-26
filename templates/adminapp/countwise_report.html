@@ -2,282 +2,218 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
 
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+        background-color: rgb(221, 221, 221);
+    }
+    .td3{
+        text-align: center;
+        background-color: rgb(255, 255, 255);
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+
+</style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Count Wise Report</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <!-- <li class="breadcrumb-item">Pages</li> -->
-                        <li class="breadcrumb-item active">Count Wise Report</li>
+                        <li class="breadcrumb-item">Count Wise Report</li>
                     </ul>
-                </div>            
-               
+                </div> 
             </div>
         </div>
 
-        <div class="row clearfix">
-            <div class="col-md-12">
+        <div class="row clearfix" style="padding-bottom: 50px;">
+            <form method="POST">
+                {% csrf_token %}
+            <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-                 
                     <div class="body">
-                        <ul class="nav nav-tabs-new2">
-                            
-            
-                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Sort Customer</label>
-                                                        <div class="mb-3">
-                                                            
-                                                            <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                                <option></option>
-                                                                <option>1</option>
-                                                                <option>2</option>
-                                                                <option>3</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
-                                                <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Sort Customer</label>
-                                                        <div class="mb-3">
-                                                            
-                                                            <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                                <option></option>
-                                                                <option>1</option>
-                                                                <option>2</option>
-                                                                <option>3</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
-
-                        </ul>
-                     
-                        <ul class="nav nav-tabs-new2">
-                            <li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#Home-new2">All </a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Profile-new2">A/B/C</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new3">AB/AC/BC</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new4">SUPER</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new5">BOX</a></li>
-
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane show active" id="Home-new2">
-                                <div class="col-lg-12">
-                                  
-                                       
-                                        
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Particular</th>
-                                                        <th>Number</th>
-                                                        <th>Count</th>
-                                                       
-                                                    </tr>
-                                                </thead>
-                                            
-                                                <tbody>
-                                                    <tr>
-                                                        <td>6</td>
-                                                        <td>7</td>
-                                                        <td>99</td>
-                                                       
-                                                    </tr>
-                                                    <tr>
-                                                        <td>78</td>
-                                                        <td>09</td>
-                                                        <td>99</td>
-                                                      
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
+                        <div class="col-lg-12">
+                            <div class="card">
+                                
+                                <div class="body">
+                                    <div class="row clearfix">
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
                                             </div>
-                                      
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="fancy-radio"><input name="select-lsk" value="all" type="radio" checked><span><i></i>ALL</span></label>
+                                            <label class="fancy-radio"><input name="select-lsk" value="a_b_c" type="radio"><span><i></i>A/B/C</span></label>
+                                            <label class="fancy-radio"><input name="select-lsk" value="ab_bc_ac" type="radio"><span><i></i>AB/BC/AC</span></label>
+                                            <label class="fancy-radio"><input name="select-lsk" value="super" type="radio"><span><i></i>Super</span></label>
+                                            <label class="fancy-radio"><input name="select-lsk" value="box" type="radio"><span><i></i>Box</span></label>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                    name="time" id="time">
+                                                    <option value="all">All Times</option>
+                                                    {% for time in times %}
+                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">                                               
+                                                <button type="button" class="btn btn-primary">Download</button>
+                                            </div>
+                                        </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">                                               
+                                                <button type="submit" class="btn btn-primary">Search</button>
+                                            </div>
+                                        </div>
                                     
+                                    </div>
+                                                                        
+                                    </div>
+                                   
+                                 </div>
+                                
+                                <div class="body">
+                                    <div class="table-responsive">
+                                        <table class="table m-b-0">
+                                            <thead>
+                                                <tr>
+                                                     <th class="th">Particular</th>
+                                                     <th class="th">Number</th>
+                                                     <th class="th">Count</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody class="not-summary">
+                                                {% for game in agent_games %}
+                                                <tr>
+                                                    <td class="td2">{{game.LSK}}</td>
+                                                    <td class="td3">{{game.number}}</td>
+                                                    <td class="td2">{{game.count}}</td>                                                  
+                                                </tr>
+                                                {% endfor %}
+                                                {% for game in dealer_games %}
+                                                <tr>
+                                                    <td class="td2">{{game.LSK}}</td>
+                                                    <td class="td3">{{game.number}}</td>
+                                                    <td class="td2">{{game.count}}</td>                                                  
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                   
                                 </div>
                                 
                             </div>
-                            
-                            <div class="tab-pane" id="Profile-new2">
-                               
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                       
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Particular</th>
-                                                        <th>Number</th>
-                                                        <th>Count</th>
-                                                       
-                                                    </tr>
-                                                </thead>
-                                            
-                                                <tbody>
-                                                    <tr>
-                                                        <td>6</td>
-                                                        <td>7</td>
-                                                        <td>99</td>
-                                                       
-                                                    </tr>
-                                                    <tr>
-                                                        <td>78</td>
-                                                        <td>09</td>
-                                                        <td>99</td>
-                                                      
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new3">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Particular</th>
-                                                        <th>Number</th>
-                                                        <th>Count</th>
-                                                       
-                                                    </tr>
-                                                </thead>
-                                            
-                                                <tbody>
-                                                    <tr>
-                                                        <td>7</td>
-                                                        <td>7</td>
-                                                        <td>99</td>
-                                                       
-                                                    </tr>
-                                                    <tr>
-                                                        <td>78</td>
-                                                        <td>09</td>
-                                                        <td>99</td>
-                                                      
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new4">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Particular</th>
-                                                        <th>Number</th>
-                                                        <th>Count</th>
-                                                       
-                                                    </tr>
-                                                </thead>
-                                            
-                                                <tbody>
-                                                    <tr>
-                                                        <td>8</td>
-                                                        <td>7</td>
-                                                        <td>99</td>
-                                                       
-                                                    </tr>
-                                                    <tr>
-                                                        <td>78</td>
-                                                        <td>09</td>
-                                                        <td>99</td>
-                                                      
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new5">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                       
-                                        <div class="body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Particular</th>
-                                                        <th>Number</th>
-                                                        <th>Count</th>
-                                                       
-                                                    </tr>
-                                                </thead>
-                                            
-                                                <tbody>
-                                                    <tr>
-                                                        <td>9</td>
-                                                        <td>7</td>
-                                                        <td>99</td>
-                                                       
-                                                    </tr>
-                                                    <tr>
-                                                        <td>78</td>
-                                                        <td>09</td>
-                                                        <td>99</td>
-                                                      
-                                                    </tr>
-                                                 
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                
-                            </div>
-                            
+                           
                         </div>
                     </div>
-                    </div>             
+                    </div>
+                </div>
             </div>
+        </form>
         </div>
+        
     </div>
 </div>
 
+<nav class="navbar-bottom">
+    <table>
+        <thead>
+            <tr>
+                 <th class="th1">TOTAL COUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td1">{{total_count.total_count}}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#summary-button").change(function() {
+            if (this.checked) {
+                $(".summary-row").show(); // Show the row when the checkbox is checked
+                $(".not-summary").hide();
+            } else {
+                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".not-summary").show(); 
+            }
+        });
+    });
+</script>
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
-{% endblock %}
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var radioInputs = document.getElementsByName("select-lsk");
+        var selectTime = document.getElementById("time");
+        // Set the selected value based on the selected_dealer variable
+        selectTime.value = "{{ selected_time }}";
+        selected_lsk = "{{ selected_lsk }}";
+        for (var i = 0; i < radioInputs.length; i++) {
+            if (radioInputs[i].value === selected_lsk) {
+                radioInputs[i].checked = true;
+                break; // Exit the loop once the correct radio input is found
+            }
+        }
+
+    });
+</script>
+{% endblock %} 

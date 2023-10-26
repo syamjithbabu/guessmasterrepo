@@ -745,7 +745,87 @@ def daily_report(request):
     return render(request,'adminapp/dailyreport.html')
 
 def countwise_report(request):
-    return render(request,'adminapp/countwise_report.html')
+    ist = pytz.timezone('Asia/Kolkata')
+    times = PlayTime.objects.filter().all()
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    agent_games = AgentGame.objects.filter(date=current_date).all()
+    dealer_games = DealerGame.objects.filter(date=current_date).all()
+    totals_agent = AgentGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
+    totals_dealer = DealerGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
+    total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
+    lsk_value = []
+    if request.method == 'POST':
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        lsk = request.POST.get('select-lsk')
+        select_time = request.POST.get('time')
+        if lsk == 'a_b_c':
+            lsk_value = ['A','B','C']
+        elif lsk == 'ab_bc_ac':
+            lsk_value = ['AB','BC','AC']
+        elif lsk == 'super':
+            lsk_value = ['Super']
+        elif lsk_value == 'box':
+            lsk_value = ['Box']
+        else:
+            lsk_value == ['all']
+        if select_time != 'all':
+            if lsk != 'all':
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
+                totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
+            else:
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time)
+                totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
+                totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
+                total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
+            context = {
+                'agent_games' : agent_games,
+                'dealer_games' : dealer_games,
+                'selected_lsk' : lsk,
+                'selected_from' : from_date,
+                'selected_to' : to_date,
+                'total_count' : total_count,
+                'selected_time' : select_time,
+                'times' : times
+            }
+            return render(request,'adminapp/countwise_report.html',context)
+        else:
+            if lsk != 'all':
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
+                totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
+            else:
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date])
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date])
+                totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
+                totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
+                total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
+            context = {
+                'agent_games' : agent_games,
+                'dealer_games' : dealer_games,
+                'selected_lsk' : lsk,
+                'selected_from' : from_date,
+                'selected_to' : to_date,
+                'total_count' : total_count,
+                'selected_time' : select_time,
+                'times' : times
+            }
+            return render(request,'adminapp/countwise_report.html',context)
+    context = {
+        'agent_games' : agent_games,
+        'dealer_games' : dealer_games,
+        'total_count' : total_count,
+        'times' : times,
+        'selected_time' : 'all'
+    }
+    return render(request,'adminapp/countwise_report.html',context)
 
 def countsales_report(request):
     return render(request,'adminapp/countsales_report.html') 
@@ -900,8 +980,6 @@ def winningcount_report(request):
     return render(request,'adminapp/winningcount_report.html')
 
 def blocked_numbers(request):
-
-
     return render(request,'adminapp/blocked_numbers.html')
 
 def edit_bill(request):
