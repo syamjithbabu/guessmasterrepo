@@ -50,49 +50,43 @@
                                         <div class="col-lg-2 col-md-6 col-sm-12">
                                             <div class="form-group">
                                                 <label for="tax-id" class="control-label">Date</label>
-                                                <input type="date" value="2017-06-01" class="form-control">
+                                                <input type="date" value="2017-06-01" name="from-date" class="form-control">
+                                            </div>  
+                                        </div>
+                                        <div class="col-lg-2 col-md-6 col-sm-12">
+                                            <div class="form-group">
+                                                <label for="tax-id" class="control-label">Date</label>
+                                                <input type="date" value="2017-06-01"   name="to-date"  class="form-control">
                                             </div>  
                                         </div>
                                         
                                     <div class="col-lg-2 col-md-6 col-sm-12">
                                         <div class="form-group">
                                             <label for="tax-id" class="control-label">Agent</label>
-                                            <div class="mb-3">
-                                                
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
-                                                </select>
-                                            </div>
+                                            <select name="agent" class="form-control show-tick ms select2" data-placeholder="Select">
+                                                {% for agent in agents %}
+                                                <option value="{{ agent.id }}">{{agent.user}}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-2 col-md-6 col-sm-12">
                                         <div class="form-group">
-                                            <label for="tax-id" class="control-label">Dealer</label>
+                                            <label for="tax-id" class="control-label">Times</label>
                                             <div class="mb-3">
                                                 
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                    <option></option>
-                                                    <option>1</option>
-                                                    <option>2</option>
-                                                    <option>3</option>
+                                                    <option>All Times</option>
+                                                    {% for time in times %}
+                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    {% endfor %}
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
                                     
-<!--                                     
-                                    <div class="col-lg-2 col-md-6 col-sm-12" >
-                                        <div class="form-group">
-                                            
-                                            <label class="fancy-checkbox"  > <br></label>
-                                                <input type="checkbox" name="checkbox">
-                                                <span><i class=" m-r-5"></i>Show Winnng Price Deatails</span>
-                                           
-                                        </div>
-                                    </div> -->
+                                    
+
                                         <div class="col-lg-2 col-md-6 col-sm-12">
                                             <div class="form-group">
                                                 <label for="ssn" class="control-label">  click </label>
@@ -120,7 +114,25 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>agent/dealer</td>
+                                                    <th>SUPER</th>
+                                                    <td><span>4</span></td>
+                                                    <td><span class="text-info">600 </span></td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                    <td>BOX</td>
+                                                    <td><span>4</span></td>
+                                                    <td><span class="text-info">600 </span></td>
+                                                   
+                                                </tr>
+                                                <tr>
+                                                    <td>SINGLE</td>
+                                                    <td><span>4</span></td>
+                                                    <td><span class="text-info">600 </span></td>
+                                                   
+                                                </tr>
+                                                <tr>
+                                                    <td>DOUBLE</td>
                                                     <td><span>4</span></td>
                                                     <td><span class="text-info">600 </span></td>
                                                    

@@ -766,6 +766,9 @@ def winning_report(request):
         return render(request,'agent/winning_report.html',context) 
 
 def count_salereport(request):
+
+
+
     return render(request,'agent/count_salereport.html') 
 
 def winning_countreport(request):
