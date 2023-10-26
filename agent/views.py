@@ -244,7 +244,7 @@ def sales_report(request):
                     if lsk != 'all':
                         #dealer and lsk selected, time not selected
                         dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,LSK__in=lsk_value)
-                        dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=select_dealer,dealer_games__in=dealer_games).distinct()
+                        dealer_bills = Bill.objecountsales_reportcts.filter(date__range=[from_date, to_date],user=select_dealer,dealer_games__in=dealer_games).distinct()
                         totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                         for bill in dealer_bills:
                             for game in bill.dealer_games.filter(LSK__in=lsk_value):
@@ -1062,7 +1062,133 @@ def count_salereport(request):
     return render(request,'agent/count_salereport.html',context) 
 
 def winning_countreport(request):
-    return render(request,'agent/winning_countreport.html') 
+    agent_obj = Agent.objects.get(user=request.user)
+    print(agent_obj)
+    dealers = Dealer.objects.filter(agent=agent_obj).all()
+    print(dealers)
+    times = PlayTime.objects.filter().all()
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    winnings = Winning.objects.filter(date=current_date).all()
+    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+    if request.method == 'POST':
+        select_time = request.POST.get('time')
+        select_agent = request.POST.get('select_agent')
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        if select_time != 'all':
+            if select_agent != 'all':
+                if select_agent == str(agent_obj.user):
+                    winnings = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date],time=select_time)
+                    totals = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    print(select_agent)
+                    context = {
+                        'times' : times,
+                        'agent_obj' : agent_obj,
+                        'dealers':dealers,
+                        'winnings' : winnings,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_agent' : select_agent,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
+                    }
+                    return render(request,'agent/winning_countreport.html',context)
+                else:
+                    winnings = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date],time=select_time)
+                    totals = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    print(winnings)
+                    print(select_agent)
+                    context = {
+                        'times' : times,
+                        'agent_obj' : agent_obj,
+                        'dealers':dealers,
+                        'winnings' : winnings,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_agent' : select_agent,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
+                    }
+                    return render(request,'agent/winning_countreport.html',context)
+            else:
+                winnings = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date],time=select_time)
+                totals = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agent_obj' : agent_obj,
+                    'dealers':dealers,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : select_time,
+                    'selected_agent' : 'all',
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'agent/winning_countreport.html',context)
+        else:
+            if select_agent != 'all':
+                if select_agent == str(agent_obj.user):
+                    winnings = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date])
+                    totals = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    print(select_agent)
+                    context = {
+                        'times' : times,
+                        'agent_obj' : agent_obj,
+                        'dealers':dealers,
+                        'winnings' : winnings,
+                        'totals' : totals,
+                        'selected_time' : 'all',
+                        'selected_agent' : select_agent,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
+                    }
+                    return render(request,'agent/winning_countreport.html',context)
+                else:
+                    winnings = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date])
+                    totals = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    print(winnings)
+                    print(select_agent)
+                    context = {
+                        'times' : times,
+                        'agent_obj' : agent_obj,
+                        'dealers':dealers,
+                        'winnings' : winnings,
+                        'totals' : totals,
+                        'selected_time' : 'all',
+                        'selected_agent' : select_agent,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
+                    }
+                    return render(request,'agent/winning_countreport.html',context)
+            else:
+                winnings = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date])
+                totals = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                print(select_agent)
+                context = {
+                    'times' : times,
+                    'agent_obj' : agent_obj,
+                    'dealers':dealers,
+                    'winnings' : winnings,
+                    'totals' : totals,
+                    'selected_time' : 'all',
+                    'selected_agent' : 'all',
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request,'agent/winning_countreport.html',context)
+    context = {
+        'times' : times,
+        'agent_obj' : agent_obj,
+        'dealers':dealers,
+        'winnings' : winnings,
+        'totals' : totals,
+        'selected_agent' : 'all',
+        'selected_time' : 'all'
+    }
+    return render(request,'agent/winning_countreport.html',context) 
 
 def collection_report(request):
     return render(request,'agent/collection_report.html') 
