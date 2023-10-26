@@ -157,19 +157,7 @@
 </nav>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $("#summary-button").change(function() {
-            if (this.checked) {
-                $(".summary-row").show(); // Show the row when the checkbox is checked
-                $(".not-summary").hide();
-            } else {
-                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
-                $(".not-summary").show(); 
-            }
-        });
-    });
-</script>
+
 <script>
     // Get the current date in the format "YYYY-MM-DD"
     function getCurrentDate() {
