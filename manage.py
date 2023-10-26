@@ -4,6 +4,7 @@ import os
 import sys
 
 
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guessmaster.settings')
@@ -20,3 +21,15 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+# def create_admin_user():
+#     username = 'admin'  # Set your desired admin username here
+#     password = '1234'  # Set your desired admin password here
+
+#     if not User.objects.filter(username=username).exists():
+#         User.objects.create_superuser(username=username, password=password)
+
+# create_admin_user()
+

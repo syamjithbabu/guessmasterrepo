@@ -22,6 +22,7 @@ urlpatterns = [
     path('edit-bill',views.edit_bill,name="edit_bill"),
     path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
     path('deleting-bill/<int:id>',views.deleting_bill,name="deleting_bill"),
+    path('change-password',views.change_password,name="change_password"),
     path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row")
 
 ]

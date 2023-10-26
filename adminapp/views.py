@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from website.decorators import dealer_required, agent_required, admin_required
@@ -386,6 +387,7 @@ def add_result(request):
                                     box_first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         agent_package = AgentPackage.objects.get(agent=game.agent)
+                        print(date,time,game.agent.user.id,game.id)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
@@ -575,12 +577,13 @@ def change_time(request):
     except:
         pass
     context = {
-        'times' : times
+        'times' : times,
     }
     return render(request,'adminapp/change_time.html',context)
 
 def change_game_time(request,id):
     time = get_object_or_404(PlayTime,id=id)
+
     print(time)
     if request.method == 'POST':
         start_time = request.POST.get('start_time')
@@ -1094,6 +1097,7 @@ def countwise_report(request):
     return render(request,'adminapp/countwise_report.html',context)
 
 def countsales_report(request):
+<<<<<<< HEAD
     times = PlayTime.objects.filter().all()
     agents = Agent.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -1324,6 +1328,10 @@ def countsales_report(request):
         'double_totals' : double_totals,
         'totals' : totals,
     }
+=======
+    
+
+>>>>>>> 4844acfbda5aad60e6aeb3f78509a55cd2d342cc
     return render(request,'adminapp/countsales_report.html',context) 
 
 def winning_report(request):
@@ -1605,8 +1613,7 @@ def change_password(request):
 def settings(request):
     return render(request,'adminapp/settings.html')
 
-def change_password(request):
-    return render(request,'adminapp/change_password.html')
+
 
 def get_combinations(input_number):
     number_str = str(input_number).zfill(3)

@@ -19,11 +19,11 @@
                             <div class="col-lg-4 col-md-12">
                                 <label>Start Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time" name="start_time" class="form-control">
+                                    <input type="time" name="start_time" class="form-control" value="{{ playtime.end_time }}">
                                 </div>
                                 <label>End Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time" name="end_time" class="form-control">
+                                    <input type="time" name="end_time" class="form-control" value="{{ playtime.end_time }}">
                                 </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Save</button>
@@ -36,5 +36,6 @@
         </div>
         
 </div>
+
     
 {% endblock %}

@@ -16,6 +16,8 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.db.models import Q
 from django.db.models import F
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 # Create your views here.
 @dealer_required
@@ -514,3 +516,16 @@ def save_data(request, id):
         print(e)
     print("###################")
     return redirect('dealer:index')
+
+
+def change_password(request):
+    if request.method== "POST":
+         form= PasswordChangeForm(user=request.user,data=request.POST)
+         if form.is_valid():
+             form.save()
+             messages.success(request,"your password changed")
+             return redirect("website:login")
+    else:
+        form= PasswordChangeForm(user=request.user)
+    return render(request,'dealer/change_password.html',{'form':form})
+ 
