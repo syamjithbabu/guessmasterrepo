@@ -81,3 +81,12 @@ class Bill(models.Model):
 
     def __str__(self):
         return f'Bill for {self.user} on {self.date}'
+    
+class DealerCollectionReport(models.Model):
+    date = models.DateField()
+    dealer = models.ForeignKey(Dealer,on_delete=models.CASCADE,null=True)
+    from_or_to = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return str(self.dealer)

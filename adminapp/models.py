@@ -107,3 +107,11 @@ class Winning(models.Model):
     def __str__(self):
         return str(self.date)
 
+class CollectionReport(models.Model):
+    date = models.DateField()
+    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    from_or_to = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return str(self.agent)

@@ -40,7 +40,7 @@
                 <div class="col-lg-12 col-md-12 col-sm-12">                        
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Collection Report</li>
+                        <li class="breadcrumb-item">Balance Report</li>
                         
                     </ul>
                 </div> 
@@ -51,7 +51,6 @@
         </div>
 
         <div class="row clearfix" style="padding-bottom: 50px;">
-            <a href="{% url 'adminapp:add_collection' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Add Collection</a>
             <form method="POST">
                 
                 {% csrf_token %}
@@ -84,16 +83,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="from-to" id="collection">
-                                                    <option value="all">All</option>
-                                                    <option value="from-agent">From Agent</option>
-                                                    <option value="to-agent">To Agent</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                                        
                                     <div class="col-md-6 col-6">
                                         <div class="form-group">                                               
                                                 <button type="submit" class="btn btn-primary">Search</button>
@@ -113,8 +103,9 @@
                                                 <tr>
                                                     <th class="th">Date</th>
                                                      <th class="th">Agent</th>
-                                                     <th class="th">Particular</th>
-                                                     <th class="th">Amount</th>
+                                                     <th class="th">Sale<br>Amount</th>
+                                                     <th class="th">Collection<br>Amount</th>
+                                                     <th class="th">Balance</th>
                                                     
                                                 </tr>
                                             </thead>
@@ -124,7 +115,8 @@
                                                     <td class="td2">{{collection.date}}</td>
                                                     <td class="td3">{{collection.agent}}</td>
                                                     <td class="td2">{{collection.from_or_to}}</td>
-                                                    <td class="td3">{{collection.amount}}</td>                                                 
+                                                    <td class="td3">{{collection.amount}}</td>   
+                                                    <td class="td2">{{collection.from_or_to}}</td>                                              
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -150,11 +142,7 @@
     <table>
         <thead>
             <tr>
-                {% if profit_or_loss|default:0|add:0 >= 0 %}
-                <th class="th1">Profit</th>
-            {% else %}
-                <th class="th1">Loss</th>
-            {% endif %}
+                <th class="th1">Balance</th>
             </tr>
         </thead>
         <tbody>
