@@ -19,6 +19,7 @@ from django.db.models import Q
 import itertools
 from django.db.models import F
 
+
 # Create your views here.
 
 @admin_required
@@ -593,6 +594,8 @@ def change_game_time(request,id):
         set_time = PlayTime.objects.filter(id=id).update(start_time=start_time,end_time=end_time)
         return redirect('adminapp:change_time')
     return render(request,'adminapp/change_game_time.html')
+
+
 
 def monitor(request):
     return render(request,'adminapp/monitor.html')
@@ -1626,4 +1629,9 @@ def get_combinations(input_number):
                         result.append(combination)
     
     return result
+
+
+
+
+
 

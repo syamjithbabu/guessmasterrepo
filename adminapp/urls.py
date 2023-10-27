@@ -35,7 +35,16 @@ urlpatterns = [
     path('payment_report',views.payment_report,name="payment_report"),
     path('change_password',views.change_password,name="change_password"),
     path('settings',views.settings,name="settings"),
-    path('view-results',views.view_results,name="view_results")
+    path('view-results',views.view_results,name="view_results"),
+
+
+
+
+
+
+
+
+    # path('pdf-download',views.pdf_download,name="pdf_download")
 
 
 
