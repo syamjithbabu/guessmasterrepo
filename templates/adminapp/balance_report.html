@@ -1,4 +1,4 @@
-{% extends 'agent/partials/base.html' %}
+{% extends 'adminapp/partials/base.html' %}
 {% load static %}
 {% block content %}
 
@@ -37,17 +37,22 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                <div class="col-lg-12 col-md-12 col-sm-12">                        
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Winning Count Report</li>
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item">Balance Report</li>
+                        
                     </ul>
                 </div> 
+                
+                    
+               
             </div>
         </div>
 
         <div class="row clearfix" style="padding-bottom: 50px;">
             <form method="POST">
+                
                 {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
@@ -69,26 +74,16 @@
                                         </div>
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
-                                                <select class="form-control show-tick" data-placeholder="Select" name="select_agent" id="agent">
-                                                    <option value="all">All</option>
-                                                    <option value="{{ request.user }}">Myself</option>
-                                                    {% for dealer in dealers %}
-                                                    <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
-                                                    {% endfor %}
-                                                 </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="time" id="time">
-                                                    <option value="all">All Times</option>
-                                                    {% for time in times %}
-                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    name="select-agent" id="agent">
+                                                    <option value="all">All Agents</option>
+                                                    {% for agent in agents %}
+                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
                                         </div>
+                                        
                                     <div class="col-md-6 col-6">
                                         <div class="form-group">                                               
                                                 <button type="submit" class="btn btn-primary">Search</button>
@@ -106,18 +101,22 @@
                                         <table class="table m-b-0">
                                             <thead>
                                                 <tr>
-                                                     <th class="th">Positon</th>
-                                                     <th class="th">Count</th>
-                                                     <th class="th">Amount</th>
+                                                    <th class="th">Date</th>
+                                                     <th class="th">Agent</th>
+                                                     <th class="th">Sale<br>Amount</th>
+                                                     <th class="th">Collection<br>Amount</th>
+                                                     <th class="th">Balance</th>
                                                     
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
-                                                {% for winning in winnings %}
+                                                {% for collection in collections %}
                                                 <tr>
-                                                    <td class="td2">{{winning.position}}</td>
-                                                    <td class="td3">{{winning.count}}</td>
-                                                    <td class="td2">{{winning.prize}}</td>                                                  
+                                                    <td class="td2">{{collection.date}}</td>
+                                                    <td class="td3">{{collection.agent}}</td>
+                                                    <td class="td2">{{collection.from_or_to}}</td>
+                                                    <td class="td3">{{collection.amount}}</td>   
+                                                    <td class="td2">{{collection.from_or_to}}</td>                                              
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -143,33 +142,19 @@
     <table>
         <thead>
             <tr>
-                 <th class="th1">TOTAL COUNT</th>
-                 <th class="th1">TOTAL AMOUNT</th>
+                <th class="th1">Balance</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{totals.total_count}}</td>
-                <td class="td1">{{totals.total_prize}}</td>
+                <td class="td1">{{profit_or_loss}}</td>
             </tr>
         </tbody>
     </table>
 </nav>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $("#summary-button").change(function() {
-            if (this.checked) {
-                $(".summary-row").show(); // Show the row when the checkbox is checked
-                $(".not-summary").hide();
-            } else {
-                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
-                $(".not-summary").show(); 
-            }
-        });
-    });
-</script>
+
 <script>
     // Get the current date in the format "YYYY-MM-DD"
     function getCurrentDate() {
@@ -195,14 +180,16 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+        var selectTime = document.getElementById("collection");
 
-        var selectTime = document.getElementById("time");
-        var selectAgent = document.getElementById("agent")
-        // Set the selected value based on the selected_dealer variable
+        console.log("{{selected_agent}}")
+        selectDealer.value = "{{ selected_agent }}";
         selectTime.value = "{{ selected_time }}";
-        selectAgent.value = "{{ selected_agent }}"
-        
 
     });
 </script>
+
+
 {% endblock %} 

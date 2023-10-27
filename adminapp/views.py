@@ -7,7 +7,7 @@ from website.forms import AgentRegistration
 from website.models import User,Agent,Dealer
 from agent.models import AgentGame, DealerPackage
 from dealer.models import DealerGame
-from .models import PlayTime, AgentPackage, Result, Winning
+from .models import PlayTime, AgentPackage, Result, Winning, CollectionReport
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from pytz import timezone as pytz_timezone
@@ -1589,8 +1589,6 @@ def edit_bill(request):
         if search_select == 'all':
             return redirect('adminapp:edit_bill')
         else :
-        
-        
             bill_search = Bill.objects.filter(user=search_select,date=current_date,time_id=matching_play_times.id).all()
             totals = Bill.objects.filter(user=search_select,date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
             print(bill_search,"search bill")
@@ -1604,10 +1602,156 @@ def edit_bill(request):
     return render(request,'adminapp/edit_bill.html',context)
 
 def payment_report(request):
-    return render(request,'adminapp/payment_report.html')
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    agents = Agent.objects.filter().all()
+    collections = CollectionReport.objects.filter(date=current_date).all()
+    from_agent_total = CollectionReport.objects.filter(date=current_date,from_or_to='from-agent').aggregate(from_agent=Sum('amount'))
+    print(from_agent_total)
+    to_agent_total = CollectionReport.objects.filter(date=current_date,from_or_to='to-agent').aggregate(to_agent=Sum('amount'))
+    print(to_agent_total)
+    from_agent_amount = from_agent_total['from_agent'] if from_agent_total['from_agent'] else 0
+    to_agent_amount = to_agent_total['to_agent'] if to_agent_total['to_agent'] else 0
+    profit_or_loss = from_agent_amount - to_agent_amount
+    print(profit_or_loss)
+    if request.method == 'POST':
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        select_agent = request.POST.get('select-agent')
+        from_or_to = request.POST.get('from-to')
+        if select_agent != 'all':
+            if from_or_to != 'all' and from_or_to == 'from-agent':
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,from_or_to='from-agent').all()
+                print(from_date, to_date, select_agent, from_or_to)
+                print(collections)
+                from_agent_amount = collections.aggregate(amount=Sum('amount'))
+                profit_or_loss = from_agent_amount['amount'] if from_agent_amount['amount'] else 0
+                print(profit_or_loss, "hello")
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+            if from_or_to != 'all' and from_or_to == 'to-agent':
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,from_or_to='to-agent').all()
+                print(from_date, to_date, select_agent, from_or_to)
+                print(collections)
+                to_agent_amount = collections.aggregate(amount=Sum('amount'))
+                profit_or_loss = to_agent_amount['amount'] if to_agent_amount['amount'] else 0
+                profit_or_loss = -profit_or_loss
+                print(profit_or_loss, "hello")
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+            else:
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date],agent__user=select_agent).all()
+                print(from_date, to_date, select_agent, from_or_to)
+                print(collections)
+                to_agent_amount = collections.aggregate(amount=Sum('amount'))
+                profit_or_loss = to_agent_amount['amount'] if to_agent_amount['amount'] else 0
+                print(profit_or_loss, "hello")
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+        else:
+            if from_or_to != 'all' and from_or_to == 'from-agent':
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date],from_or_to='from-agent').all()
+                print(from_date, to_date, select_agent, from_or_to)
+                print(collections)
+                from_agent_amount = collections.aggregate(amount=Sum('amount'))
+                profit_or_loss = from_agent_amount['amount'] if from_agent_amount['amount'] else 0
+                print(profit_or_loss, "hello")
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+            if from_or_to != 'all' and from_or_to == 'to-agent':
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date],from_or_to='to-agent').all()
+                print(from_date, to_date, select_agent, from_or_to)
+                print(collections)
+                to_agent_amount = collections.aggregate(amount=Sum('amount'))
+                profit_or_loss = to_agent_amount['amount'] if to_agent_amount['amount'] else 0
+                profit_or_loss = -profit_or_loss
+                print(profit_or_loss, "hello")
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+            else:
+                collections = CollectionReport.objects.filter(date__range=[from_date, to_date]).all()
+                from_agent_total = CollectionReport.objects.filter(date=current_date,from_or_to='from-agent').aggregate(from_agent=Sum('amount'))
+                print(from_agent_total)
+                to_agent_total = CollectionReport.objects.filter(date=current_date,from_or_to='to-agent').aggregate(to_agent=Sum('amount'))
+                print(to_agent_total)
+                from_agent_amount = from_agent_total['from_agent'] if from_agent_total['from_agent'] else 0
+                to_agent_amount = to_agent_total['to_agent'] if to_agent_total['to_agent'] else 0
+                profit_or_loss = from_agent_amount - to_agent_amount
+                context = {
+                    'agents': agents,
+                    'collections': collections,
+                    'profit_or_loss': profit_or_loss,
+                    'selected_agent' : select_agent,
+                    'from_or_to' : from_or_to
+                }
+                return render(request, 'adminapp/payment_report.html', context)
+    else:
+        context = {
+            'agents' : agents,
+            'collections' : collections,
+            'selected_agent' : 'all',
+            'profit_or_loss' : profit_or_loss,
+            'from_or_to' : 'all'
+        }
+    return render(request,'adminapp/payment_report.html',context)
+
+def add_collection(request):
+    agents = Agent.objects.filter().all()
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        select_agent = request.POST.get('select-agent')
+        agent_instance = Agent.objects.get(id=select_agent)
+        from_or_to = request.POST.get('select-collection')
+        amount = request.POST.get('amount')
+        print(select_agent,from_or_to,amount)
+        collection = CollectionReport.objects.create(agent=agent_instance,date=date,from_or_to=from_or_to,amount=amount)
+        return redirect('adminapp:payment_report')
+    context = {
+        'agents' : agents,
+    }
+    return render(request,'adminapp/add_collection.html',context)
+
+def balance_report(request):
+    agents = Agent.objects.filter().all()
+    context = {
+        'agents' : agents,
+        'selected_agent' : 'all'
+    }
+    return render(request, 'adminapp/balance_report.html',context)
 
 def change_password(request):
     return render(request,'adminapp/change_password.html')
+
 def settings(request):
     return render(request,'adminapp/settings.html')
 

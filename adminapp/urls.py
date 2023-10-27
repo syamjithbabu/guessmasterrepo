@@ -36,15 +36,8 @@ urlpatterns = [
     path('change_password',views.change_password,name="change_password"),
     path('settings',views.settings,name="settings"),
     path('view-results',views.view_results,name="view_results"),
-
-
-
-
-
-
-
-
-    # path('pdf-download',views.pdf_download,name="pdf_download")
+    path('add-collection',views.add_collection,name="add_collection"),
+    path('balance-report',views.balance_report,name="balance_report"),
 
 
 

@@ -37,17 +37,23 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                <div class="col-lg-12 col-md-12 col-sm-12">                        
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Add Collection</li>
+                        <li class="breadcrumb-item">Collection Report</li>
+                        
                     </ul>
                 </div> 
+                
+                    
+               
             </div>
         </div>
 
         <div class="row clearfix" style="padding-bottom: 50px;">
+            <a href="{% url 'agent:add_collection' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Add Collection</a>
             <form method="POST">
+                
                 {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
@@ -59,15 +65,21 @@
                                     <div class="row clearfix">
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
-                                                <input type="date" class="form-control" id="from-date" name="date">
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="select-dealer" id="agent" required>
+                                                    name="select-dealer" id="agent">
+                                                    <option value="all">All Dealers</option>
                                                     {% for dealer in dealers %}
-                                                    <option value="{{dealer.id}}">{{dealer.user}}</option>
+                                                    <option value="{{dealer.user.id}}">{{dealer.user}}</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
@@ -75,28 +87,50 @@
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="select-collection" id="collect" required>
+                                                    name="from-to" id="collection">
+                                                    <option value="all">All</option>
                                                     <option value="from-dealer">From Dealer</option>
                                                     <option value="to-dealer">To Dealer</option>
                                                 </select>
                                             </div>
                                         </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">                                               
+                                                <button type="submit" class="btn btn-primary">Search</button>
+                                            </div>
+                                        </div>
+                                    
                                     </div>
                                                                         
                                     </div>
                                    
                                  </div>
                                 
-                                <div class="body d-flex justify-content-center">
-                                    <div class="form-group col-md-6 col-6">
-                                        <input type="number" class="form-control" id="numberInput" name="amount" placeholder="Enter amount"
-                                            required>
+                                <div class="body">
+                                    <div class="table-responsive">
+                                        <table class="table m-b-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="th">Date</th>
+                                                     <th class="th">Dealer</th>
+                                                     <th class="th">Particular</th>
+                                                     <th class="th">Amount</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody class="not-summary">
+                                                {% for collection in collections %}
+                                                <tr>
+                                                    <td class="td2">{{collection.date}}</td>
+                                                    <td class="td3">{{collection.dealer}}</td>
+                                                    <td class="td2">{{collection.from_or_to}}</td>
+                                                    <td class="td3">{{collection.amount}}</td>                                                 
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div class="col-md-6 col-6">
-                                        <div class="form-group">                                               
-                                                <button type="submit" class="btn btn-primary">Submit</button>
-                                            </div>
-                                        </div>
+                                   
                                 </div>
                                 
                             </div>
@@ -112,20 +146,27 @@
     </div>
 </div>
 
+<nav class="navbar-bottom">
+    <table>
+        <thead>
+            <tr>
+                {% if profit_or_loss|default:0|add:0 >= 0 %}
+                <th class="th1">Profit</th>
+            {% else %}
+                <th class="th1">Loss</th>
+            {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td1">{{profit_or_loss}}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $("#summary-button").change(function() {
-            if (this.checked) {
-                $(".summary-row").show(); // Show the row when the checkbox is checked
-                $(".not-summary").hide();
-            } else {
-                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
-                $(".not-summary").show(); 
-            }
-        });
-    });
-</script>
+
 <script>
     // Get the current date in the format "YYYY-MM-DD"
     function getCurrentDate() {
@@ -151,14 +192,16 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+        var selectTime = document.getElementById("collection");
 
-        var selectTime = document.getElementById("time");
-        var selectAgent = document.getElementById("agent")
-        // Set the selected value based on the selected_dealer variable
-        selectTime.value = "{{ selected_time }}";
-        selectAgent.value = "{{ selected_agent }}"
-        
+        console.log("{{selected_agent}}")
+        selectDealer.value = "{{ selected_agent }}";
+        selectTime.value = "{{ from_or_to }}";
 
     });
 </script>
+
+
 {% endblock %} 
