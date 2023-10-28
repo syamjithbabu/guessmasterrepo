@@ -229,26 +229,29 @@ def daily_report(request):
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
         dealer_bills = []
-        totals = []
+        total_winning = []
+        total_balance = []
         if select_time != 'all':
-            dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time)
-            dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).distinct()
-            winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
-            print(winning_for_bills)
-            totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+            dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj,time=select_time).all()
+            dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id,time_id=select_time).all()
             for bill in dealer_bills:
-                for game in bill.dealer_games.filter():
-                    print("Game Count of",bill.id," is" , game.count)
-                    print("Game D Amount of",bill.id," is" , game.d_amount)
-                    print("Game C Amount of",bill.id," is" , game.c_amount)
-                bill.total_count = bill.dealer_games.filter().aggregate(total_count=Sum('count'))['total_count']
-                bill.total_d_amount = bill.dealer_games.filter().aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                bill.total_c_amount = bill.dealer_games.filter().aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=bill.id,time=select_time)
+                total_winning = sum(winning.prize for winning in winnings)
+                bill.win_amount += total_winning
+                if winnings != 0:
+                    bill.total_d_amount = bill.total_c_amount - total_winning
+                else:
+                    bill.total_d_amount = total_winning - bill.total_c_amount
+                total_winning = sum(bill.win_amount for bill in dealer_bills)
+                total_balance = sum(bill.total_d_amount for bill in dealer_bills)
+            total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))
             context = {
                 'times': times,
                 'dealer_bills' : dealer_bills,
                 'dealer_games' : dealer_games,
-                'totals' : totals,
+                'total_c_amount' : total_c_amount,
+                'total_winning' : total_winning,
+                'total_balance' : total_balance,
                 'selected_time' : select_time,
             }
             return render(request,'dealer/daily_report.html',context)
@@ -270,13 +273,25 @@ def daily_report(request):
     else:
         dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all()
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
-        totals = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+        for bill in dealer_bills:
+            winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=bill.id)
+            total_winning = sum(winning.prize for winning in winnings)
+            bill.win_amount += total_winning
+            if winnings != 0:
+                bill.total_d_amount = bill.total_c_amount - total_winning
+            else:
+                bill.total_d_amount = total_winning - bill.total_c_amount
+            total_winning = sum(bill.win_amount for bill in dealer_bills)
+            total_balance = sum(bill.total_d_amount for bill in dealer_bills)
+        total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))
         select_time = 'all'
         context = {
             'times': times,
             'dealer_bills' : dealer_bills,
             'dealer_games' : dealer_games,
-            'totals' : totals,
+            'total_c_amount' : total_c_amount,
+            'total_winning' : total_winning,
+            'total_balance' : total_balance,
             'selected_time' : select_time,
             'dealer_games' : dealer_games
         }
@@ -369,7 +384,295 @@ def winning_report(request):
         return render(request,'dealer/winning_report.html',context) 
 
 def count_salereport(request):
-    return render(request,'dealer/count_salereport.html') 
+    times = PlayTime.objects.filter().all()
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    lsk_value1 = ['A','B','C']
+    lsk_value2 = ['AB','BC','AC']
+    dealer_obj = Dealer.objects.get(user=request.user)
+    dealer_super = DealerGame.objects.filter(date=current_date,dealer=dealer_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_box = DealerGame.objects.filter(date=current_date,dealer=dealer_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_single = DealerGame.objects.filter(date=current_date,dealer__agent=agent_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_double = DealerGame.objects.filter(date=current_date,dealer__agent=agent_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    super_totals = {
+        'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
+        'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
+        }
+    box_totals = {
+        'total_count': (agent_box['total_count'] or 0) + (dealer_box['total_count'] or 0),
+        'total_amount': (agent_box['total_amount'] or 0) + (dealer_box['total_amount'] or 0)
+        }
+    single_totals = {
+        'total_count': (agent_single['total_count'] or 0) + (dealer_single['total_count'] or 0),
+        'total_amount': (agent_single['total_amount'] or 0) + (dealer_single['total_amount'] or 0)
+        }
+    double_totals = {
+        'total_count': (agent_double['total_count'] or 0) + (dealer_double['total_count'] or 0),
+        'total_amount': (agent_double['total_amount'] or 0) + (dealer_double['total_amount'] or 0)
+        }
+    totals = {
+        'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+        'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+    }
+    if request.method == 'POST':
+        select_dealer = request.POST.get('select-agent')
+        print(select_dealer)
+        select_time = request.POST.get('time')
+        print(select_time)
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        if select_dealer != 'all':
+            if select_dealer == str(agent_obj.user):
+                if select_time != 'all':
+                    agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    print(agent_super)
+                    super_totals = {
+                        'total_count': (agent_super['total_count'] or 0),
+                        'total_amount': (agent_super['total_amount'] or 0)
+                        }
+                    box_totals = {
+                        'total_count': (agent_box['total_count'] or 0),
+                        'total_amount': (agent_box['total_amount'] or 0)
+                        }
+                    single_totals = {
+                        'total_count': (agent_single['total_count'] or 0),
+                        'total_amount': (agent_single['total_amount'] or 0)
+                        }
+                    double_totals = {
+                        'total_count': (agent_double['total_count'] or 0),
+                        'total_amount': (agent_double['total_amount'] or 0)
+                        }
+                    totals = {
+                        'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                        'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                    }
+                    context = {
+                        'times' : times,
+                        'dealers' : dealers,
+                        'super_totals' : super_totals,
+                        'box_totals' : box_totals,
+                        'double_totals': double_totals,
+                        'single_totals' : single_totals,
+                        'selected_time' : select_time,
+                        'selected_dealer' : select_dealer,
+                        'totals' : totals
+                    }
+                    return render(request,'agent/count_salereport.html',context)
+                else:
+                    agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    print(agent_super)
+                    print(agent_box)
+                    print(agent_single)
+                    print(agent_double)
+                    super_totals = {
+                        'total_count': (agent_super['total_count'] or 0),
+                        'total_amount': (agent_super['total_amount'] or 0)
+                        }
+                    box_totals = {
+                        'total_count': (agent_box['total_count'] or 0),
+                        'total_amount': (agent_box['total_amount'] or 0)
+                        }
+                    single_totals = {
+                        'total_count': (agent_single['total_count'] or 0),
+                        'total_amount': (agent_single['total_amount'] or 0)
+                        }
+                    double_totals = {
+                        'total_count': (agent_double['total_count'] or 0),
+                        'total_amount': (agent_double['total_amount'] or 0)
+                        }
+                    totals = {
+                        'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                        'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                    }
+                    context = {
+                        'times' : times,
+                        'dealers' : dealers,
+                        'super_totals' : super_totals,
+                        'box_totals' : box_totals,
+                        'double_totals': double_totals,
+                        'single_totals' : single_totals,
+                        'selected_time' : 'all',
+                        'selected_dealer' : select_dealer,
+                        'totals' : totals
+                    }
+                    return render(request,'agent/count_salereport.html',context)
+            else:
+                if select_time != 'all':
+                    agent_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    super_totals = {
+                        'total_count': (agent_super['total_count'] or 0),
+                        'total_amount': (agent_super['total_amount'] or 0)
+                        }
+                    box_totals = {
+                        'total_count': (agent_box['total_count'] or 0),
+                        'total_amount': (agent_box['total_amount'] or 0)
+                        }
+                    single_totals = {
+                        'total_count': (agent_single['total_count'] or 0),
+                        'total_amount': (agent_single['total_amount'] or 0)
+                        }
+                    double_totals = {
+                        'total_count': (agent_double['total_count'] or 0),
+                        'total_amount': (agent_double['total_amount'] or 0)
+                        }
+                    totals = {
+                        'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                        'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                    }
+                    context = {
+                        'times' : times,
+                        'dealers' : dealers,
+                        'super_totals' : super_totals,
+                        'box_totals' : box_totals,
+                        'double_totals': double_totals,
+                        'single_totals' : single_totals,
+                        'selected_time' : select_time,
+                        'selected_dealer' : select_dealer,
+                        'totals' : totals
+                    }
+                    return render(request,'agent/count_salereport.html',context)
+                else:
+                    agent_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    agent_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                    super_totals = {
+                        'total_count': (agent_super['total_count'] or 0),
+                        'total_amount': (agent_super['total_amount'] or 0)
+                        }
+                    box_totals = {
+                        'total_count': (agent_box['total_count'] or 0),
+                        'total_amount': (agent_box['total_amount'] or 0)
+                        }
+                    single_totals = {
+                        'total_count': (agent_single['total_count'] or 0),
+                        'total_amount': (agent_single['total_amount'] or 0)
+                        }
+                    double_totals = {
+                        'total_count': (agent_double['total_count'] or 0),
+                        'total_amount': (agent_double['total_amount'] or 0)
+                        }
+                    totals = {
+                        'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                        'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                    }
+                    context = {
+                        'times' : times,
+                        'dealers' : dealers,
+                        'super_totals' : super_totals,
+                        'box_totals' : box_totals,
+                        'double_totals': double_totals,
+                        'single_totals' : single_totals,
+                        'selected_time' : 'all',
+                        'selected_dealer' : select_dealer,
+                        'totals' : totals
+                    }
+                    return render(request,'agent/count_salereport.html',context)
+        else:
+            if select_time != 'all':
+                agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                super_totals = {
+                    'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
+                    'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
+                    }
+                box_totals = {
+                    'total_count': (agent_box['total_count'] or 0) + (dealer_box['total_count'] or 0),
+                    'total_amount': (agent_box['total_amount'] or 0) + (dealer_box['total_amount'] or 0)
+                    }
+                single_totals = {
+                    'total_count': (agent_single['total_count'] or 0) + (dealer_single['total_count'] or 0),
+                    'total_amount': (agent_single['total_amount'] or 0) + (dealer_single['total_amount'] or 0)
+                    }
+                double_totals = {
+                    'total_count': (agent_double['total_count'] or 0) + (dealer_double['total_count'] or 0),
+                    'total_amount': (agent_double['total_amount'] or 0) + (dealer_double['total_amount'] or 0)
+                    }
+                totals = {
+                    'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                    'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                }
+                context = {
+                    'times' : times,
+                    'dealers' : dealers,
+                    'super_totals' : super_totals,
+                    'box_totals' : box_totals,
+                    'double_totals': double_totals,
+                    'single_totals' : single_totals,
+                    'selected_time' : select_time,
+                    'selected_dealer' : 'all',
+                    'totals' : totals
+                }
+                return render(request,'agent/count_salereport.html',context)
+            else:
+                agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                super_totals = {
+                    'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
+                    'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
+                    }
+                box_totals = {
+                    'total_count': (agent_box['total_count'] or 0) + (dealer_box['total_count'] or 0),
+                    'total_amount': (agent_box['total_amount'] or 0) + (dealer_box['total_amount'] or 0)
+                    }
+                single_totals = {
+                    'total_count': (agent_single['total_count'] or 0) + (dealer_single['total_count'] or 0),
+                    'total_amount': (agent_single['total_amount'] or 0) + (dealer_single['total_amount'] or 0)
+                    }
+                double_totals = {
+                    'total_count': (agent_double['total_count'] or 0) + (dealer_double['total_count'] or 0),
+                    'total_amount': (agent_double['total_amount'] or 0) + (dealer_double['total_amount'] or 0)
+                    }
+                totals = {
+                    'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
+                    'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
+                }
+                context = {
+                    'times' : times,
+                    'dealers' : dealers,
+                    'super_totals' : super_totals,
+                    'box_totals' : box_totals,
+                    'double_totals': double_totals,
+                    'single_totals' : single_totals,
+                    'selected_time' : 'all',
+                    'selected_dealer' : 'all',
+                    'totals' : totals
+                }
+                return render(request,'agent/count_salereport.html',context)
+    context = {
+        'times' : times,
+        'dealers' : dealers,
+        'super_totals' : super_totals,
+        'box_totals' : box_totals,
+        'double_totals': double_totals,
+        'single_totals' : single_totals,
+        'selected_time' : 'all',
+        'selected_dealer' : 'all',
+        'totals' : totals
+    }
+    return render(request,'agent/count_salereport.html',context) 
 
 def winning_countreport(request):
     return render(request,'dealer/winning_countreport.html') 
@@ -456,6 +759,7 @@ def save_data(request, id):
         dealer_game_records = []
         for test_record in dealer_game_test:
             dealer_game_record = DealerGame(
+                agent=dealer_obj.agent,
                 dealer=test_record.dealer,
                 time=test_record.time,
                 date=test_record.date,

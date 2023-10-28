@@ -114,8 +114,8 @@
                                             <tr>
                                                 <td>{{ bill.date }}</td>
                                                 <td>{{ bill.user }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
-                                                <td>{{ bill.total_count }}</td>
+                                                <td>{{ bill.total_c_amount }}</td>
+                                                <td>{{ bill.win_amount }}</td>
                                                 <td>{{ bill.total_d_amount }}</td>
                                             </tr>
                                         {% endfor %}
@@ -142,9 +142,9 @@
             </thead>
             <tbody>
                 <tr>
-                    <td class="td">{{totals.total_count}}</td>
-                    <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
-                    <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+                    <td class="td">{{total_c_amount.total_c_amount|floatformat:2}}</td>
+                    <td class="td">{{total_winning|floatformat:2 }}</td>
+                    <td class="td">{{total_balance|floatformat:2 }}</td>
                 </tr>
             </tbody>
         </table>

@@ -19,6 +19,7 @@ from django.db.models import Q
 import itertools
 from django.db.models import F
 
+
 # Create your views here.
 
 @admin_required
@@ -593,6 +594,8 @@ def change_game_time(request,id):
         set_time = PlayTime.objects.filter(id=id).update(start_time=start_time,end_time=end_time)
         return redirect('adminapp:change_time')
     return render(request,'adminapp/change_game_time.html')
+
+
 
 def monitor(request):
     return render(request,'adminapp/monitor.html')
@@ -1740,9 +1743,34 @@ def add_collection(request):
 
 def balance_report(request):
     agents = Agent.objects.filter().all()
+    collection = CollectionReport.objects.filter().all()
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    report_data = []
+    for agent in agents:
+        agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
+        dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
+        collection = CollectionReport.objects.filter(date=current_date, agent=agent)
+        agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('d_amount'))['agent_total_d_amount'] or 0
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
+        total_d_amount = agent_total_d_amount + dealer_total_d_amount
+        from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        total_collection_amount = from_agent - to_agent
+        balance = float(total_d_amount) - float(total_collection_amount)
+        print(f"Agent: {agent}, Total D Amount: {total_d_amount}")
+        if total_d_amount > 0:
+            report_data.append({
+                'date' : current_date,
+                'agent': agent,
+                'total_d_amount': total_d_amount,
+                'from_or_to' : total_collection_amount,
+                'balance' : balance
+            })
     context = {
         'agents' : agents,
-        'selected_agent' : 'all'
+        'selected_agent' : 'all',
+        'report_data': report_data,
     }
     return render(request, 'adminapp/balance_report.html',context)
 
@@ -1770,4 +1798,9 @@ def get_combinations(input_number):
                         result.append(combination)
     
     return result
+
+
+
+
+
 

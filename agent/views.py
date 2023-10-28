@@ -1406,8 +1406,6 @@ def delete_row(request,id,bill_id):
     row_delete.delete()
     return redirect('agent:delete_bill',id=bill_id)
 
-
-
 def play_game(request,id):
     agent_package = []
     time = PlayTime.objects.get(id=id)

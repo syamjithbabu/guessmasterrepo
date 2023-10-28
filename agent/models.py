@@ -78,6 +78,7 @@ class Bill(models.Model):
     total_c_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_d_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_count = models.DecimalField(max_digits=10, decimal_places=0)
+    win_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
 
     def __str__(self):
         return f'Bill for {self.user} on {self.date}'
