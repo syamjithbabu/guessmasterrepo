@@ -78,7 +78,7 @@
                                                     name="select-agent" id="agent">
                                                     <option value="all">All Agents</option>
                                                     {% for agent in agents %}
-                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
+                                                    <option value="{{agent.id}}">{{agent.user}}</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
@@ -113,7 +113,7 @@
                                                 {% for data in report_data %}
                                                 <tr>
                                                     <td class="td2">{{data.date}}</td>
-                                                    <td class="td3">{{data.agent}}</td>
+                                                    <td class="td3">{{data.agent.user}}</td>
                                                     <td class="td2">{{data.total_d_amount}}</td>
                                                     <td class="td3">{{data.from_or_to}}</td>   
                                                     <td class="td2">{{data.balance}}</td>                                              
@@ -147,13 +147,24 @@
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{profit_or_loss}}</td>
+                <td class="td1">{{total_balance}}</td>
             </tr>
         </tbody>
     </table>
 </nav>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#expand-button").change(function() {
+            if (this.checked) {
+                $(".expand-row").show(); // Show the row when the checkbox is checked
+            } else {
+                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+            }
+        });
+    });
+</script>
 
 <script>
     // Get the current date in the format "YYYY-MM-DD"

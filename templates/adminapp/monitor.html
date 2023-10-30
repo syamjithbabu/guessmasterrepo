@@ -2,586 +2,292 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .expand-row{
+        background-color: rgb(46, 206, 255);
+    }
+</style>
 
+<style>
+    .table-cell {
+        border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
+        text-align: center;
+}
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    th, td{
+        text-align: center;
+    }
+</style>
 
 <div id="main-content">
+    <a href="{% url 'adminapp:set_monitor' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Monitor</h2>
+                <div class="col-lg-5 col-md-8 col-sm-12">
+                    
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Monitor</li>
+                        <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>
+                        <li class="breadcrumb-item active">Monitor</li>
+                        
                     </ul>
-                </div>            
-             
+                </div>
+
             </div>
         </div>
-       <div class="row clearfix">
-            <div class="col-lg-12 col-md-12">
+
+        <div class="row clearfix">
+            <div class="col-md-12">
                 <div class="card">
-                   
-                   
-                        <ul class="nav nav-tabs-new2">
-                            <li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#Home-new2">Set Monitor </a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Profile-new2">All</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new3">1</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new4">2</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Contact-new5">3</a></li>
 
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane show active" id="Home-new2">
-                                <div class="card">
-                                    
-                                    
-                                        <div class="row clearfix">
-                                            <div class="col-lg-12">
-                                                <div class="card">
-                                                   
-                                                        <table id="mainTable" class="table table-hover">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Ticket</th>
-                                                                    <th>Rate</th>
-                                                                   
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td>SUPER</td>
-                                                                    <td contenteditable="true" name="first_prize" style="position: relative;">
-                                                                        <input type="number" value="5000" required  step="0.01" name="first_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="first_dc" style="position: relative;">
-                                                                        <input type="number" value="400" required  step="0.01" name="first_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>BOX</td>
-                                                                    <td contenteditable="true" name="second_prize" style="position: relative;">
-                                                                        <input type="number" value="500" required  step="0.01" name="second_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="second_dc" style="position: relative;">
-                                                                        <input type="number" value="50" required  step="0.01" name="second_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>AB</td>
-                                                                    <td contenteditable="true" name="third_prize" style="position: relative;">
-                                                                        <input type="number" value="250" required  step="0.01" name="third_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="third_dc" style="position: relative;">
-                                                                        <input type="number" value="30" required  step="0.01" name="third_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>BC</td>
-                                                                    <td contenteditable="true" name="fourth_prize" style="position: relative;">
-                                                                        <input type="number" value="100" required  step="0.01" name="fourth_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="fourth_dc" style="position: relative;">
-                                                                        <input type="number" value="20" required  step="0.01" name="fourth_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>AC</td>
-                                                                    <td contenteditable="true" name="fifth_prize" style="position: relative;">
-                                                                        <input type="number" value="50" required  step="0.01" name="fifth_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="fifth_dc" style="position: relative;">
-                                                                        <input type="number" value="10" required  step="0.01" name="fifth_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>A</td>
-                                                                    <td contenteditable="true" name="guarantee_prize" style="position: relative;">
-                                                                        <input type="number" value="20" required  step="0.01" name="guarantee_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="guarantee_dc" style="position: relative;">
-                                                                        <input type="number" value="0" required  step="0.01" name="guarantee_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>B</td>
-                                                                    <td contenteditable="true" name="box_first_prize" style="position: relative;">
-                                                                        <input type="number" value="3000" required  step="0.01" name="box_first_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="box_first_prize_dc" style="position: relative;">
-                                                                        <input type="number" value="250" required  step="0.01" name="box_first_prize_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>C</td>
-                                                                    <td contenteditable="true" name="box_series_prize" style="position: relative;">
-                                                                        <input type="number" value="800" required  step="0.01" name="box_series_prize" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                    <td contenteditable="true" name="box_series_dc" style="position: relative;">
-                                                                        <input type="number" value="50" required  step="0.01" name="box_series_dc" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent;">
-                                                                    </td>
-                                                                </tr>
-                                                              
-                                                            </tbody>
-                                                        </table>
-                                                        <button  type="submit" class="btn btn-primary">submit</button>
-                                                   
-                                                </div>
-                                            </div>
-                                        </div>
+                    <div class="body">
+                        
+                        <form method="POST">
+                            {% csrf_token %}
+                            <ul class="nav nav-tabs-new2">
+
+                                <div class="col-12">
+                                    <label class="fancy-radio"><input id="all" name="radio" type="radio" checked><span><i></i>ALL</span></label>
+                                    <label class="fancy-radio"><input id="one" name="radio" type="radio"><span><i></i>1</span></label>
+                                    <label class="fancy-radio"><input id="two" name="radio" type="radio"><span><i></i>2</span></label>
+                                    <label class="fancy-radio"><input id="three" name="radio" type="radio"><span><i></i>3</span></label>
+                                </div>
                                 
-                                  
+                                <div class="col-12" id="for-one" style="display: none;">
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>A</span>
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>B</span>
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>C</span>
                                 </div>
-                            </div>
-                            
-                            <div class="tab-pane" id="Profile-new2">
-                               
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                        
-                                       
-                                            <div class="row clearfix">
-                                                 <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <div class="body search">
-                                                            <div class="input-group ">
-                                                                <div class="input-group-prepend">
-                                                                    <span class="input-group-text"><i class="icon-magnifier"></i></span>
-                                                                </div>
-                                                                <input type="text" class="form-control" placeholder="Search...">                                    
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
-                                             
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Sort Customer</label>
-                                                        <div class="mb-3">
-                                                            
-                                                            <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                                <option></option>
-                                                                <option>1</option>
-                                                                <option>2</option>
-                                                                <option>3</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="ssn" class="control-label">SSN</label>
-                                                        <br><button type="button" class="btn btn-primary">GO</button>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> Hide Zero content</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-                                        
-                                        
-                                            <div class="table-responsive">
-                                                <table class="table m-b-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Customer</th>
-                                                            <th>Ticket name</th>
-                                                            <th>No</th>
-                                                            <th> Count</th>
-                                                            <th>Limit</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>1</td>
-                                                            <td><span>John</span></td>
-                                                            <td><span class="text-info">Bowman </span></td>
-                                                            <td>2017</td>
-                                                            <td>1</td>
-                                                            <td>6 </td>
-                                                        </tr>
-
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                       
-                                  
-                                    
+                                
+                                <div class="col-12" id="for-two" style="display: none;">
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>AB</span>
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>BC</span>
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>AC</span>
                                 </div>
-                            </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new3">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                      
-                                            <div class="row clearfix">
-                                             
-                                              
-
-
-                                                           
-                                             
-                                               
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                                <div class="form-group">
-                                                    <label for="tax-id" class="control-label">Sort Customer</label>
-                                                    <div class="mb-3">
-                                                        
-                                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                            <option></option>
-                                                            <option>1</option>
-                                                            <option>2</option>
-                                                            <option>3</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="ssn" class="control-label">SSN</label>
-                                                        <br><button type="button" class="btn btn-primary">GO</button>
-                                                       
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-                                            <div class="row clearfix">
-                                                <div class="col-lg-6 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> Hide Zero content</span>
-                                                       
-                                                    </div>
-                                                   </div>
-                                               
-                                    
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> A</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i>B</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> C</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                
-                                                
-                                           </div>
-                                        
-                                        
-                                            
-                                            <div class="table-responsive">
-                                                <!-- <table class="table m-b-0"> -->
-                                                    <table class="table  able m-b-0table-bordered table-striped table-hover dataTable js-exportable">
-                                                        <thead>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Customer</th>
-                                                            <th>Ticket</th>
-                                                            <th>No</th>
-                                                            <th> Count</th>
-                                                            <th>Limit</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>1</td>
-                                                            <td><span>Anu</span></td>
-                                                            <td><span class="text-info">Bowman </span></td>
-                                                            <td>2017</td>
-                                                            <td>1</td>
-                                                            <td>6 </td>
-                                                        </tr>
-                                                        
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                       
-                                  
-                                    
+                                
+                                <div class="col-12" id="for-three" style="display: none;">
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>Super</span>
+                                    <input type="checkbox" name="checkbox2" id="">
+                                    <span>Box</span>
                                 </div>
-                            </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new4">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                      
-                                            <div class="row clearfix">
-                                             
-                                              
 
-
-                                                           
-                                             
-                                               
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                                <div class="form-group">
-                                                    <label for="tax-id" class="control-label">Sort Customer</label>
-                                                    <div class="mb-3">
-                                                        
-                                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                            <option></option>
-                                                            <option>1</option>
-                                                            <option>2</option>
-                                                            <option>3</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="ssn" class="control-label">SSN</label>
-                                                        <br><button type="button" class="btn btn-primary">GO</button>
-                                                       
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-                                            <div class="row clearfix">
-                                                <div class="col-lg-6 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> Hide Zero content</span>
-                                                       
-                                                    </div>
-                                                   </div>
-                                               
-                                    
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> A</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i>B</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> C</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                
-                                                
-                                           </div>
-                                        
-                                        
-                                            
-                                            <div class="table-responsive">
-                                                <!-- <table class="table m-b-0"> -->
-                                                    <table class="table  able m-b-0table-bordered table-striped table-hover dataTable js-exportable">
-                                                        <thead>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Customer</th>
-                                                            <th>Ticket</th>
-                                                            <th>No</th>
-                                                            <th> Count</th>
-                                                            <th>Limit</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>1</td>
-                                                            <td><span>John</span></td>
-                                                            <td><span class="text-info">Bowman </span></td>
-                                                            <td>2017</td>
-                                                            <td>1</td>
-                                                            <td>6 </td>
-                                                        </tr>
-                                                        
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                       
-                                  
-                                    
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="from-date" name="from-date">
+                                    </div>
                                 </div>
-                            </div>
-                            </div>
-                            <div class="tab-pane" id="Contact-new5">
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                      
-                                            <div class="row clearfix">
-                                             
-                                              
-
-
-                                                           
-                                             
-                                               
-                                            <div class="col-lg-2 col-md-6 col-sm-12">
-                                                <div class="form-group">
-                                                    <label for="tax-id" class="control-label">Sort Customer</label>
-                                                    <div class="mb-3">
-                                                        
-                                                        <select class="form-control show-tick ms select2" data-placeholder="Select">
-                                                            <option></option>
-                                                            <option>1</option>
-                                                            <option>2</option>
-                                                            <option>3</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" value="2017-06-01" class="form-control">
-                                                    </div>        
-                                                </div>
-                                                
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="ssn" class="control-label">SSN</label>
-                                                        <br><button type="button" class="btn btn-primary">GO</button>
-                                                       
-                                                    </div>
-                                                </div>
-                                               
-                                            </div>
-                                            <div class="row clearfix">
-                                                <div class="col-lg-6 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> Hide Zero content</span>
-                                                       
-                                                    </div>
-                                                   </div>
-                                               
-                                    
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> A</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i>B</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label class="fancy-checkbox"  > </label>
-                                                            <input type="checkbox" name="checkbox">
-                                                            <span><i class=" m-r-5"></i> C</span>
-                                                       
-                                                    </div>
-                                                </div>
-                                                
-                                                
-                                           </div>
-                                        
-                                        
-                                            
-                                            <div class="table-responsive">
-                                                <!-- <table class="table m-b-0"> -->
-                                                    <table class="table  able m-b-0table-bordered table-striped table-hover dataTable js-exportable">
-                                                        <thead>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Customer</th>
-                                                            <th>Ticket</th>
-                                                            <th>No</th>
-                                                            <th> Count</th>
-                                                            <th>Limit</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>1</td>
-                                                            <td><span>syam</span></td>
-                                                            <td><span class="text-info">Bowman </span></td>
-                                                            <td>2017</td>
-                                                            <td>1</td>
-                                                            <td>6 </td>
-                                                        </tr>
-                                                        
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                       
-                                  
-                                    
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="search" placeholder="Search" name="serch">
+                                    </div>
                                 </div>
-                            </div>
-                            </div>
-                        </div>
-                   
+                                <label class="control-inline fancy-checkbox ml-auto">
+                                    <input type="checkbox" name="checkbox2" id="expand-button">
+                                    <span>Hide Zero Count</span>
+                                </label>
+                                <label class="control-inline fancy-checkbox ml-auto">
+                                    <input type="checkbox" name="checkbox2" id="expand-button">
+                                    <span>Sort Customer</span>
+                                </label>
+                                
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Go</button>
+                                    </div>
+                                </div>
+                                
+                            </ul>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="container-fluid">
+            <div class="row clearfix">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="body">
+                            <div class="table-responsive">
+                                <table class="table m-b-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Customer</th>
+                                            <th>LSK</th>
+                                            <th>No</th>
+                                            <th>Count</th>
+                                            <th>Limit</th>
+                                            <th>#</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for game in combined_games_list %}
+                                        <tr class="main-row">
+                                            {% if not game.combined %}
+                                                <td>{{ game.user }}</td>
+                                            {% else %}
+                                                <td>$</td>
+                                            {% endif %}
+                                            <td>{{ game.LSK }}</td>
+                                            <td>{{ game.number }}</td>
+                                            <td>{{ game.count }}</td>
+                                            <td>{{ game.remaining_limit }}</td>
+                                            {% if game.remaining_limit <= 0 %}
+                                            <td>#</td>
+                                            {% else %}
+                                            <td><a href="">clear</a></td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div  style="padding-top: 50px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-</div>  
 
 
 
+    <script>
+        function printcontent() {
 
-{% endblock %}
+            var divToPrint = document.getElementById("printcontent");
+            newWin = window.open("");
+            newWin.document.write(divToPrint.outerHTML);
+            newWin.document.close();
+            newWin.print();
+            //newWin.close();
+        }
 
+        document.querySelector("#button").addEventListener("click", function () {
+            printcontent();
+        });
+
+    </script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#expand-button").change(function() {
+            if (this.checked) {
+                $(".expand-row").show(); // Show the row when the checkbox is checked
+            } else {
+                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+            }
+        });
+    });
+</script>
+
+<script>
+    // Get the radio buttons
+    var allRadio = document.getElementById("all");
+    var oneRadio = document.getElementById("one");
+    var twoRadio = document.getElementById("two");
+    var threeRadio = document.getElementById("three");
+
+    // Get the div elements
+    var forOneDiv = document.getElementById("for-one");
+    var forTwoDiv = document.getElementById("for-two");
+    var forThreeDiv = document.getElementById("for-three");
+
+    // Add event listeners to the radio buttons
+    allRadio.addEventListener("change", function () {
+        forOneDiv.style.display = "none";
+        forTwoDiv.style.display = "none";
+        forThreeDiv.style.display = "none";
+    });
+
+    oneRadio.addEventListener("change", function () {
+        forOneDiv.style.display = "block";
+        forTwoDiv.style.display = "none";
+        forThreeDiv.style.display = "none";
+    });
+
+    twoRadio.addEventListener("change", function () {
+        forOneDiv.style.display = "none";
+        forTwoDiv.style.display = "block";
+        forThreeDiv.style.display = "none";
+    });
+
+    threeRadio.addEventListener("change", function () {
+        forOneDiv.style.display = "none";
+        forTwoDiv.style.display = "none";
+        forThreeDiv.style.display = "block";
+    });
+</script>
+
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+        var selectTime = document.getElementById("time");
+        var selectFrom = document.getElementById("from-date");
+        var selectTo = document.getElementById("to-date");
+        var radioInputs = document.getElementsByName("select-lsk");
+
+        // Set the selected value based on the selected_dealer variable
+        selectDealer.value = "{{ selected_dealer }}";
+        selectTime.value = "{{ selected_time }}";
+        selected_lsk = "{{ selected_lsk }}";
+        for (var i = 0; i < radioInputs.length; i++) {
+            if (radioInputs[i].value === selected_lsk) {
+                radioInputs[i].checked = true;
+                break; // Exit the loop once the correct radio input is found
+            }
+        }
+
+    });
+</script>
+
+
+    {% endblock %}

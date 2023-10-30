@@ -115,3 +115,29 @@ class CollectionReport(models.Model):
 
     def __str__(self):
         return str(self.agent)
+
+class Monitor(models.Model):
+    super = models.IntegerField(default=0)
+    box = models.IntegerField(default=0)
+    ab = models.IntegerField(default=0)
+    bc = models.IntegerField(default=0)
+    ac = models.IntegerField(default=0)
+    a = models.IntegerField(default=0)
+    b = models.IntegerField(default=0)
+    c = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)
+    
+class CombinedGame(models.Model):
+    date = models.DateField()
+    time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
+    LSK = models.CharField(max_length=100)
+    number = models.CharField(max_length=100)
+    count = models.IntegerField()
+    user = models.CharField(max_length=100)
+    remaining_limit = models.IntegerField(null=True, blank=True)
+    combined = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.LSK} - {self.number}"

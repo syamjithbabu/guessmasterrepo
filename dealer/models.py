@@ -28,6 +28,7 @@ class DealerGame(models.Model):
     count = models.IntegerField()
     d_amount = models.FloatField()
     c_amount = models.FloatField()
+    combined = models.BooleanField()
 
     def __str__(self):
         return str(self.dealer)

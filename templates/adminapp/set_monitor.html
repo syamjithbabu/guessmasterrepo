@@ -1,0 +1,182 @@
+{% extends 'adminapp/partials/base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+        background-color: rgb(221, 221, 221);
+    }
+    .td3{
+        text-align: center;
+        background-color: rgb(255, 255, 255);
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+
+</style>
+<div id="main-content">
+    <div class="container-fluid">
+        <div class="block-header">
+            <div class="row">
+                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item">Set Monitor</li>
+                    </ul>
+                </div> 
+            </div>
+        </div>
+
+        <div class="row clearfix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="body">
+                        <form method="POST">
+                            {% csrf_token %}
+                        <table id="mainTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>LSK</th>
+                                    <th>Limit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Super</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" required name="super" value="{{monitor.super}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>Box</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="box" value="{{monitor.box}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>AB</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="ab" value="{{monitor.ab}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>BC</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="bc" value="{{monitor.bc}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>AC</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="ac" value="{{monitor.ac}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>A</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="a" value="{{monitor.a}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="b" value="{{monitor.b}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td contenteditable="true" style="position: relative;">
+                                        <input type="number" class="auto-focus" name="c" value="{{monitor.c}}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                    </td>
+                                </tr>
+                                
+                            </tbody>
+                        </table>
+                        <button type="submit" class="btn btn-primary mb-3">Set</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+
+        </div>
+        
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#summary-button").change(function() {
+            if (this.checked) {
+                $(".summary-row").show(); // Show the row when the checkbox is checked
+                $(".not-summary").hide();
+            } else {
+                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".not-summary").show(); 
+            }
+        });
+    });
+</script>
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var selectTime = document.getElementById("time");
+        var selectAgent = document.getElementById("agent")
+        // Set the selected value based on the selected_dealer variable
+        selectTime.value = "{{ selected_time }}";
+        selectAgent.value = "{{ selected_agent }}"
+        
+
+    });
+</script>
+{% endblock %} 

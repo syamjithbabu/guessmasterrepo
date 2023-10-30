@@ -25,6 +25,7 @@ urlpatterns = [
     path('change-time',views.change_time,name="change_time"),
     path('change-game-time/<int:id>',views.change_game_time,name="change_game_time"),
     path('monitor',views.monitor,name="monitor"),
+    path('set-monitor',views.set_monitor,name="set_monitor"),
     path('dailyreport',views.daily_report,name="dailyreport"),
     path('countwise-report',views.countwise_report,name="countwise_report"),
     path('countsales-report',views.countsales_report,name="countsales_report"),
@@ -39,9 +40,6 @@ urlpatterns = [
     path('add-collection',views.add_collection,name="add_collection"),
     path('balance-report',views.balance_report,name="balance_report"),
 
-
-
-    
 
 
 ]

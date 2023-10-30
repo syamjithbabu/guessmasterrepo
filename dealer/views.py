@@ -5,7 +5,7 @@ import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
 from adminapp.models import PlayTime, Result, Winning
-from agent.models import DealerPackage,Bill
+from agent.models import DealerPackage,Bill,DealerCollectionReport
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
 from django.utils import timezone
@@ -49,11 +49,14 @@ def result(request):
     if request.method == 'POST':
         date = request.POST.get('date')
         time = request.POST.get('time')
-        results = Result.objects.filter(date=date,time=time).last()
+        if time != 'all':
+            
+            results = Result.objects.filter(date=date,time=time).last()
         context = {
             'times' : times,
             'results' : results,
             'selected_date' : date,
+            'selected_time' : time
         }
         return render(request,'dealer/results.html',context)
     context = {
@@ -97,16 +100,12 @@ def delete_bill(request,id):
     print(time_id,"time")
     date = bill.date
     print(date,"date")
-    if DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date):
-        games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
-    else:
-        print("error")
+    games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
     context = {
-        'bill' : bill,
-        'games' : games
-    }
-    return render(request,'dealer/delete_bill.html',context) 
-
+            'bill' : bill,
+            'games' : games
+        }
+    return render(request,'dealer/delete_bill.html',context)  
 
 def deleting_bill(request,id):
     bill = get_object_or_404(Bill,id=id)
@@ -361,25 +360,32 @@ def winning_report(request):
     else:
         try:
             matching_play_times = Winning.objects.filter().last()
-            winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date=current_date,time=matching_play_times.time)
-            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
-                total_count=Sum('count'),
-                total_commission=Sum('commission'),
-                total_prize=Sum('prize'),
-                total_net=Sum('total'),
-                agent=F('agent__agent_name'),
-                dealer=F('dealer__dealer_name'),
-                position=F('position'),
-            )
-            totals = Winning.objects.filter(dealer__user=dealer_obj.user.id,date=current_date,time=matching_play_times.time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            if matching_play_times:
+                winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date, time=matching_play_times.time)
+                aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+                    total_count=Sum('count'),
+                    total_commission=Sum('commission'),
+                    total_prize=Sum('prize'),
+                    total_net=Sum('total'),
+                    agent=F('agent__agent_name'),
+                    dealer=F('dealer__dealer_name'),
+                    position=F('position'),
+                )
+                totals = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date, time=matching_play_times.time).aggregate(total_count=Sum('count'), total_commission=Sum('commission'), total_rs=Sum('prize'), total_net=Sum('total'))
+            else:
+                winnings = []
+                aggregated_winnings = []
+                totals = {}
         except:
-            pass
+            winnings = []
+            aggregated_winnings = []
+            totals = {}
         context = {
             'times' : times,
             'winnings' : winnings,
             'totals' : totals,
             'aggr' : aggregated_winnings,
-            'selected_time' : matching_play_times.time.id,
+            'selected_time' : matching_play_times.time.id if matching_play_times else None,
         }
         return render(request,'dealer/winning_report.html',context) 
 
@@ -675,10 +681,111 @@ def count_salereport(request):
     return render(request,'agent/count_salereport.html',context) 
 
 def winning_countreport(request):
-    return render(request,'dealer/winning_countreport.html') 
+    dealer_obj = Dealer.objects.get(user=request.user)
+    times = PlayTime.objects.filter().all()
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    winnings = Winning.objects.filter(date=current_date).all()
+    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+    if request.method == 'POST':
+        select_time = request.POST.get('time')
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        if select_time != 'all':
+            winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time)
+            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+            context = {
+                'times' : times,
+                'winnings' : winnings,
+                'totals' : totals,
+                'selected_time' : select_time,
+                'selected_from' : from_date,
+                'selected_to' : to_date
+            }
+            return render(request,'dealer/winning_countreport.html',context)
+        else:
+            winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date])
+            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+            context = {
+                'times' : times,
+                'winnings' : winnings,
+                'totals' : totals,
+                'selected_time' : select_time,
+                'selected_from' : from_date,
+                'selected_to' : to_date
+            }
+            return render(request,'dealer/winning_countreport.html',context)
+    context = {
+        'times' : times,
+        'winnings' : winnings,
+        'totals' : totals,
+        'selected_agent' : 'all',
+        'selected_time' : 'all'
+    }
+    return render(request,'dealer/winning_countreport.html',context) 
 
 def balance_report(request):
-    return render(request,'dealer/balance_report.html') 
+    dealer_obj = Dealer.objects.get(user=request.user)
+    collection = DealerCollectionReport.objects.filter().all()
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    report_data = []
+    total_balance = []
+    if request.method == 'POST':
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], dealer=dealer_obj)
+        print(dealer_games)
+        collection = DealerCollectionReport.objects.filter(date__range=[from_date, to_date], dealer=dealer_obj)
+        print(collection)
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
+        total_d_amount = dealer_total_d_amount
+        from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        total_collection_amount = from_agent - to_agent
+        balance = float(total_collection_amount) - float(total_d_amount)
+        if total_d_amount > 0:
+            report_data.append({
+                'date' : current_date,
+                'total_d_amount': total_d_amount,
+                'from_or_to' : total_collection_amount,
+                'balance' : balance
+            })
+        total_balance = sum(entry['balance'] for entry in report_data)
+        context = {
+            'selected_agent' : 'all',
+            'report_data': report_data,
+            'total_balance' : total_balance,
+            'selected_from' : from_date,
+            'selected_to' : to_date
+        }
+    else:
+        pass
+    dealer_games = DealerGame.objects.filter(date=current_date, dealer=dealer_obj)
+    print(dealer_games)
+    collection = DealerCollectionReport.objects.filter(date=current_date, dealer=dealer_obj)
+    print(collection)
+    dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
+    total_d_amount = dealer_total_d_amount
+    from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    total_collection_amount = from_agent - to_agent
+    balance = float(total_collection_amount) - float(total_d_amount)
+    if total_d_amount > 0:
+        report_data.append({
+            'date' : current_date,
+            'total_d_amount': total_d_amount,
+            'from_or_to' : total_collection_amount,
+            'balance' : balance
+        })
+    total_balance = sum(entry['balance'] for entry in report_data)
+    context = {
+        'selected_agent' : 'all',
+        'report_data': report_data,
+        'total_balance' : total_balance
+    }
+    return render(request, 'dealer/balance_report.html',context)
 
 def play_game(request,id):
     dealer_package = []
@@ -767,7 +874,8 @@ def save_data(request, id):
                 number=test_record.number,
                 count=test_record.count,
                 d_amount=test_record.d_amount,
-                c_amount=test_record.c_amount
+                c_amount=test_record.c_amount,
+                combined=False
             )
             dealer_game_records.append(dealer_game_record)
 

@@ -1,4 +1,4 @@
-{% extends 'agent/partials/base.html' %}
+{% extends 'adminapp/partials/base.html' %}
 {% load static %}
 {% block content %}
 
@@ -70,9 +70,8 @@
                                     <div class="form-group">
                                         <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="agent">
                                             <option value="all">All</option>
-                                            <option value="{{ request.user }}">Myself</option>
-                                            {% for dealer in dealers %}
-                                            <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
+                                            {% for agent in agents %}
+                                            <option value="{{ agent.id }}">{{agent.user}}</option>
                                             {% endfor %}
                                          </select>
                                     </div>
@@ -123,7 +122,11 @@
                                         {% for bill in dealer_bills %}
                                             <tr>
                                                 <td>{{ bill.date }}</td>
-                                                <td>{{ bill.user }}</td>
+                                                {% if bill.user.agent %}
+                                                    <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
+                                                {% else %}
+                                                    <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
+                                                {% endif %}
                                                 <td>{{ bill.total_c_amount }}</td>
                                                 <td>{{ bill.win_amount }}</td>
                                                 <td>{{ bill.total_d_amount }}</td>
