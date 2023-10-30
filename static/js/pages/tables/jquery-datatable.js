@@ -1,3 +1,6 @@
+
+
+
 $(function () {
     $('.js-basic-example').DataTable();
 
@@ -5,7 +8,7 @@ $(function () {
     $('.js-exportable').DataTable({
         dom: 'Bfrtip',
         buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
+            'pdf', 'print'
         ]
     });
 });

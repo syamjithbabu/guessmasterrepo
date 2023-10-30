@@ -19,6 +19,7 @@ from django.db.models import Q
 import itertools
 from django.db.models import F
 from collections import defaultdict
+from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
 # Create your views here.
@@ -2026,7 +2027,17 @@ def balance_report(request):
     return render(request, 'adminapp/balance_report.html',context)
 
 def change_password(request):
-    return render(request,'adminapp/change_password.html')
+    if request.method == "POST":
+        form = AdminPasswordChangeForm(user=request.user,data=request.POST)
+        if form.is_valid():
+            form.save()
+            print("password changed")
+            messages.success(request,"your password changed")
+            return redirect("website:login")
+    else:
+
+        form= AdminPasswordChangeForm(user=request.user)
+    return render(request,'adminapp/change_password.html',{'form':form})
 
 def settings(request):
     return render(request,'adminapp/settings.html')

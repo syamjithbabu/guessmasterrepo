@@ -3,20 +3,13 @@
 {% block content %}
 
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-  
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-
-
 <style>
-
-
     .navbar-bottom {
         position: fixed;
         bottom: 0;
         width: 100%;
         height: 55px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         background-color: #ffffff;
         overflow-x: auto;
         justify-content: space-evenly;
@@ -24,182 +17,279 @@
         flex-direction: column;
     }
 
-    .th{
+    .th {
         text-align: center;
     }
 
-    .td2{
+    .td2 {
         text-align: center;
         background-color: rgb(221, 221, 221);
     }
-    .td3{
+
+    .td3 {
         text-align: center;
         background-color: rgb(255, 255, 255);
     }
-    .th1, .td1{
+
+    .th1,
+    .td1 {
         text-align: center;
+    }
+
+    @media screen {
+        #total {
+            display: none !important;
+        }
+
+        #dateprint {
+            display: none;
+        }
     }
 
 
 
-    
+    @media print {
+
+        #header,
+        #left-sidebar,
+        .navbar-toggler,
+        .a,
+        .serch,
+        .header,
+        .button,
+        #printbutton {
+            display: none !important;
+            content: none !important;
+        }
+
+        .page-titles,
+        h1,
+        h2,
+        h3 {
+            display: none;
+
+        }
+
+        .page-wrapper>.content {
+            padding: 0 !important;
+            padding-left: 0%;
+            padding-right: 0%;
+        }
+
+        .page-wrapper {
+            padding-top: 0%;
+        }
+
+        #table {
+            table-layout: fixed;
+            size: 36cm;
+            width: 142%;
+            margin-top: 5cm;
+            margin-left: 0cm;
+            margin-right: 0cm;
+
+        }
+
+        #dateprint {
+            display: block;
+        }
+
+        #total {
+            display: block;
+        }
+
+        .page-main-content {
+            padding-top: 0px;
+        }
+
+        .navbar-bottom {
+            display: none;
+        }
 
 
+    }
 </style>
-<div id="main-content" >
-    <div class="container-fluid">
+
+
+
+
+<div id="main-content">
+    <div class="container-fluid" id="content">
         <div class="block-header">
-            <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
+            <div class="row header">
+                <div class="col-lg-5 col-md-8 col-sm-12">
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
+                        </li>
                         <li class="breadcrumb-item">Count Sales Report</li>
                     </ul>
-                </div> 
+                </div>
             </div>
         </div>
 
-        <div class="row clearfix" style="padding-bottom: 50px;">
+        <div class="row clearfix " style="padding-bottom: 50px;">
             <form method="POST">
                 {% csrf_token %}
-            <div class="col-lg-12 col-md-12 col-sm-12" class="t">
-                <div class="card">
-                    <div class="body">
-                        <div class="col-lg-12">
-                            <div class="card">
-                                
-                                <div class="body">
-                                    <div class="row clearfix">
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <input type="date" class="form-control" id="from-date" name="from-date">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <input type="date" class="form-control" id="to-date" name="to-date">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="select-agent" id="agent">
-                                                    <option value="all">All Agents</option>
-                                                    {% for agent in agents %}
-                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="time" id="time">
-                                                    <option value="all">All Times</option>
-                                                    {% for time in times %}
-                                                    <option value="{{time.id}}">{{time.game_time}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    <div class="col-md-6 col-6">
-                                        <div class="form-group">                                               
-                                                <button type="submit" class="btn btn-primary">Search</button>
-                                            </div>
-                                        </div>
-                                    
-                                    
+                <div class="col-lg-12 col-md-12 col-sm-12 ">
 
-                                     
 
-                                      
-                                      
+                    <div class="card serch">
+
+                        <div class="body">
+                            <div class="row clearfix">
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="from-date" name="from-date">
                                     </div>
-                                   
-                                 </div>
-                                
-                                <div class="body"  >
-                                    <div class="table-responsive">
-                                        <div class="col-lg-12">
-                                            <div class="card">
-                                             
-                                                <div class="body">
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered table-striped table-hover dataTable js-exportable">
-                                                        <thead>
-                                                        
-                                                            <tr>
-                                                                 <th class="th">Positon</th>
-                                                                 <th class="th">Count</th>
-                                                                 <th class="th">Amount</th>
-                                                                
-                                                                 
-                                                                
-                                                            </tr>
-                                                        </thead>
-                                                     
-                                                        <tbody>
-                                                           
-                                                           
-                                                            <tr>
-                                                                <td class="td2">Super</td>
-                                                                <td class="td3">{{super_totals.total_count}}</td>
-                                                                <td class="td2">{{super_totals.total_amount}}</td>                                                  
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="td2">Box</td>
-                                                                <td class="td3">{{box_totals.total_count}}</td>
-                                                                <td class="td2">{{box_totals.total_amount}}</td>                                                  
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="td2">Single</td>
-                                                                <td class="td3">{{single_totals.total_count}}</td>
-                                                                <td class="td2">{{single_totals.total_amount}}</td>                                                  
-                                                            </tr>
-                                                            <tr>
-                                                                <td class="td2">Double</td>
-                                                                <td class="td3">{{double_totals.total_count}}</td>
-                                                                <td class="td2">{{double_totals.total_amount}}</td>                                                  
-                                                            </tr>
-                                                            <tr style="display: none;">
-                                                                <td>total</td>
-                                                                <td class="td1">TOTAL COUNT  = {{totals.net_count}}</td>
-                                                                
-                                                                <td class="td1">TOTAL AMOUNT = {{totals.net_amount}}</td>
-                                                                
-                                                            </tr>
-                                                          
-                                                        
-                                                        </tbody>
-                                                    </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                
                                 </div>
-                                
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="to-date" name="to-date">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                            name="select-agent" id="agent">
+                                            <option value="all">All Agents</option>
+                                            {% for agent in agents %}
+                                            <option value="{{agent.user.id}}">{{agent.user}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                            name="time" id="time">
+                                            <option value="all">All Times</option>
+                                            {% for time in times %}
+                                            <option value="{{time.id}}">{{time.game_time}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6 col-6 text-right">
+                                    
+                                        <button type="submit" class="btn btn-primary">Search</button>
+                                    
+                                    
+                                        <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
+                                            type="submit">Print </button>
+                                    </div>
+                                </div>
+
                             </div>
-                           
                         </div>
+
+
                     </div>
+                </div>
+        </div>
+
+    </div>
+</div>
+</form>
+
+<div class="body body-content">
+    <div class="table-responsive">
+        <div class="col-lg-12 ">
+            <div class="card">
+
+                <div class="body main-table">
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped " id="table">
+
+                            <div class="col-lg-12 text-right" id="dateprint">
+                                <h6 id="demo2"></h6>
+                                <h6>Count Sales Report</h6>
+                                <h6 id="demo"></h6>
+                                <h6 id="demo1"></h6>
+
+                            </div>
+
+                            <thead>
+
+                                <tr>
+                                    <th class="th">Positon</th>
+                                    <th class="th">Count</th>
+                                    <th class="th">Amount</th>
+
+
+
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+
+                                <tr>
+                                    <td class="td2">Super</td>
+                                    <td class="td3">{{super_totals.total_count}}
+                                    </td>
+                                    <td class="td2">{{super_totals.total_amount}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="td2">Box</td>
+                                    <td class="td3">{{box_totals.total_count}}</td>
+                                    <td class="td2">{{box_totals.total_amount}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="td2">Single</td>
+                                    <td class="td3">{{single_totals.total_count}}
+                                    </td>
+                                    <td class="td2">{{single_totals.total_amount}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="td2">Double</td>
+                                    <td class="td3">{{double_totals.total_count}}
+                                    </td>
+                                    <td class="td2">{{double_totals.total_amount}}
+                                    </td>
+                                </tr>
+
+
+
+                            </tbody>
+                        </table>
+                        <div class="col-md-12 text-right" id="total">
+                            <h6>TOTAL COUNT : {{totals.net_count}}</h6>
+                            <h6>TOTAL AMOUNT : {{totals.net_amount}}</h6>
+
+                        </div>
+
                     </div>
                 </div>
             </div>
-        </form>
         </div>
-        
+
     </div>
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
 </div>
 
 <nav class="navbar-bottom">
     <table>
         <thead>
             <tr>
-                 <th class="th1">TOTAL COUNT</th>
-                 <th class="th1">TOTAL AMOUNT</th>
+                <th class="th1">TOTAL COUNT</th>
+                <th class="th1">TOTAL AMOUNT</th>
             </tr>
         </thead>
         <tbody>
@@ -211,16 +301,19 @@
     </table>
 </nav>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
 <script>
-    $(document).ready(function() {
-        $("#summary-button").change(function() {
+    $(document).ready(function () {
+        $("#summary-button").change(function () {
             if (this.checked) {
                 $(".summary-row").show(); // Show the row when the checkbox is checked
                 $(".not-summary").hide();
             } else {
                 $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
-                $(".not-summary").show(); 
+                $(".not-summary").show();
             }
         });
     });
@@ -256,16 +349,43 @@
         // Set the selected value based on the selected_dealer variable
         selectTime.value = "{{ selected_time }}";
         selectAgent.value = "{{ selected_agent }}"
-        
+
 
     });
+</script>
+
+
+<script>
+
+    // print table
+    function makeprint(table) {
+        window.print();
+    }
+
+
+    // get date
+
+    const x = document.getElementById("from-date");
+    const y = document.getElementById("to-date");
+    // const a = document.getElementById("agent");
+    let currentVal = x.value;
+    let currentValue = y.value;
+    // let agent = a.value;
+
+    document.getElementById("demo").innerHTML = "<br>From Date : " + currentVal;
+    document.getElementById("demo1").innerHTML = "<br>To Date: " + currentValue;
+    // document.getElementById("demo2").innerHTML = "<br>  " + agent;
+
+
+var selectElement = document.getElementById("agent");
+var selectedOption = selectElement.options[selectElement.selectedIndex];
+var selectedValueName = selectedOption.text;
+document.getElementById("demo2").innerHTML = "<br>name : " + selectedValueName;
+
 </script>
 
 
 
 
 
-
-
-
-{% endblock %} 
+{% endblock %}

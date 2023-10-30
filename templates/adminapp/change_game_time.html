@@ -19,11 +19,11 @@
                             <div class="col-lg-4 col-md-12">
                                 <label>Start Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time" name="start_time" class="form-control" value="{{ playtime.end_time }}">
+                                    <input type="time"    id="start_time"  name="start_time" class="form-control" value="{{ playtime.end_time }}">
                                 </div>
                                 <label>End Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time" name="end_time" class="form-control" value="{{ playtime.end_time }}">
+                                    <input type="time" name="end_time"  id="end_time" class="form-control" value="{{ playtime.end_time }}">
                                 </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Save</button>
@@ -37,5 +37,19 @@
         
 </div>
 
-    
+<script>
+    // Retrieve the time value from local storage if available
+    const storedTime = localStorage.getItem('time');
+    if (storedTime) {
+      document.getElementById('start_time').value = storedTime;
+      document.getElementById('end_time').value = storedTime;
+ 
+    }
+  
+    // Update the time value and store it in local storage when it changes
+    document.getElementById('timeField').addEventListener('change', function() {
+      const newTime = this.value;
+      localStorage.setItem('time', newTime);
+    });
+  </script>   
 {% endblock %}
