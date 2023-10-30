@@ -18,6 +18,7 @@ from django.db.models import Sum
 from django.db.models import Q
 import itertools
 from django.db.models import F
+from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
 # Create your views here.
@@ -955,7 +956,7 @@ def daily_report(request):
                             totals = {
                                 'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0),
                                 'total_c_amount': (totals_agent['total_c_amount'] or 0) + (totals_dealer['total_c_amount'] or 0),
-                                'total_d_amount': (totals_agent['total_d_amount'] or 0) + (totals_dealer['total_d_amount'] or 0)
+                                'total_djavascript_amount': (totals_agent['total_d_amount'] or 0) + (totals_dealer['total_d_amount'] or 0)
                             }
                         else:
                             totals = AgentGame.objects.filter(agent=agent_obj,date=current_date,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
@@ -1743,14 +1744,49 @@ def add_collection(request):
 
 def balance_report(request):
     agents = Agent.objects.filter().all()
+    collection = CollectionReport.objects.filter().all()
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    report_data = []
+    for agent in agents:
+        agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
+        dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
+        collection = CollectionReport.objects.filter(date=current_date, agent=agent)
+        agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('d_amount'))['agent_total_d_amount'] or 0
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
+        total_d_amount = agent_total_d_amount + dealer_total_d_amount
+        from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        total_collection_amount = from_agent - to_agent
+        balance = float(total_d_amount) - float(total_collection_amount)
+        print(f"Agent: {agent}, Total D Amount: {total_d_amount}")
+        if total_d_amount > 0:
+            report_data.append({
+                'date' : current_date,
+                'agent': agent,
+                'total_d_amount': total_d_amount,
+                'from_or_to' : total_collection_amount,
+                'balance' : balance
+            })
     context = {
         'agents' : agents,
-        'selected_agent' : 'all'
+        'selected_agent' : 'all',
+        'report_data': report_data,
     }
     return render(request, 'adminapp/balance_report.html',context)
 
 def change_password(request):
-    return render(request,'adminapp/change_password.html')
+    if request.method == "POST":
+        form = AdminPasswordChangeForm(user=request.user,data=request.POST)
+        if form.is_valid():
+            form.save()
+            print("password changed")
+            messages.success(request,"your password changed")
+            return redirect("website:login")
+    else:
+
+        form= AdminPasswordChangeForm(user=request.user)
+    return render(request,'adminapp/change_password.html',{'form':form})
 
 def settings(request):
     return render(request,'adminapp/settings.html')
