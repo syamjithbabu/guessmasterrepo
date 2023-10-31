@@ -17,13 +17,13 @@
                         <form method="POST">
                             {% csrf_token %}
                             <div class="col-lg-4 col-md-12">
-                                <label>Start Time</label>
+                                <label>Opening Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time"    id="start_time"  name="start_time" class="form-control" value="{{ playtime.end_time }}">
+                                    <input type="time" id="start_time"  name="start_time" class="form-control" value="{{ time.start_time|time:'H:i' }}">
                                 </div>
-                                <label>End Time</label>
+                                <label>Closing Time</label>
                                 <div class="input-group" data-date-autoclose="true">
-                                    <input type="time" name="end_time"  id="end_time" class="form-control" value="{{ playtime.end_time }}">
+                                    <input type="time" name="end_time"  id="end_time" class="form-control" value="{{ time.end_time|time:'H:i' }}">
                                 </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Save</button>

@@ -11,7 +11,7 @@
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
                     <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"></a>  <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Agents</li>
+                        <li class="breadcrumb-item">Limits</li>
                     </ul></h2>
                    
                 </div>            
@@ -33,15 +33,12 @@
                                 <span></span>
                             </label>
                         </th>
-                        <th>Agent Name</th>                                    
-                        <th>Phone</th> 
                         <th>Username</th>                                   
-                        <th>Package</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                     <tbody>
-                    {% for agent in agents %}
+                    {% for limit in limits %}
                     <tr>
                         <td style="width: 50px;">
                             <label class="fancy-checkbox">
@@ -50,31 +47,12 @@
                             </label>
                         </td>
                         <td>
-                            <p class="c_name">{{agent.agent_name}}</p>
-                        </td>
-                        <td>
-                            <span class="phone"><i class="zmdi zmdi-phone m-r-10"></i>{{agent.phone_number}}</span>
-                        </td> 
-                        <td>
-                            <p class="c_name">{{agent.user.username}}</p>
+                            <p class="c_name">{{limit.agent.user}}</p>
                         </td>                                
                         <td>
-                            <address><i class="zmdi zmdi-pin">{% for package in packages %}
-                                {% if package.agent == agent %}
-                                    {{ package.package_name }}
-                                {% endif %}
-                            {% endfor %}</i></address>
-                        </td>
-                        <td>
-                            {% if agent.user.is_active %}      
-                            <button  type="button" onclick="agentBan(('{{ agent.id }}'))" class="btn btn-warning" title="Ban"> <i class="fa fa-ban"></i></button>
-                            {% else %}
-                            <button  type="button" onclick="removeBan(('{{ agent.id }}'))" class="btn btn-warning" title="Remove Ban"> <i class="fa fa-check"></i></button>
-                            {% endif %}
-                            <a href="{% url 'adminapp:edit_agent' agent.id %}" class="btn btn-info" title="Edit">
+                            <a href="{% url 'adminapp:edit_limit' limit.id %}" class="btn btn-info" title="Edit">
                                 <i class="fa fa-edit"></i>
                             </a>
-                            <button type="button" onclick="agentDelete(('{{ agent.id }}'))" data-type="confirm" class="btn btn-danger js-sweetalert" title="Delete"><i class="fa fa-trash-o"></i></button>
                         </td>
                     </tr>
                     {% endfor %}

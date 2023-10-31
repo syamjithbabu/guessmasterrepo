@@ -393,17 +393,6 @@
         var result1 = (count * amounts[linkText]).toFixed(2);
         var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
 
-        newRow.innerHTML = `
-        <td>${linkText}</td>
-        <td>${number}</td>
-        <td>${count}</td>
-        <td>${result1}</td>
-        <td>${result2}</td>
-        <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-    `;
-
-        tableBody.appendChild(newRow);
-        updateTotal();
         sendDataToDjango(linkText, number, count, result1, result2);
     }
 
@@ -434,18 +423,6 @@
         var newRow = document.createElement("tr");
         var result1 = (count * amounts[linkText]).toFixed(2);
         var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-
-        newRow.innerHTML = `
-        <td>${linkText}</td>
-        <td>${number.toString().padStart(2, '0')}</td>
-        <td>${count}</td>
-        <td>${result1}</td>
-        <td>${result2}</td>
-        <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-    `;
-
-        tableBody.appendChild(newRow);
-        updateTotal();
         sendDataToDjango(linkText, number, count, result1, result2);
     }
 
@@ -516,16 +493,6 @@
             var allRow = document.createElement("tr");
             var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
             var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-            tableBody.appendChild(allRow);
-            updateTotal();
             sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
         })
     }
@@ -589,16 +556,6 @@
             var allRow = document.createElement("tr");
             var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
             var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            allRow.innerHTML = `
-                <td>${linkText}</td>
-                <td>${difference}</td> <!-- Display the combination in this cell -->
-                <td>${countConditional}</td>
-                <td>${allResult1}</td>
-                <td>${allResult2}</td>
-                <td><button type="button" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
-                `;
-            tableBody.appendChild(allRow);
-            updateTotal();
             sendDataToDjango(linkText,difference,countConditional,allResult1,allResult2)
         })
     }
@@ -934,6 +891,7 @@
 
             differences.forEach(function (difference) {
                 var allRow = document.createElement("tr");
+                var uniqueIdentifier = generateUniqueIdentifier();
                 var allResult1 = (countConditional * amounts[linkText]).toFixed(2);
                 var allResult2 = (countConditional * (amounts[linkText] + dcs[linkText])).toFixed(2);
                 sendDataToDjango(linkText, difference, countConditional, allResult1, allResult2);
@@ -957,11 +915,12 @@
                 document.getElementById("countInput").value = "";
                 return;
             }
+
             console.log("not R input")
             var newRow = document.createElement("tr")
+            var uniqueIdentifier = generateUniqueIdentifier();
             var result1 = (count * amounts[linkText]).toFixed(2);
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            tableBody.appendChild(newRow);
             sendDataToDjango(linkText, number, count, result1, result2);
         }
         document.getElementById("numberInput").value = "";

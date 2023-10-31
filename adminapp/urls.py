@@ -39,7 +39,8 @@ urlpatterns = [
     path('view-results',views.view_results,name="view_results"),
     path('add-collection',views.add_collection,name="add_collection"),
     path('balance-report',views.balance_report,name="balance_report"),
-
-
-
+    path('set-limit',views.set_limit,name="set_limit"),
+    path('view-limit',views.view_limits,name="view_limits"),
+    path('edit-limit/<int:id>',views.edit_limit,name="edit_limit"),
+    
 ]

@@ -7,7 +7,7 @@ from website.forms import AgentRegistration
 from website.models import User,Agent,Dealer
 from agent.models import AgentGame, DealerPackage
 from dealer.models import DealerGame
-from .models import PlayTime, AgentPackage, Result, Winning, CollectionReport, Monitor, CombinedGame
+from .models import PlayTime, AgentPackage, Result, Winning, CollectionReport, Monitor, CombinedGame, Limit
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from pytz import timezone as pytz_timezone
@@ -59,17 +59,49 @@ def add_agent(request):
             c.user = user
             c.save()
             messages.info(request, "Agent Created Successfully")
-            return redirect("adminapp:view_agent")
+            return redirect("adminapp:new_package")
     return render(request,'adminapp/add_agent.html',{"login_form": login_form, "agent_form": agent_form})
 
 def view_agent(request):
     agents = Agent.objects.filter().all()
-  
+    packages = AgentPackage.objects.filter().all()
     context = {
         'agents' : agents,
-       
+        'packages' : packages
     }
     return render(request,'adminapp/view_agent.html',context)
+
+def view_limits(request):
+    limits = Limit.objects.filter().all()
+    context = {
+        'limits' : limits
+    }
+    return render(request,'adminapp/view_limits.html',context)
+
+def edit_limit(request, id):
+    times = PlayTime.objects.all()
+    if request.method == 'POST':
+        limit = request.POST.get('limit')
+        selected_times = request.POST.getlist('checkbox')
+        selected_agent = request.POST.get('select-agent')
+
+        # Get the selected Limit object
+        limit_instance = Limit.objects.get(id=id)
+
+        # Update the daily_limit for the selected Limit
+        limit_instance.daily_limit = limit
+        limit_instance.save()
+
+        # Update the checked_times for the selected Limit
+        limit_instance.checked_times.set(selected_times)
+
+        return redirect('adminapp:index')
+
+    context = {
+        'times': times
+    }
+    return render(request, 'adminapp/edit_limit.html', context)
+
 
 def edit_agent(request,id):
     agent = get_object_or_404(Agent, id=id)
@@ -190,11 +222,32 @@ def new_package(request):
                         single1_dc=single1_dc,double2_prize=double2_prize,double2_dc=double2_dc)
             add_package.save()
             messages.info(request, "Package created successfully!")
-            return redirect('adminapp:package')
+            return redirect('adminapp:set_limit')
     context = {
         'agents' : agent
     }
     return render(request,'adminapp/new_package.html',context)
+
+def set_limit(request):
+    agents = Agent.objects.filter().all()
+    times = PlayTime.objects.filter().all()
+    if request.method == 'POST':
+        limit = request.POST.get('limit')
+        print(limit)
+        selected_times = request.POST.getlist('checkbox')
+        print(selected_times)
+        selected_agent = request.POST.get('select-agent')
+        agent_instance = Agent.objects.get(id=selected_agent)
+        print(selected_agent)
+        agent_checked_times = Limit(agent=agent_instance,daily_limit=limit)
+        agent_checked_times.save()
+        agent_checked_times.checked_times.add(*selected_times)
+        return redirect('adminapp:index')
+    context = {
+        'agents' : agents,
+        'times' : times
+    }
+    return render(request,'adminapp/set_limit.html',context)
 
 def edit_package(request,id):
     package = AgentPackage.objects.get(id=id)
@@ -816,8 +869,8 @@ def change_time(request):
 
 def change_game_time(request,id):
     time = get_object_or_404(PlayTime,id=id)
-
-    print(time)
+    print(time.start_time)
+    print(time.end_time)
     if request.method == 'POST':
         start_time = request.POST.get('start_time')
         print(start_time)
@@ -825,9 +878,7 @@ def change_game_time(request,id):
         print(end_time)
         set_time = PlayTime.objects.filter(id=id).update(start_time=start_time,end_time=end_time)
         return redirect('adminapp:change_time')
-    return render(request,'adminapp/change_game_time.html')
-
-
+    return render(request,'adminapp/change_game_time.html',{'time': time})
 
 def monitor(request):
     ist = pytz.timezone('Asia/Kolkata')
@@ -1685,7 +1736,7 @@ def winning_report(request):
             'winnings' : winnings,
             'totals' : totals,
             'aggr' : aggregated_winnings,
-            'selected_time' : matching_play_times.time.id,
+            'selected_time' : 'all',
             'selected_agent' : 'all'
         }
         return render(request,'adminapp/winning_report.html',context) 

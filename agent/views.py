@@ -29,7 +29,11 @@ def index(request):
     ist = pytz_timezone('Asia/Kolkata')
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
-    play_times = PlayTime.objects.filter().all()
+    agent_obj = Agent.objects.get(user=request.user)
+    if PlayTime.objects.filter(limit__agent=agent_obj).all():
+        play_times = PlayTime.objects.filter(limit__agent=agent_obj).all()
+    else:
+        play_times = PlayTime.objects.filter().all()
     play_time_availabilities = []
     for time in play_times:
         if time.start_time <= current_time <= time.end_time:

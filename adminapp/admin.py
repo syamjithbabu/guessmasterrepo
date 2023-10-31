@@ -1,5 +1,5 @@
 from django.contrib import admin
-from adminapp.models import PlayTime, AgentPackage, Result, Winning, CollectionReport, Monitor, CombinedGame
+from adminapp.models import PlayTime, AgentPackage, Result, Winning, CollectionReport, Monitor, CombinedGame, Limit
 
 # Register your models here.
 
@@ -10,3 +10,4 @@ admin.site.register(Winning)
 admin.site.register(CollectionReport)
 admin.site.register(Monitor)
 admin.site.register(CombinedGame)
+admin.site.register(Limit)

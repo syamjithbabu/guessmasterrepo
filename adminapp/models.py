@@ -48,6 +48,15 @@ class AgentPackage(models.Model):
     def __str__(self):
         return str(self.package_name)
     
+class Limit(models.Model):
+    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    daily_limit = models.FloatField()
+    checked_times = models.ManyToManyField(PlayTime)
+
+    def __str__(self):
+        return str(self.agent)
+    
+    
 class Result(models.Model):
     date = models.DateField()
     time = models.ForeignKey(PlayTime,on_delete=models.CASCADE)

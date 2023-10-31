@@ -24,9 +24,15 @@ from django.contrib.auth.forms import PasswordChangeForm
 @login_required
 def index(request):
     ist = pytz_timezone('Asia/Kolkata')
+    dealer_obj = Dealer.objects.get(user=request.user)
+    agent = dealer_obj.agent
+    print(agent)
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
-    play_times = PlayTime.objects.filter().all()
+    if PlayTime.objects.filter(limit__agent=agent).all():
+        play_times = PlayTime.objects.filter(limit__agent=agent).all()
+    else:
+        play_times = PlayTime.objects.filter().all()
     play_time_availabilities = []
     for time in play_times:
         if time.start_time <= current_time <= time.end_time:

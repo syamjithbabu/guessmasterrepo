@@ -41,14 +41,12 @@
                     <tbody>
                         {% for game in games %}
                     <tr>
-                        
                         <td>{{game.LSK}}</td>
                         <td>{{game.number}}</td> 
                         <td>{{game.count}}</td>                                  
                         <td>
                             <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
                         </td>
-                       
                     </tr>
                     {% endfor %}
                 </tbody>
