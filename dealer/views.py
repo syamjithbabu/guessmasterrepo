@@ -635,7 +635,10 @@ def play_game(request,id):
     agent_obj = dealer_obj.agent
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
     print(current_date)
+    if current_time > time.end_time:
+        return redirect('agent:index')
     if DealerPackage.objects.filter(dealer=dealer_obj).exists():
         dealer_package = DealerPackage.objects.get(dealer=dealer_obj)
         print(dealer_package.single_rate)
@@ -747,7 +750,7 @@ def save_data(request, id):
     except Exception as e:
         print(e)
     print("###################")
-    return redirect('dealer:index')
+    return redirect('dealer:play_game',id=id)
 
 
 def change_password(request):

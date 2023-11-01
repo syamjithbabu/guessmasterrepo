@@ -66,7 +66,7 @@
                         <h2>{{time.end_time}}</h2>
                     </div>
                     <form method="POST">
-                        <a href="{% url 'dealer:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
+                        <a onclick="bill()" href="{% url 'dealer:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
                             <span class="sr-only">Save</span>
                             <i class="fa fa-save"></i>
                         </a>
@@ -80,9 +80,9 @@
                             </div>
                             <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
                                 <div class="btn-group mr-2" role="group" aria-label="First group">
-                                    <button type="button" class="btn btn-secondary selected-button" id="button1">1</button>
+                                    <button type="button" class="btn btn-secondary" id="button1">1</button>
                                     <button type="button" class="btn btn-secondary" id="button2">2</button>
-                                    <button type="button" class="btn btn-secondary" id="button3">3</button>
+                                    <button type="button" class="btn btn-secondary selected-button" id="button3">3</button>
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
                                     <input type="checkbox" name="checkbox2" required data-parsley-mincheck="2"
@@ -120,7 +120,7 @@
                             <!-- only show when R is chacked -->
 
                             <div class="tab-content" style="padding: 10px !important;">
-                                <div class="tab-pane show active" id="tabSet1">
+                                <div class="tab-pane" id="tabSet1">
                                     <ul class="nav nav-tabs-new">
                                         <li class="nav-item"><a class="nav-link" data-toggle="tab" id="A" href="">A</a>
                                         </li>
@@ -144,7 +144,7 @@
                                                 href="">ALL</a></li>
                                     </ul>
                                 </div>
-                                <div class="tab-pane" id="tabSet3">
+                                <div class="tab-pane show active" id="tabSet3">
                                     <ul class="nav nav-tabs-new">
                                         <li class="nav-item"><a class="nav-link" data-toggle="tab" id="Super"
                                                 href="">Super</a>
@@ -254,7 +254,7 @@
     var stepInput = document.getElementById("step")
     var countInput2 = document.getElementById("count")
 
-    var maxDigits = 1;
+    var maxDigits = 3;
 
     button1.addEventListener("click", function () {
         maxDigits = 1;
@@ -1979,6 +1979,16 @@
 </script>
 
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    function bill() {
+        swal({
+            title: "Success!",
+            text: "Your bill created successfully.",
+            icon: "success",
+            buttons: "OK",
+        });
+    }
+</script>
 
 
 

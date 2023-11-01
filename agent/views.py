@@ -1,6 +1,6 @@
 from audioop import reverse
 import json
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 import pytz
@@ -1429,7 +1429,10 @@ def play_game(request,id):
     agent_obj = Agent.objects.get(user=request.user)
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
     print(current_date)
+    if current_time > time.end_time:
+        return redirect('agent:index')
     if AgentPackage.objects.filter(agent=agent_obj).exists():
         agent_package = AgentPackage.objects.get(agent=agent_obj)
         print(agent_package.single_rate)
@@ -1592,6 +1595,7 @@ def submit_data(request):
     agent_obj = Agent.objects.get(user=request.user)
     if request.method == 'POST':
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
+        select_dealer = data.get('selectDealer')
         link_text = data.get('linkText')
         value1 = data.get('value1')
         value2 = data.get('value2')
@@ -1599,7 +1603,7 @@ def submit_data(request):
         value4 = data.get('value4')
         timeId = data.get('timeId')
 
-        print(data)
+        print(select_dealer,"############")
 
         time = get_object_or_404(PlayTime,id=timeId)
         
@@ -1671,7 +1675,7 @@ def save_data(request, id):
     except Exception as e:
         print(e)
 
-    return redirect('agent:index')
+    return redirect('agent:play_game',id=id)
 
 def change_password(request):
     if request.method == "POST":
