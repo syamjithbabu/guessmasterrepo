@@ -6,9 +6,7 @@
     .expand-row{
         background-color: rgb(46, 206, 255);
     }
-</style>
 
-<style>
     .table-cell {
         border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
         text-align: center;
@@ -29,12 +27,103 @@
     .th, .td{
         text-align: center;
     }
+
+
+
+/* print start here */
+
+
+@media screen {
+        
+
+        #dateprint {
+            display: none;
+        }
+        #totalcount {
+            display: none;
+        }
+
+    }
+
+
+
+    @media print {
+
+        #header,
+        #left-sidebar,
+        .navbar-toggler,
+        .a,
+        .serch,
+        .header,
+        .button,
+        #printbutton {
+            display: none !important;
+            content: none !important;
+        }
+
+        .page-titles,
+        h1,
+        h2,
+        h3 {
+            display: none;
+
+        }
+
+        .page-wrapper>.content {
+            padding: 0 !important;
+            padding-left: 0%;
+            padding-right: 0%;
+        }
+
+        .page-wrapper {
+            padding-top: 0%;
+        }
+
+        #table , th, td {
+            table-layout: fixed;
+            size: 36cm;
+            width: 142%;
+          
+            table-layout: auto;
+            border: 1px solid black;
+            border-collapse: collapse;
+
+
+        }
+        #printbutton{
+            display: none;
+        }
+
+        #dateprint {
+            display: block;
+        }
+
+        #total {
+            display: block;
+        }
+
+        .page-main-content {
+            padding-top: 0px;
+        }
+
+       
+        
+        #btotal {
+            display: none;
+        }
+        th, .td{
+        text-align: center;
+    }
+
+
+    }
+/* print css end */
 </style>
 
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
-            <div class="row">
+            <div class="row header">
                 <div class="col-lg-5 col-md-8 col-sm-12">
                     <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
                                 class="fa fa-arrow-left"></i></a> Sales Report</h2>
@@ -49,7 +138,7 @@
 
         <div class="row clearfix">
             <div class="col-md-12">
-                <div class="card">
+                <div class="card serch">
 
                     <div class="body">
                         <form method="POST">
@@ -114,9 +203,19 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="body">
-                            {% if dealer_bills %}
+                            
                             <div class="table-responsive">
                                 <table class="table m-b-0">
+                                    {% if dealer_bills %}
+                                    <div class="col-lg-12 text-right" id="dateprint">
+                                        <h6 > {{request.user}}</h6>
+                                        <h6>Sales Report</h6>
+
+                                        <h6 id="demo"></h6>
+                                        <h6 id="demo1"></h6>
+                                        <h6 id="demo3"></h6>
+        
+                                    </div>
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -155,7 +254,19 @@
                             </div>
                             {% else %}
                             {% endif %}
+                           
                             <div  style="padding-top: 50px;"></div>
+                            <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
+                                type="submit">Print </button>
+                            <div class="col-md-12 text-right" id="totalcount">
+                                <h6>Total Count:{{totals.total_count}}</h6>
+                                <h6>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h6>
+                                <h6>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h6>
+                            </div>
+                        </div>
+                       
+                        
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -164,7 +275,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom">
+    <nav class="navbar-bottom" id="btotal">
         <table>
             <thead>
                 <tr>
@@ -182,7 +293,6 @@
             </tbody>
         </table>
 </nav>
-
 
     <script>
         function printcontent() {
@@ -258,6 +368,42 @@
         }
 
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // print table
+    function makeprint(table) {
+        window.print();
+    }
+
+
+
+    // get date and inputs 
+    const b = document.getElementById("time");
+
+    const x = document.getElementById("from-date");
+    const y = document.getElementById("to-date");
+    // const a = document.getElementById("agent");
+    let currentVal = x.value;
+    let currentValue = y.value;
+    let timev = b.value;
+    // let agent = a.value;
+    document.getElementById("demo3").innerHTML = "<br>Time : " + timev;
+    document.getElementById("demo").innerHTML = "<br>From Date : " + currentVal;
+    document.getElementById("demo1").innerHTML = "<br>To Date: " + currentValue;
+    // document.getElementById("demo2").innerHTML = "<br>  " + agent;
+
 </script>
 
 

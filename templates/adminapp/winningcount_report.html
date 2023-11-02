@@ -112,7 +112,7 @@
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
-            <div class="row">
+            <div class="row header">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
@@ -122,12 +122,12 @@
             </div>
         </div>
 
-        <div class="row clearfix" style="padding-bottom: 50px;">
+        <div class="row clearfix" style="padding-bottom: 00px;">
             <form method="POST">
                 {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-                    <div class="body">
+                    <div class="body serch">
                         <div class="col-lg-12">
                             <div class="card serch-form">
                                 
@@ -231,7 +231,7 @@
     </div>
 </div>
 
-<nav class="navbar-bottom">
+<nav class="navbar-bottom" id="btotal">
     <table>
         <thead>
             <tr>

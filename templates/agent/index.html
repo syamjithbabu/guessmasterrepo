@@ -19,7 +19,7 @@
             {% if is_available %}
             <div class="col-lg-3 col-md-12">
                 <a href="{% url 'agent:play_game' time.id %}">
-                <div class="card top_counter currency_state">
+                <div class="card top_counter currency_state bg-warning">
                     <div class="body">
                         <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
                         <div class="content">
@@ -37,7 +37,7 @@
             {% else %}
             <div class="col-lg-3 col-md-12">
                 <a href="#" onclick="noGame()" data-type="confirm" class="js-sweetalert">
-                <div class="card top_counter currency_state">
+                <div class="card top_counter currency_state bg-warning">
                     <div class="body">
                         <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
                         <div class="content">
