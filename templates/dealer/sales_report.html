@@ -187,10 +187,21 @@
                                         <button type="submit" class="btn btn-primary">Search</button>
                                     </div>
                                 </div>
-                                <label class="control-inline fancy-checkbox ml-auto">
-                                    <input type="checkbox" name="checkbox2" id="expand-button">
-                                    <span>Expand</span>
-                                </label>
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
+                                type="submit">Print </button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
+                                        <label class="control-inline fancy-checkbox ml-auto">
+                                            <input type="checkbox" name="checkbox2" id="expand-button">
+                                            <span>Expand</span>
+                                        </label>
+                                    </div>
+                                </div>
+                             
                             </ul>
                         </form>
                     </div>
@@ -250,18 +261,20 @@
                                             {% endfor %}
                                             {% endfor %}
                                     </tbody>
+                                    {% else %}
+                                    {% endif %}
                                 </table>
+                                <div class="col-md-12 text-right" id="totalcount">
+                                    <h6>Total Count:{{totals.total_count}}</h6>
+                                    <h6>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h6>
+                                    <h6>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h6>
+                                </div>
                             </div>
-                            {% else %}
-                            {% endif %}
+                          
                            
                             <div  style="padding-top: 50px;"></div>
-                            <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
-                                type="submit">Print </button>
-                            <div class="col-md-12 text-right" id="totalcount">
-                                <h6>Total Count:{{totals.total_count}}</h6>
-                                <h6>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h6>
-                                <h6>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h6>
+                            <div class="text-right" style="padding-top: 50px;"> 
+                            
                             </div>
                         </div>
                        
