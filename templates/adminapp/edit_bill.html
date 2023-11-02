@@ -20,7 +20,7 @@
         flex-direction: column;
     }
 
-    .th, .td{
+    th, td{
         text-align: center;
     }
 </style>
@@ -32,7 +32,6 @@
                     <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>  Edit Bill </h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Edit Bill</li>
                     </ul>
                 </div>            
              
@@ -54,26 +53,15 @@
                                                 {% csrf_token %}
                                                 <div class="row">
                                                 <div class="col-lg-6 col-12">
-                                                <label for="select" class="control-label">Select Dealer</label>
-                                                <select class="form-control" name="select" data-placeholder="Select">
-                                                  
-                                                    <!-- <option value="{{ request.user.id }}">Myself</option> -->
-                                                    {% for dealer in bill_dealer %}
-                                                        <option value="{{ dealer.user.id }}">{{ dealer.user }}</option>
+                                                <label for="dealer-select" class="control-label">Select Agent</label>
+                                                <select class="form-control" name="dealer-select" data-placeholder="Select">
+                                                    <option value="all">All</option>
+                                                    {% for agent in agents %}
+                                                        <option value="{{ agent.user }}">{{ agent.user }}</option>
                                                     {% endfor %}
-                                                    {% for agent in bill_agent %}
-                                                    <option value="{{ agent.user.id }}">{{ agent.user }}</option>
-                                                {% endfor %}
                                                 </select>
                                                 </div>  
-
-                                                <!-- <div class="col-lg-2 col-md-6 col-sm-12">
-                                                    <div class="form-group">
-                                                        <label for="tax-id" class="control-label">Date</label>
-                                                        <input type="date" name="select-date" class="form-control">
-                                                    </div>        
                                                 </div>
-                                                </div> -->
                                                 <button type="submit" class="btn btn-primary mt-3">Search</button>
                                                 </form>
                                             </div>
@@ -94,6 +82,7 @@
                                                      <th>Count </th>
                                                      <th>S Amount </th>
                                                      <th>C Amount </th>
+                                                     <th>#</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="bill-table">
@@ -101,11 +90,16 @@
                                                 <!-- hello -->
                                                 <tr data-dealer="{{ bill.agent.user }}">
                                                     <td class="table-cell">{{bill.date}}</td>
+                                                    {% if bill.user.agent.user %}
                                                     <td class="table-cell">{{bill.user}}</td>
+                                                    {% else %}
+                                                    <td>{{ bill.user.dealer.agent.user }}</td>
+                                                    {% endif %}
                                                     <td class="table-cell">{{bill.id}}</td>
                                                     <td class="table-cell">{{bill.total_count}}</td>
                                                     <td class="table-cell">{{bill.total_d_amount}}</td>
                                                     <td class="table-cell">{{bill.total_c_amount}}</td>
+                                                    <td class="table-cell"><a href="{% url 'adminapp:delete_bill' bill.id %}">Edit</a></td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>

@@ -33,14 +33,20 @@ urlpatterns = [
     path('winningcount-report',views.winningcount_report,name="winningcount_report"),
     path('blocked_numbers',views.blocked_numbers,name="blocked_numbers"),
     path('edit_bill',views.edit_bill,name="edit_bill"),
+    path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
+    path('deleting-bill/<int:id>',views.deleting_bill,name="deleting_bill"),
+    path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row"),
     path('payment_report',views.payment_report,name="payment_report"),
     path('change_password',views.change_password,name="change_password"),
-    path('settings',views.settings,name="settings"),
     path('view-results',views.view_results,name="view_results"),
     path('add-collection',views.add_collection,name="add_collection"),
     path('balance-report',views.balance_report,name="balance_report"),
     path('set-limit',views.set_limit,name="set_limit"),
     path('view-limit',views.view_limits,name="view_limits"),
     path('edit-limit/<int:id>',views.edit_limit,name="edit_limit"),
+    path('blocked-numbers',views.blocked_numbers,name="blocked_numbers"),
+    path('new-block',views.new_block,name="new_block"),
+    path('delete-block/<int:id>',views.delete_block,name="delete_block"),
+    path('clear-limit/<int:id>',views.clear_limit,name="clear_limit")
     
 ]

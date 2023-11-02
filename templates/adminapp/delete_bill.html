@@ -1,4 +1,4 @@
-{% extends 'dealer/partials/base.html' %}
+{% extends 'adminapp/partials/base.html' %}
 {% load static %}
 {% block content %}
 
@@ -13,13 +13,11 @@
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>  Edit Bill </h2>
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Delete Bill </h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'dealer:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">Delete Bill</li>
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
                     </ul>
-                </div>            
-             
+                </div>                 
             </div>
         </div>
         
@@ -29,8 +27,12 @@
     <div class="header">
         <h6>Bill ID : {{bill.id}}</h6>
         <h6>Date : {{bill.date}}</h6>
+        {% if bill.user.agent.user %}
         <h6>User : {{bill.user}}</h6>
-        <a href="{% url 'dealer:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+        {% else %}
+        <h6>User : {{ bill.user.dealer.agent.user }}</h6>
+        {% endif %}
+        <a href="{% url 'adminapp:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
     </div>
     <div class="body">
         <div class="table-responsive">
@@ -46,14 +48,12 @@
                     <tbody>
                         {% for game in games %}
                     <tr>
-                        
                         <td>{{game.LSK}}</td>
                         <td>{{game.number}}</td> 
                         <td>{{game.count}}</td>                                  
                         <td>
-                            <a href="{% url 'dealer:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                            <a href="{% url 'adminapp:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
                         </td>
-                       
                     </tr>
                     {% endfor %}
                 </tbody>

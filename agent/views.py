@@ -7,7 +7,7 @@ import pytz
 from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
-from adminapp.models import PlayTime, AgentPackage,Result,Winning
+from adminapp.models import PlayTime, AgentPackage,Result,Winning,Limit,BlockedNumber
 from .models import DealerPackage, AgentGameTest, AgentGame, Bill, DealerCollectionReport
 from dealer.models import DealerGame
 from django.contrib import messages
@@ -1418,8 +1418,14 @@ def deleting_bill(request,id):
 
 def delete_row(request,id,bill_id):
     print(id,"this row")
-    row_delete = get_object_or_404(AgentGame,id=id)
-    row_delete.delete()
+    bill = get_object_or_404(Bill, id=bill_id)
+    try:
+        row_delete = get_object_or_404(AgentGame, id=id)
+        row_delete.delete()
+    except:
+        row_delete = get_object_or_404(DealerGame, id=id)
+        row_delete.delete()
+    bill.update_totals()
     return redirect('agent:delete_bill',id=bill_id)
 
 def play_game(request,id):
@@ -1593,6 +1599,11 @@ def submit_data(request):
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     agent_obj = Agent.objects.get(user=request.user)
+    try:
+        limit = Limit.objects.get(agent=agent_obj)
+        print(limit.daily_limit)
+    except:
+        pass
     if request.method == 'POST':
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
         select_dealer = data.get('selectDealer')
@@ -1606,6 +1617,11 @@ def submit_data(request):
         print(select_dealer,"############")
 
         time = get_object_or_404(PlayTime,id=timeId)
+
+        blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
+        if blocked_numbers:
+            messages.info(request, "This number and LSK is blocked!")
+            return redirect('agent:play_game',id=timeId)
         
         agent_game_test = AgentGameTest(
             agent=agent_obj,
@@ -1617,7 +1633,24 @@ def submit_data(request):
             c_amount=value4
         )
         agent_game_test.save()
-        print(agent_game_test.id,"id")
+        total_c_amount = AgentGameTest.objects.filter(agent=agent_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        print(total_c_amount,"@@@@@")
+        try:
+            agent_total_c_amount = AgentGame.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            print(agent_total_c_amount,"$$$$$$")
+            print(agent_game_test.id,"id")
+            if total_c_amount + agent_total_c_amount > limit.daily_limit:
+                print("Your daily limit is exceeded")
+                agent_game_test.delete()
+                messages.info(request, "Your daily limit is exceeded")
+            else:
+                print("You have limit balance")
+        except:
+            pass
+        try:
+            blocked_numbers = BlockedNumber.objects.filter().all()
+        except:
+            pass
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'success'})
 

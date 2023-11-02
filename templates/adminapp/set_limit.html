@@ -5,8 +5,7 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> New Package </h2>
+                <div class="col-lg-5 col-md-8 col-sm-12">
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
                         <li class="breadcrumb-item">Limit</li>
@@ -33,7 +32,7 @@
                             <div class="col-lg-3 col-md-6">
                                 <div class="mb-3">
                                     <label>Select Agent</label>
-                                    <select name="select-agent" class="form-control show-tick ms select2" data-placeholder="Select">
+                                    <select name="select-agent" id="agent" class="form-control show-tick ms select2" data-placeholder="Select">
                                         {% for agent in agents %}
                                         <option value="{{ agent.id }}">{{agent.user}}</option>
                                         {% endfor %}
@@ -85,6 +84,16 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("agent");
+
+        // Set the selected value based on the selected_dealer variable
+        selectDealer.value = "{{ selected_agent }}";
+
+    });
+</script>
 
 
 {% endblock %} 

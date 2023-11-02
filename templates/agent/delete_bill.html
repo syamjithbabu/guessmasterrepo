@@ -2,7 +2,11 @@
 {% load static %}
 {% block content %}
 
-
+<style>
+    th, td{
+        text-align: center;
+    }
+</style>
 
 <div id="main-content">
     <div class="container-fluid">
@@ -25,7 +29,7 @@
         <h6>Bill ID : {{bill.id}}</h6>
         <h6>Date : {{bill.date}}</h6>
         <h6>User : {{bill.user}}</h6>
-        <a href="{% url 'agent:delete_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+        <a href="{% url 'agent:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
     </div>
     <div class="body">
         <div class="table-responsive">

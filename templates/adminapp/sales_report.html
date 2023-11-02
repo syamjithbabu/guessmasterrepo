@@ -157,21 +157,21 @@
                                         
                                         
                                         {% for game in bill.agent_games.all %}
-                                           
-                                                <tr class="expand-row grouped-row" style="display: none;">
-                                                    <td>#</td>
-                                                    <td>{{ game.LSK }}</td>
-                                                    <td>{{ game.number }}</td>
-                                                    <td>{{ game.count }}</td>
-                                                    <td>{{ game.d_amount }}</td>
-                                                    <td>{{ game.c_amount }}</td>
-                                                </tr>
-                                           
+                                            {% if game in agent_games %}
+                                            <tr class="expand-row grouped-row" style="display: none;">
+                                                <td>#</td>
+                                                <td>{{ game.LSK }}</td>
+                                                <td>{{ game.number }}</td>
+                                                <td>{{ game.count }}</td>
+                                                <td>{{ game.d_amount }}</td>
+                                                <td>{{ game.c_amount }}</td>
+                                            </tr>
+                                            {% endif %}
                                         {% endfor %}
                                         
                                         <!-- Display Dealer Games -->
                                         {% for game in bill.dealer_games.all %}
-                                          
+                                            {% if game in dealer_games %}
                                                 <tr class="expand-row grouped-row" style="display: none;">
                                                     <td>#</td>
                                                     <td>{{ game.LSK }}</td>
@@ -180,7 +180,7 @@
                                                     <td>{{ game.d_amount }}</td>
                                                     <td>{{ game.c_amount }}</td>
                                                 </tr>
-                                           
+                                            {% endif %}
                                         {% endfor %}
                                     {% endfor %}
 
