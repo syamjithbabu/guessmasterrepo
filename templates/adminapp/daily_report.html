@@ -217,7 +217,7 @@
         
                                     </div>
                                     <thead>
-                                        <tr>
+                                        <tr class="l-pink">
                                             <th>Date</th>
                                             <th>Dealer</th>
                                             <th>T.Sale</th>
@@ -227,7 +227,7 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in dealer_bills %}
-                                            <tr>
+                                            <tr class="l-blue">
                                                 <td>{{ bill.date }}</td>
                                                 {% if bill.user.agent %}
                                                     <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
@@ -259,10 +259,10 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
-        <table>
+    <nav class="navbar-bottom  l-parpl" id="btotal" >
+        <table >
             <thead>
-                <tr>
+                <tr >
                      <th class="th">Sales Amount</th>
                      <th class="th">Win Amount</th>
                      <th class="th">Balance</th>

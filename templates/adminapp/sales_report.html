@@ -240,7 +240,7 @@
         
                                     </div>
                                     <thead>
-                                        <tr>
+                                        <tr class="l-blue">
                                             <th>Date</th>
                                             <th>Agent</th>
                                             <th>Bill</th>
@@ -251,7 +251,7 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in bills %}
-                                        <tr class="main-row">
+                                        <tr class="main-row l-pink">
                                             <td>{{ bill.date }}</td>
                                             {% if bill.user.agent.user %}
                                             <td>{{ bill.user }}</td>
@@ -313,7 +313,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
+    <nav class="navbar-bottom  l-parpl" id="btotal">
         <table>
             <thead>
                 <tr>

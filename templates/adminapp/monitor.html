@@ -142,7 +142,7 @@
                                     </thead>
                                     <tbody>
                                     {% for game in monitor_games %}
-                                        <tr class="main-row">
+                                        <tr class="main-row l-pink" >
                                             {% if not game.combined %}
                                                 <td>{{ game.user }}</td>
                                             {% else %}
@@ -160,7 +160,7 @@
                                         </tr>
                                     {% endfor %}
                                     {% for game in agent_games %}
-                                    <tr class="sorted-row" style="display: none;">
+                                    <tr class="sorted-row  l-turquoise" style="display: none;">
                                         <td>{{game.agent.user}}</td>
                                         <td>{{game.LSK}}</td>
                                         <td>{{game.number}}</td>
@@ -170,7 +170,7 @@
                                     </tr>
                                     {% endfor %}
                                     {% for game in dealer_games %}
-                                    <tr class="sorted-row" style="display: none;">
+                                    <tr class="sorted-row l-parpl" style="display: none;">
                                         <td>{{game.dealer.user}}</td>
                                         <td>{{game.LSK}}</td>
                                         <td>{{game.number}}</td>

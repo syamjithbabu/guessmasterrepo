@@ -75,7 +75,7 @@
                                     <div class="table-responsive">
                                         <table class="table m-b-0">
                                             <thead>
-                                                <tr>
+                                                <tr class="l-blue">
                                                      <th>Date</th>
                                                      <th>User</th>
                                                      <th>Bill</th>
@@ -88,7 +88,7 @@
                                             <tbody id="bill-table">
                                                 {% for bill in bills %}
                                                 <!-- hello -->
-                                                <tr data-dealer="{{ bill.agent.user }}">
+                                                <tr data-dealer="{{ bill.agent.user }}" class="l-pink">
                                                     <td class="table-cell">{{bill.date}}</td>
                                                     {% if bill.user.agent.user %}
                                                     <td class="table-cell">{{bill.user}}</td>
@@ -119,7 +119,7 @@
     </div>
 </div>
 
-<nav class="nav">
+<nav class="nav l-parpl">
             <table>
                 <thead>
                     <tr>

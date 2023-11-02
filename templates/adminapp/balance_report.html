@@ -200,7 +200,7 @@
                 
                                             </div>
                                             <thead>
-                                                <tr>
+                                                <tr class="l-blue">
                                                     <th class="th">Date</th>
                                                      <th class="th">Agent</th>
                                                      <th class="th">Sale<br>Amount</th>
@@ -211,7 +211,7 @@
                                             </thead>
                                             <tbody class="not-summary">
                                                 {% for data in report_data %}
-                                                <tr>
+                                                <tr class="l-pink"> 
                                                     <td class="td2">{{data.date}}</td>
                                                     <td class="td3">{{data.agent.user}}</td>
                                                     <td class="td2">{{data.total_d_amount}}</td>
@@ -246,7 +246,7 @@
     </div>
 </div>
 
-<nav class="navbar-bottom"  id="btotal">
+<nav class="navbar-bottom l-parpl"  id="btotal">
     <table>
         <thead>
             <tr>

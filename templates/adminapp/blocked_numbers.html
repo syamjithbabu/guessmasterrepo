@@ -52,7 +52,7 @@
                                     <div class="table-responsive">
                                         <table class="table m-b-0">
                                             <thead>
-                                                <tr>
+                                                <tr class="l-blue">
                                                      <th>LSK</th>
                                                      <th>Number</th>
                                                      <th>Action </th>
@@ -61,7 +61,7 @@
                                             <tbody id="bill-table">
                                                 {% for block in blocked %}
                                                 <!-- hello -->
-                                                <tr data-dealer="{{ bill.agent.user }}">
+                                                <tr data-dealer="{{ bill.agent.user }}" class="l-pink">
                                                     <td class="table-cell">{{block.LSK}}</td>
                                                     <td class="table-cell">{{block.number}}</td>
                                                     <td class="table-cell"><a href="{% url 'adminapp:delete_block' block.id %}" class="btn btn-danger" title="Edit">
