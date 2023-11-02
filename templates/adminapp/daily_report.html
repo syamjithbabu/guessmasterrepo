@@ -1,6 +1,7 @@
 {% extends 'adminapp/partials/base.html' %}
 {% load static %}
 {% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 <style>
     .expand-row{
@@ -157,7 +158,7 @@
                                 </div>
                                 <div class="col-md-6 col-6">
                                     <div class="form-group">
-                                        <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="agent">
+                                        <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="aioConceptName">
                                             <option value="all">All</option>
                                             {% for agent in agents %}
                                             <option value="{{ agent.id }}">{{agent.user}}</option>
@@ -207,7 +208,7 @@
                             <div class="table-responsive">
                                 <table class="table m-b-0">
                                     <div class="col-lg-12 text-right" id="dateprint">
-                                        <h6 id="demo2"></h6>
+                                        <p class="result"></p>
                                         <h6>Daily Report</h6>
 
                                         <h6 id="demo"></h6>
@@ -369,17 +370,25 @@
 
     const x = document.getElementById("from-date");
     const y = document.getElementById("to-date");
-    // const a = document.getElementById("agent");
     let currentVal = x.value;
     let currentValue = y.value;
     let timev = b.value;
-    // let agent = a.value;
     document.getElementById("demo3").innerHTML = "<br>Time : " + timev;
     document.getElementById("demo").innerHTML = "<br>From Date : " + currentVal;
     document.getElementById("demo1").innerHTML = "<br>To Date: " + currentValue;
-    // document.getElementById("demo2").innerHTML = "<br>  " + agent;
 
 
+</script>
+
+
+<!-- selected agent or dealer or all -->
+<script>
+    $(document).on('change','#aioConceptName' ,function(){
+  var val = $('#aioConceptName option:selected').val();
+  var text = $('#aioConceptName option:selected').text();
+  $('.result').text("Select Value = " + val);
+  $('.result').append("<br>Select Text = " + text);
+})
 </script>
 
     {% endblock %}

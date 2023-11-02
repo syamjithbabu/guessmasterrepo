@@ -4,7 +4,7 @@ from django.shortcuts import render,get_object_or_404,redirect
 import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
-from adminapp.models import PlayTime, Result, Winning
+from adminapp.models import PlayTime, Result, Winning, BlockedNumber
 from agent.models import DealerPackage,Bill,DealerCollectionReport
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
@@ -679,6 +679,11 @@ def submit_data(request):
         print(data)
 
         time = get_object_or_404(PlayTime,id=timeId)
+
+        blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
+        if blocked_numbers:
+            messages.info(request, "This number and LSK is blocked!")
+            return redirect('agent:play_game',id=timeId)
         
         dealer_game_test = DealerGameTest(
             dealer=dealer_obj,

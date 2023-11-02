@@ -2,6 +2,7 @@ from django.db import models
 from website.models import Dealer,User
 from adminapp.models import Agent,PlayTime
 from dealer.models import DealerGame
+from django.db.models import Sum
 
 # Create your models here.
 
@@ -83,6 +84,17 @@ class Bill(models.Model):
 
     def __str__(self):
         return f'Bill for {self.user} on {self.date}'
+    
+    def update_totals(self):
+        # Calculate and update total_count, total_c_amount, and total_d_amount
+        total_count = self.agent_games.aggregate(total_count=Sum('count'))['total_count'] or 0
+        total_c_amount = self.agent_games.aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        total_d_amount = self.agent_games.aggregate(total_d_amount=Sum('d_amount'))['total_d_amount'] or 0
+
+        self.total_count = total_count
+        self.total_c_amount = total_c_amount
+        self.total_d_amount = total_d_amount
+        self.save()
     
 class DealerCollectionReport(models.Model):
     date = models.DateField()

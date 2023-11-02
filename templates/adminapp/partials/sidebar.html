@@ -54,7 +54,12 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="{% url 'adminapp:view_limits' %}"><i class="icon-trophy"></i> <span>Limit</span></a>
+                            <a href="#Limit" class="has-arrow"><i class="icon-trophy"></i> <span>Daily Limit</span></a>
+                            <ul>
+                                <li><a href="{% url 'adminapp:view_limits' %}">Edit Limit</a></li>                                    
+                                <li><a href="{% url 'adminapp:set_limit' %}">Set Limit</a></li>
+                                
+                            </ul>
                         </li>
                         <li>
                             <a href="#GameTime" class="has-arrow"><i class=" icon-speedometer"></i> <span>Game Time</span></a>
@@ -63,6 +68,9 @@
                                 <li><a href="{% url 'adminapp:change_time' %}">Change Time</a></li>
                                 
                             </ul>
+                        </li>
+                        <li>
+                            <a href="{% url 'adminapp:blocked_numbers' %}"><i class=" icon-control-pause"></i> <span>Blocked Numbers</span></a>
                         </li>
                         <li>
                             <a href="{% url 'adminapp:monitor' %}" ><i class="icon-screen-desktop"></i> <span>Monitor</span></a>
@@ -91,15 +99,16 @@
                            
                             </ul>
                         </li>
-                        
+                        <li>
+                            <a href="{% url 'adminapp:edit_bill' %}"><i class="icon-note"></i>Edit Bill</a>
+                        </li>
                         
                         <li>
-                            <a href="{% url 'adminapp:change_password' %}" ><i class="icon-note"></i> <span>Change Password</span></a>
+                            <a href="{% url 'adminapp:change_password' %}" ><i class="icon-settings"></i> <span>Change Password</span></a>
                            
                         </li>
-                        <li>
-                        <a href="{% url 'adminapp:settings' %}"><i class="icon-settings"></i>Settings</a></li>
-                        <li>
+                        
+                       
                        
                      
                     </ul>

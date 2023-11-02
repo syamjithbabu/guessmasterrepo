@@ -1,0 +1,215 @@
+{% extends 'adminapp/partials/base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .selected-button {
+        background-color: #007bff; /* Change the background color to blue */
+        color: #fff; /* Change the text color to white for better contrast */
+    }
+
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+        background-color: rgb(221, 221, 221);
+    }
+    .td3{
+        text-align: center;
+        background-color: rgb(255, 255, 255);
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+    .selected-nav {
+        background-color: #007bff; /* Change the background color to blue */
+        color: #fff;
+    }
+
+</style>
+<div id="main-content">
+    <div class="container-fluid">
+        <div class="block-header">
+            <div class="row">
+                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item">Add Collection</li>
+                    </ul>
+                </div> 
+            </div>
+        </div>
+
+        <div class="row clearfix" style="padding-bottom: 50px;">
+            <form method="POST">
+                {% csrf_token %}
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="card">
+                    <div class="body">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                
+                                <div class="body">
+                                    <div class="row clearfix">
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
+                                            </div>
+                                        </div>
+                                        <div class="btn-group mr-2" role="group" aria-label="First group">
+                                            <button type="button" class="btn btn-secondary" id="button1">1</button>
+                                            <button type="button" class="btn btn-secondary" id="button2">2</button>
+                                            <button type="button" class="btn btn-secondary selected-button" id="button3">3</button>
+                                        </div>
+                                        <div class="tab-content" style="padding: 10px !important;">
+                                            <div class="tab-pane" id="tabSet1">
+                                                <ul class="nav nav-tabs-new">
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="A" type="radio"><span><i></i>A</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="B" type="radio"><span><i></i>B</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="C" type="radio"><span><i></i>C</span></label></li>
+                                                </ul>
+                                            </div>
+                                            <div class="tab-pane" id="tabSet2">
+                                                <ul class="nav nav-tabs-new">
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="AB" type="radio"><span><i></i>AB</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="BC" type="radio"><span><i></i>BC</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="AC" type="radio"><span><i></i>AC</span></label></li>
+                                                </ul>
+                                            </div>
+                                            <div class="tab-pane show active" id="tabSet3">
+                                                <ul class="nav nav-tabs-new">
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="Super" type="radio"><span><i></i>Super</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="Box" type="radio"><span><i></i>Box</span></label></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                                                        
+                                    </div>
+                                   
+                                 </div>
+                                
+                                <div class="body d-flex justify-content-center">
+                                    <div class="form-group col-md-6 col-6">
+                                        <input type="number" class="form-control" id="numberInput" name="numberInput" placeholder="Enter number"
+                                            required>
+                                    </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">                                               
+                                                <button type="submit" class="btn btn-primary">Save</button>
+                                            </div>
+                                        </div>
+                                </div>
+                                
+                            </div>
+                           
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        </div>
+        
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.getElementById("button1").addEventListener("click", function () {
+        document.getElementById("button1").classList.add("selected-button");
+        document.getElementById("button2").classList.remove("selected-button");
+        document.getElementById("button3").classList.remove("selected-button");
+        document.getElementById("tabSet1").classList.add("show", "active");
+        document.getElementById("tabSet2").classList.remove("show", "active");
+        document.getElementById("tabSet3").classList.remove("show", "active");
+    });
+
+    document.getElementById("button2").addEventListener("click", function () {
+        document.getElementById("button1").classList.remove("selected-button");
+        document.getElementById("button2").classList.add("selected-button");
+        document.getElementById("button3").classList.remove("selected-button");
+        document.getElementById("tabSet1").classList.remove("show", "active");
+        document.getElementById("tabSet2").classList.add("show", "active");
+        document.getElementById("tabSet3").classList.remove("show", "active");
+    });
+
+    document.getElementById("button3").addEventListener("click", function () {
+        document.getElementById("button1").classList.remove("selected-button");
+        document.getElementById("button2").classList.remove("selected-button");
+        document.getElementById("button3").classList.add("selected-button");
+        document.getElementById("tabSet1").classList.remove("show", "active");
+        document.getElementById("tabSet2").classList.remove("show", "active");
+        document.getElementById("tabSet3").classList.add("show", "active");
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $("#summary-button").change(function() {
+            if (this.checked) {
+                $(".summary-row").show(); // Show the row when the checkbox is checked
+                $(".not-summary").hide();
+            } else {
+                $(".summary-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".not-summary").show(); 
+            }
+        });
+    });
+</script>
+<script>
+    // Get the current date in the format "YYYY-MM-DD"
+    function getCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Check if selected_from and selected_to are defined
+    var selectedFrom = "{{selected_from}}";
+    var selectedTo = "{{selected_to}}";
+
+    if (selectedFrom && selectedTo) {
+        document.getElementById('from-date').value = selectedFrom;
+        document.getElementById('to-date').value = selectedTo;
+    } else {
+        document.getElementById('from-date').value = getCurrentDate();
+        document.getElementById('to-date').value = getCurrentDate();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var selectTime = document.getElementById("time");
+        var selectAgent = document.getElementById("agent")
+        // Set the selected value based on the selected_dealer variable
+        selectTime.value = "{{ selected_time }}";
+        selectAgent.value = "{{ selected_agent }}"
+        
+
+    });
+</script>
+{% endblock %} 

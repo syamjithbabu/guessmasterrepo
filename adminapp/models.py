@@ -150,3 +150,12 @@ class CombinedGame(models.Model):
 
     def __str__(self):
         return f"{self.LSK} - {self.number}"
+    
+class BlockedNumber(models.Model):
+    from_date = models.DateField()
+    to_date = models.DateField()
+    LSK = models.CharField(max_length=100)
+    number = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.LSK} - {self.number}"

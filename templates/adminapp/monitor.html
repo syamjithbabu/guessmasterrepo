@@ -32,9 +32,9 @@
 </style>
 
 <div id="main-content">
-    <a href="{% url 'adminapp:set_monitor' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
     <div class="container-fluid">
         <div class="block-header">
+            
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">
                     
@@ -49,6 +49,7 @@
         </div>
 
         <div class="row clearfix">
+            <a href="{% url 'adminapp:set_monitor' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
             <div class="col-md-12">
                 <div class="card">
 
@@ -66,27 +67,27 @@
                                 </div>
                                 
                                 <div class="col-12" id="for-one" style="display: none;">
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="A" name="checkbox2" id="">
                                     <span>A</span>
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="B" name="checkbox2" id="">
                                     <span>B</span>
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="C" name="checkbox2" id="">
                                     <span>C</span>
                                 </div>
                                 
                                 <div class="col-12" id="for-two" style="display: none;">
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="AB" name="checkbox2" id="">
                                     <span>AB</span>
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="BC" name="checkbox2" id="">
                                     <span>BC</span>
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="AC" name="checkbox2" id="">
                                     <span>AC</span>
                                 </div>
                                 
                                 <div class="col-12" id="for-three" style="display: none;">
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="Super" name="checkbox2" id="">
                                     <span>Super</span>
-                                    <input type="checkbox" name="checkbox2" id="">
+                                    <input type="checkbox" value="Box" name="checkbox2" id="">
                                     <span>Box</span>
                                 </div>
 
@@ -101,11 +102,11 @@
                                     </div>
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
-                                    <input type="checkbox" name="checkbox2" id="expand-button">
+                                    <input type="checkbox" id="hide-zero" onchange="hideZeroCountRows()">
                                     <span>Hide Zero Count</span>
                                 </label>
                                 <label class="control-inline fancy-checkbox ml-auto">
-                                    <input type="checkbox" name="checkbox2" id="expand-button">
+                                    <input type="checkbox" name="sort" id="sort" onchange="toggleSorting()">
                                     <span>Sort Customer</span>
                                 </label>
                                 
@@ -140,7 +141,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {% for game in combined_games_list %}
+                                    {% for game in monitor_games %}
                                         <tr class="main-row">
                                             {% if not game.combined %}
                                                 <td>{{ game.user }}</td>
@@ -154,11 +155,30 @@
                                             {% if game.remaining_limit <= 0 %}
                                             <td>#</td>
                                             {% else %}
-                                            <td><a href="">clear</a></td>
+                                            <td><a href="{% url 'adminapp:clear_limit' game.id %}">clear</a></td>
                                             {% endif %}
                                         </tr>
                                     {% endfor %}
-
+                                    {% for game in agent_games %}
+                                    <tr class="sorted-row" style="display: none;">
+                                        <td>{{game.agent.user}}</td>
+                                        <td>{{game.LSK}}</td>
+                                        <td>{{game.number}}</td>
+                                        <td>{{game.count}}</td>
+                                        <td>0</td>
+                                        <td>#</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% for game in dealer_games %}
+                                    <tr class="sorted-row" style="display: none;">
+                                        <td>{{game.dealer.user}}</td>
+                                        <td>{{game.LSK}}</td>
+                                        <td>{{game.number}}</td>
+                                        <td>{{game.count}}</td>
+                                        <td>0</td>
+                                        <td>#</td>
+                                    </tr>
+                                    {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -288,6 +308,51 @@
 
     });
 </script>
+
+<script>
+    function hideZeroCountRows() {
+        // Get the "Hide Zero Count" checkbox element
+        var hideZeroCheckbox = document.getElementById('hide-zero');
+        
+        // Get all the rows with class "main-row"
+        var rows = document.querySelectorAll('.main-row');
+    
+        // Loop through the rows and hide those with remaining_limit equal to 0 when the checkbox is checked
+        for (var i = 0; i < rows.length; i++) {
+            // Get the "remaining_limit" value from the fifth column (adjust the index based on your table structure)
+            var remainingLimitCell = rows[i].getElementsByTagName('td')[4];
+    
+            // Check if the checkbox is checked and the remaining limit is 0, then hide the row
+            if (hideZeroCheckbox.checked && parseInt(remainingLimitCell.textContent) === 0) {
+                rows[i].style.display = 'none';
+            } else {
+                rows[i].style.display = ''; // Show the row
+            }
+        }
+    }
+</script>
+
+<script>
+    function toggleSorting() {
+        // Get the "Sort Customer" checkbox element
+        var sortCheckbox = document.getElementById('sort');
+        
+        // Get all the main-row and sorted-row elements
+        var mainRows = document.querySelectorAll('.main-row');
+        var sortedRows = document.querySelectorAll('.sorted-row');
+    
+        // Check the checkbox status and show/hide rows accordingly
+        for (var i = 0; i < mainRows.length; i++) {
+            if (sortCheckbox.checked) {
+                mainRows[i].style.display = 'none'; // Hide main rows
+                sortedRows[i].style.display = ''; // Show sorted rows
+            } else {
+                mainRows[i].style.display = ''; // Show main rows
+                sortedRows[i].style.display = 'none'; // Hide sorted rows
+            }
+        }
+    }
+    </script>
 
 
     {% endblock %}
