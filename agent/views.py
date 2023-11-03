@@ -8,7 +8,7 @@ from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
 from adminapp.models import PlayTime, AgentPackage,Result,Winning,Limit,BlockedNumber
-from .models import DealerPackage, AgentGameTest, AgentGame, Bill, DealerCollectionReport
+from .models import DealerPackage, AgentGameTest, AgentGame, Bill, DealerCollectionReport, DealerLimit
 from dealer.models import DealerGame
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
@@ -67,7 +67,7 @@ def add_dealer(request):
             dealer.agent = agent_obj  # Associate the agent_obj with the dealer
             dealer.save()
             messages.info(request, "Dealer Created Successfully")
-            return redirect("agent:view_dealer")
+            return redirect("agent:new_package")
     return render(request,'agent/add_dealer.html',{"login_form": login_form, "dealer_form": dealer_form})
 
 def view_dealer(request):
@@ -1520,7 +1520,7 @@ def new_package(request):
                         single1_dc=single1_dc,double2_prize=double2_prize,double2_dc=double2_dc)
             add_package.save()
             messages.info(request, "Package created successfully!")
-            return redirect('agent:package')
+            return redirect('agent:set_limit')
     context = {
         'dealers' : dealer
     }
@@ -1618,10 +1618,13 @@ def submit_data(request):
 
         time = get_object_or_404(PlayTime,id=timeId)
 
-        blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
-        if blocked_numbers:
-            messages.info(request, "This number and LSK is blocked!")
-            return redirect('agent:play_game',id=timeId)
+        try:
+            blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
+            if blocked_numbers:
+                messages.info(request, "This number and LSK is blocked!")
+                return redirect('agent:play_game',id=timeId)
+        except:
+            pass
         
         agent_game_test = AgentGameTest(
             agent=agent_obj,
@@ -1709,6 +1712,36 @@ def save_data(request, id):
         print(e)
 
     return redirect('agent:play_game',id=id)
+
+def set_limit(request):
+    agent_obj = Agent.objects.get(user=request.user)
+    dealers = Dealer.objects.filter(agent=agent_obj).all()
+    times = PlayTime.objects.filter().all()
+    if request.method == 'POST':
+        limit = request.POST.get('limit')
+        print(limit)
+        selected_times = request.POST.getlist('checkbox')
+        print(selected_times)
+        selected_agent = request.POST.get('select-agent')
+        dealer_instance = Dealer.objects.get(id=selected_agent)
+        print(selected_agent)
+        if DealerLimit.objects.filter(agent=agent_obj,dealer=selected_agent).exists():
+            messages.info(request, "Limit is not set, This dealer already have a limit!")
+            context = {
+                'agents' : dealers,
+                'times' : times,
+                'selected_agent' : selected_agent,
+            }
+            return render(request,'agent/set_limit.html',context)
+        agent_checked_times = DealerLimit(agent=agent_obj,dealer=dealer_instance,daily_limit=limit)
+        agent_checked_times.save()
+        agent_checked_times.checked_times.add(*selected_times)
+        return redirect('agent:index')
+    context = {
+        'agents' : dealers,
+        'times' : times
+    }
+    return render(request,'agent/set_limit.html',context)
 
 def change_password(request):
     if request.method == "POST":

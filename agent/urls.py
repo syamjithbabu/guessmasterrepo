@@ -43,7 +43,7 @@ urlpatterns = [
     path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row"),
 
 
-
+    path('set-limit',views.set_limit,name="set_limit"),
     path('change-password',views.change_password,name="change_password"),
 
 

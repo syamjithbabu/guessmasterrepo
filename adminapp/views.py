@@ -223,8 +223,11 @@ def new_package(request):
             add_package.save()
             messages.info(request, "Package created successfully!")
             return redirect('adminapp:set_limit')
+    last_agent = Agent.objects.filter().last()
+    agent_instance = last_agent.user
     context = {
-        'agents' : agent
+        'agents' : agent,
+        'selected_agent' : agent_instance,
     }
     return render(request,'adminapp/new_package.html',context)
 
@@ -1015,6 +1018,7 @@ def monitor(request):
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     print(current_date)
+    times = PlayTime.objects.filter().all()
     matching_play_times = []
     try:
         matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
@@ -1138,7 +1142,8 @@ def monitor(request):
     context = {
         'agent_games' : agent_games,
         'dealer_games' : dealer_games,
-        'monitor_games' : monitor_game
+        'monitor_games' : monitor_game,
+        'times' : times
     }
     if request.method == 'POST':
         print("filtering")
@@ -1148,12 +1153,17 @@ def monitor(request):
         sort = request.POST.get('sort')
         hide_zero = request.POST.get('hide-zero')
         search = request.POST.get('serch')
+        selected_time = request.POST.get('time')
         print(search)
         print(hide_zero)
         filter_query = Q()
-        filter_query |= Q(LSK__in=checkboxes)
+        if checkboxes:
+            filter_query |= Q(LSK__in=checkboxes)
         if from_date:
             filter_query &= Q(date=from_date)
+        if selected_time != 'all':
+            selected_time_obj = PlayTime.objects.get(id=selected_time)
+            filter_query &= Q(time=selected_time_obj)
         if search:
             search_query = Q(LSK__icontains=search) | Q(number__icontains=search)
             combined_games = CombinedGame.objects.filter(search_query)
@@ -1161,17 +1171,19 @@ def monitor(request):
                 'monitor_games' : combined_games,
                 'agent_games' : agent_games,
                 'dealers_games' : dealer_games,
+                'times' : times,
+                'selected_time' : selected_time
             }
             return render(request,'adminapp/monitor.html',context)
 
-        print("Filter Query:", filter_query)  # Debugging
+        print("Filter Query:", filter_query)
         combined_games = CombinedGame.objects.filter(filter_query)
-
-        print("Combined Games:", combined_games)  # Debugging
+        print("Combined Games:", combined_games)
         context = {
             'monitor_games' : combined_games,
             'agent_games' : agent_games,
             'dealers_games' : dealer_games,
+            'times' : times,
         }
     return render(request,'adminapp/monitor.html',context)
 
@@ -1179,6 +1191,11 @@ def clear_limit(request,id):
     combined_game = get_object_or_404(CombinedGame,id=id)
     print(combined_game)
     clear_limit = CombinedGame.objects.filter(id=id).update(remaining_limit=0)
+    print("cleared")
+    return redirect('adminapp:monitor')
+
+def clear_all(request):
+    clear_limit = CombinedGame.objects.filter().update(remaining_limit=0)
     print("cleared")
     return redirect('adminapp:monitor')
 
@@ -1218,36 +1235,36 @@ def republish_results(request):
             'third': last_result.third,
             'fourth': last_result.fourth,
             'fifth': last_result.fifth,
-            'feild1': last_result.field1,
-            'feild2': last_result.field2,
-            'feild3': last_result.field3,
-            'feild4': last_result.field4,
-            'feild5': last_result.field5,
-            'feild6': last_result.field6,
-            'feild7': last_result.field7,
-            'feild8': last_result.field8,
-            'feild9': last_result.field9,
-            'feild10': last_result.field10,
-            'feild11': last_result.field11,
-            'feild12': last_result.field12,
-            'feild13': last_result.field13,
-            'feild14': last_result.field14,
-            'feild15': last_result.field15,
-            'feild16': last_result.field16,
-            'feild17': last_result.field17,
-            'feild18': last_result.field18,
-            'feild19': last_result.field19,
-            'feild20': last_result.field20,
-            'feild21': last_result.field21,
-            'feild22': last_result.field22,
-            'feild23': last_result.field23,
-            'feild24': last_result.field24,
-            'feild25': last_result.field25,
-            'feild26': last_result.field26,
-            'feild27': last_result.field27,
-            'feild28': last_result.field28,
-            'feild29': last_result.field29,
-            'feild30': last_result.field30,
+            'field1': last_result.field1,
+            'field2': last_result.field2,
+            'field3': last_result.field3,
+            'field4': last_result.field4,
+            'field5': last_result.field5,
+            'field6': last_result.field6,
+            'field7': last_result.field7,
+            'field8': last_result.field8,
+            'field9': last_result.field9,
+            'field10': last_result.field10,
+            'field11': last_result.field11,
+            'field12': last_result.field12,
+            'field13': last_result.field13,
+            'field14': last_result.field14,
+            'field15': last_result.field15,
+            'field16': last_result.field16,
+            'field17': last_result.field17,
+            'field18': last_result.field18,
+            'field19': last_result.field19,
+            'field20': last_result.field20,
+            'field21': last_result.field21,
+            'field22': last_result.field22,
+            'field23': last_result.field23,
+            'field24': last_result.field24,
+            'field25': last_result.field25,
+            'field26': last_result.field26,
+            'field27': last_result.field27,
+            'field28': last_result.field28,
+            'field29': last_result.field29,
+            'field30': last_result.field30,
         }
     else:
         field_values = {
@@ -1326,6 +1343,7 @@ def republish_results(request):
         result = Result.objects.update(date=current_date,time=time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
         messages.info(request, "Result re-published!")
         return redirect('adminapp:index')
+    print(field_values)
     context = {
         'timings' : times,
         'result' : last_result,

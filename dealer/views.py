@@ -29,8 +29,8 @@ def index(request):
     print(agent)
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
-    if PlayTime.objects.filter(limit__agent=agent).all():
-        play_times = PlayTime.objects.filter(limit__agent=agent).all()
+    if PlayTime.objects.filter(dealerlimit__dealer=dealer_obj).all():
+        play_times = PlayTime.objects.filter(dealerlimit__dealer=dealer_obj).all()
     else:
         play_times = PlayTime.objects.filter().all()
     play_time_availabilities = []
@@ -56,7 +56,6 @@ def result(request):
         date = request.POST.get('date')
         time = request.POST.get('time')
         if time != 'all':
-            
             results = Result.objects.filter(date=date,time=time).last()
         context = {
             'times' : times,
@@ -67,7 +66,8 @@ def result(request):
         return render(request,'dealer/results.html',context)
     context = {
         'times' : times,
-        'results' : results
+        'results' : results,
+        
     }
     return render(request,'dealer/results.html',context)
 
@@ -680,10 +680,13 @@ def submit_data(request):
 
         time = get_object_or_404(PlayTime,id=timeId)
 
-        blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
-        if blocked_numbers:
-            messages.info(request, "This number and LSK is blocked!")
-            return redirect('agent:play_game',id=timeId)
+        try:
+            blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
+            if blocked_numbers:
+                messages.info(request, "This number and LSK is blocked!")
+                return redirect('agent:play_game',id=timeId)
+        except:
+            pass
         
         dealer_game_test = DealerGameTest(
             dealer=dealer_obj,

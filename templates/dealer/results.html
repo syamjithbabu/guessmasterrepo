@@ -13,8 +13,6 @@
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
-                                class="fa fa-arrow-left"></i></a> View Result</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'dealer:index' %}"><i class="icon-home"></i></a>
                         </li>
@@ -39,7 +37,6 @@
                             <label for="time" class="control-label">Time</label>
                             <select class="form-control show-tick ms select2" data-placeholder="Select"
                                 name="time" id="time">
-                                <option value="all">All Times</option>
                                 {% for time in times %}
                                 <option value="{{time.id}}">{{time.game_time}}</option>
                                 {% endfor %}

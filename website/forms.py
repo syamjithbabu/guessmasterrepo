@@ -49,28 +49,20 @@ def phone_number_validation(value):
 
 
 class AgentRegistration(forms.ModelForm):
-    phone_number = forms.CharField(
-        validators=[phone_number_validation],
-        widget=TextInput(attrs={"class": "form-control", "name": "phone_number", "placeholder": "Phone", "required": "required", "autocomplete": "off"}),
-    )
 
     class Meta:
         model = Agent
-        fields = ("agent_name", "phone_number")
+        fields = ()
         widgets = {
             "agent_name": TextInput(attrs={"class": "form-control", "name": "agent_name", "placeholder": "Name", "required": "required", "autocomplete": "off"}),
         }
 
 
 class DealerRegistration(forms.ModelForm):
-    phone_number = forms.CharField(
-        validators=[phone_number_validation],
-        widget=TextInput(attrs={"class": "form-control", "name": "phone_number", "placeholder": "Phone", "required": "required", "autocomplete": "off"}),
-    )
 
     class Meta:
         model = Dealer
-        fields = ("dealer_name", "phone_number")
+        fields = ()
         widgets = {
             "dealer_name": TextInput(attrs={"class": "form-control", "name": "dealer_name", "placeholder": "Name", "required": "required", "autocomplete": "off"}),
         }

@@ -9,19 +9,19 @@ class User(AbstractUser):
 
 class Agent(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name="agent")
-    agent_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=100)
+    agent_name = models.CharField(max_length=100,null=True)
+    phone_number = models.CharField(max_length=100,null=True)
 
     def __str__(self):
-        return str(self.agent_name)
+        return str(self.user)
     
 class Dealer(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name="dealer")
     agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
-    dealer_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=100)
+    dealer_name = models.CharField(max_length=100,null=True)
+    phone_number = models.CharField(max_length=100,null=True)
 
     def __str__(self):
-        return str(self.dealer_name)
+        return str(self.user)
     
     

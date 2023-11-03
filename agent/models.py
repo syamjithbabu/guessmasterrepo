@@ -104,3 +104,12 @@ class DealerCollectionReport(models.Model):
 
     def __str__(self):
         return str(self.dealer)
+    
+class DealerLimit(models.Model):
+    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    dealer = models.ForeignKey(Dealer,on_delete=models.CASCADE,null=True)
+    daily_limit = models.FloatField()
+    checked_times = models.ManyToManyField(PlayTime)
+
+    def __str__(self):
+        return str(self.dealer)

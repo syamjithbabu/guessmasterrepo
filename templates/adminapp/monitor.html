@@ -96,9 +96,30 @@
                                         <input type="date" class="form-control" id="from-date" name="from-date">
                                     </div>
                                 </div>
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                            name="time" id="time">
+                                            <option value="all">All Times</option>
+                                            {% for time in times %}
+                                            <option value="{{time.id}}">{{time.game_time}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
                                         <input type="text" class="form-control" id="search" placeholder="Search" name="serch">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-6 col-3">
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Search</button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-6 col-3">
+                                    <div class="form-group">
+                                        <a href="{% url 'adminapp:clear_all' %}" class="btn btn-primary">Clear All</a>
                                     </div>
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
@@ -110,11 +131,10 @@
                                     <span>Sort Customer</span>
                                 </label>
                                 
-                                <div class="col-lg-2 col-md-6 col-6">
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Go</button>
-                                    </div>
-                                </div>
+                                
+                                
+
+                                
                                 
                             </ul>
                         </form>

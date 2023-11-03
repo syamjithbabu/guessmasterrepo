@@ -47,6 +47,7 @@ urlpatterns = [
     path('blocked-numbers',views.blocked_numbers,name="blocked_numbers"),
     path('new-block',views.new_block,name="new_block"),
     path('delete-block/<int:id>',views.delete_block,name="delete_block"),
-    path('clear-limit/<int:id>',views.clear_limit,name="clear_limit")
+    path('clear-limit/<int:id>',views.clear_limit,name="clear_limit"),
+    path('clear-all',views.clear_all,name="clear_all")
     
 ]

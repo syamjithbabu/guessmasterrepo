@@ -922,7 +922,6 @@
             var newRow = document.createElement("tr")
             var result1 = (count * amounts[linkText]).toFixed(2);
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            tableBody.appendChild(newRow);
             sendDataToDjango(linkText, number, count, result1, result2);
         }
         document.getElementById("numberInput").value = "";

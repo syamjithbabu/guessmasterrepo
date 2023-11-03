@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import AgentGameTest,AgentGame,Bill,DealerCollectionReport
+from . models import AgentGameTest,AgentGame,Bill,DealerCollectionReport, DealerLimit
 
 # Register your models here.
 
@@ -13,3 +13,4 @@ class AgentGameAdmin(admin.ModelAdmin):
 
 admin.site.register(Bill)
 admin.site.register(DealerCollectionReport)
+admin.site.register(DealerLimit)
