@@ -102,13 +102,19 @@
                         <li>
                             <a href="{% url 'adminapp:edit_bill' %}"><i class="icon-note"></i>Edit Bill</a>
                         </li>
-                        
+                        <li>
+                            <a href="{% url 'adminapp:settings' %}" ><i class="icon-settings"></i> <span>Settings</span></a>
+                           
+                        </li>
                         <li>
                             <a href="{% url 'adminapp:change_password' %}" ><i class="icon-settings"></i> <span>Change Password</span></a>
                            
                         </li>
                         
-                       
+                        <li>
+                            <a href="{% url 'adminapp:index' %}"><i class="icon-refresh"></i> <span>Refresh</span></a>
+                        </li>
+                        
                        
                      
                     </ul>

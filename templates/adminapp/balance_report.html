@@ -200,7 +200,7 @@
                 
                                             </div>
                                             <thead>
-                                                <tr>
+                                                <tr class="l-blue">
                                                     <th class="th">Date</th>
                                                      <th class="th">Agent</th>
                                                      <th class="th">Sale<br>Amount</th>
@@ -211,18 +211,18 @@
                                             </thead>
                                             <tbody class="not-summary">
                                                 {% for data in report_data %}
-                                                <tr>
+                                                <tr class="l-pink"> 
                                                     <td class="td2">{{data.date}}</td>
                                                     <td class="td3">{{data.agent.user}}</td>
-                                                    <td class="td2">{{data.total_d_amount}}</td>
-                                                    <td class="td3">{{data.from_or_to}}</td>   
-                                                    <td class="td2">{{data.balance}}</td>                                              
+                                                    <td class="td2">{{data.total_d_amount|floatformat:2}}</td>
+                                                    <td class="td3">{{data.from_or_to|floatformat:2}}</td>   
+                                                    <td class="td2">{{data.balance|floatformat:2}}</td>                                              
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
                                         <div class="col-md-12 text-right" id="totalcount">
-                                            <h6>Balance:{{total_balance}}</h6>
+                                            <h6>Balance:{{total_balance|floatformat:2}}</h6>
                                         </div>
                                     </div>
                                     <div  style="padding-top: 50px;"></div>
@@ -246,7 +246,7 @@
     </div>
 </div>
 
-<nav class="navbar-bottom"  id="btotal">
+<nav class="navbar-bottom l-parpl"  id="btotal">
     <table>
         <thead>
             <tr>
@@ -255,7 +255,7 @@
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{total_balance}}</td>
+                <td class="td1">{{total_balance|floatformat:2}}</td>
             </tr>
         </tbody>
     </table>

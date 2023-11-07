@@ -126,6 +126,7 @@ class CollectionReport(models.Model):
         return str(self.agent)
 
 class Monitor(models.Model):
+    time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     super = models.IntegerField(default=0)
     box = models.IntegerField(default=0)
     ab = models.IntegerField(default=0)
@@ -159,3 +160,17 @@ class BlockedNumber(models.Model):
 
     def __str__(self):
         return f"{self.LSK} - {self.number}"
+    
+class GameLimit(models.Model):
+    time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
+    super = models.IntegerField(default=0)
+    box = models.IntegerField(default=0)
+    ab = models.IntegerField(default=0)
+    bc = models.IntegerField(default=0)
+    ac = models.IntegerField(default=0)
+    a = models.IntegerField(default=0)
+    b = models.IntegerField(default=0)
+    c = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)

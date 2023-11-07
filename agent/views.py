@@ -7,7 +7,7 @@ import pytz
 from website.forms import LoginForm
 from website.forms import DealerRegistration,UserUpdateForm
 from website.models import User,Dealer,Agent
-from adminapp.models import PlayTime, AgentPackage,Result,Winning,Limit,BlockedNumber
+from adminapp.models import PlayTime, AgentPackage,Result,Winning,Limit,BlockedNumber,GameLimit
 from .models import DealerPackage, AgentGameTest, AgentGame, Bill, DealerCollectionReport, DealerLimit
 from dealer.models import DealerGame
 from django.contrib import messages
@@ -86,7 +86,7 @@ def edit_dealer(request,id):
         dealer_form = DealerRegistration(request.POST, instance=dealer)
         login_form = UserUpdateForm(request.POST, instance=user)
         if dealer_form.is_valid() and login_form.is_valid():
-            dealer_form.save()
+            login_form.save()
             messages.info(request, "Dealer Updated Successfully")
             return redirect("agent:view_dealer")
     else:
@@ -126,7 +126,10 @@ def results(request):
     if request.method == 'POST':
         date = request.POST.get('date')
         time = request.POST.get('time')
-        results = Result.objects.filter(date=date,time=time)
+        try:
+            results = Result.objects.get(date=date,time=time)
+        except:
+            results = []
         context = {
             'times' : times,
             'results' : results,
@@ -170,7 +173,7 @@ def sales_report(request):
             lsk_value = ['AB','BC','AC']
         elif lsk == 'super':
             lsk_value = ['Super']
-        elif lsk_value == 'box':
+        elif lsk == 'box':
             lsk_value = ['Box']
         else:
             lsk_value == ['all']
@@ -442,7 +445,7 @@ def daily_report(request):
                     for bill in bills:
                         winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=bill.id,date__range=[from_date, to_date],time=select_time)
                         print(winnings)
-                        total_winning = sum(winning.prize for winning in winnings)
+                        total_winning = sum(winning.total for winning in winnings)
                         bill.win_amount += total_winning
                         if winnings != 0:
                             bill.total_d_amount = bill.total_c_amount - total_winning
@@ -469,7 +472,7 @@ def daily_report(request):
                     for bill in bills:
                         winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=bill.id,date__range=[from_date, to_date],time=select_time)
                         print(winnings)
-                        total_winning = sum(winning.prize for winning in winnings)
+                        total_winning = sum(winning.total for winning in winnings)
                         bill.win_amount += total_winning
                         if winnings != 0:
                             bill.total_d_amount = bill.total_c_amount - total_winning
@@ -497,7 +500,7 @@ def daily_report(request):
                     for bill in bills:
                         winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=bill.id,date__range=[from_date, to_date])
                         print(winnings)
-                        total_winning = sum(winning.prize for winning in winnings)
+                        total_winning = sum(winning.total for winning in winnings)
                         bill.win_amount += total_winning
                         if winnings != 0:
                             bill.total_d_amount = bill.total_c_amount - total_winning
@@ -524,7 +527,7 @@ def daily_report(request):
                     for bill in bills:
                         winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=bill.id,date__range=[from_date, to_date])
                         print(winnings)
-                        total_winning = sum(winning.prize for winning in winnings)
+                        total_winning = sum(winning.total for winning in winnings)
                         bill.win_amount += total_winning
                         if winnings != 0:
                             bill.total_d_amount = bill.total_c_amount - total_winning
@@ -552,7 +555,7 @@ def daily_report(request):
                 for bill in bills:
                     winnings = Winning.objects.filter(bill=bill.id,date__range=[from_date, to_date],time=select_time)
                     print(winnings)
-                    total_winning = sum(winning.prize for winning in winnings)
+                    total_winning = sum(winning.total for winning in winnings)
                     bill.win_amount += total_winning
                     if winnings != 0:
                         bill.total_d_amount = bill.total_c_amount - total_winning
@@ -579,7 +582,7 @@ def daily_report(request):
                 for bill in bills:
                     winnings = Winning.objects.filter(bill=bill.id,date__range=[from_date, to_date])
                     print(winnings)
-                    total_winning = sum(winning.prize for winning in winnings)
+                    total_winning = sum(winning.total for winning in winnings)
                     bill.win_amount += total_winning
                     if winnings != 0:
                         bill.total_d_amount = bill.total_c_amount - total_winning
@@ -605,7 +608,7 @@ def daily_report(request):
         for bill in bills:
             winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
             print(winnings)
-            total_winning = sum(winning.prize for winning in winnings)
+            total_winning = sum(winning.total for winning in winnings)
             bill.win_amount += total_winning
             if winnings != 0:
                 bill.total_d_amount = bill.total_c_amount - total_winning
@@ -1360,7 +1363,7 @@ def edit_bill(request):
         matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
         print(matching_play_times.id)
     except:
-        pass
+        matching_play_times = []
     if request.method == 'POST':
         search_dealer = request.POST.get('dealer-select')
         print(search_dealer,"the user id")
@@ -1368,26 +1371,47 @@ def edit_bill(request):
             return redirect('agent:edit_bill')
         else:
             pass
-        bill_search = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).all()
-        totals = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
-        dealers = Dealer.objects.filter(agent=agent_obj).all()
-        print(bill_search,"search bill")
-        context = {
-            'dealers': dealers,
-            'bills': bill_search,
-            'totals' : totals
-        }
-        return render(request,'agent/edit_bill.html',context)
+        try:
+            bill_search = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).all()
+            totals = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            dealers = Dealer.objects.filter(agent=agent_obj).all()
+            print(bill_search,"search bill")
+            context = {
+                'dealers': dealers,
+                'bills': bill_search,
+                'totals' : totals
+            }
+            return render(request,'agent/edit_bill.html',context)
+        except:
+            bill_search = []
+            totals = []
+            dealers = Dealer.objects.filter(agent=agent_obj).all()
+            context = {
+                'dealers': dealers,
+                'bills': bill_search,
+                'totals' : totals
+            }
+            return render(request,'agent/edit_bill.html',context)
     else:
-        bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).all()
-        totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
-        dealers = Dealer.objects.filter(agent=agent_obj).all()
-        print(agent_obj.user,"agent id")
-        context = {
-            'bills':bills,
-            'dealers' : dealers,
-            'totals' : totals
-        }
+        try:
+            bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).all()
+            totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            dealers = Dealer.objects.filter(agent=agent_obj).all()
+            print(agent_obj.user,"agent id")
+            context = {
+                'bills':bills,
+                'dealers' : dealers,
+                'totals' : totals
+            }
+        except:
+            bill_search = []
+            totals = []
+            dealers = Dealer.objects.filter(agent=agent_obj).all()
+            context = {
+                'dealers': dealers,
+                'bills': bill_search,
+                'totals' : totals
+            }
     return render(request,'agent/edit_bill.html',context)
 
 def delete_bill(request,id):
@@ -1399,14 +1423,8 @@ def delete_bill(request,id):
     print(time_id,"time")
     date = bill.date
     print(date,"date")
-    if AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date):
-        games = AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date).all()
-    else:
-        games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
-    print(games)
     context = {
         'bill' : bill,
-        'games' : games
     }
     return render(request,'agent/delete_bill.html',context)     
 
@@ -1446,7 +1464,7 @@ def play_game(request,id):
         messages.info(request,"There is no package for this user!")
     dealers = Dealer.objects.filter(agent=agent_obj).all()
     try:
-        rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date)
+        rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date).order_by('-id')
         total_c_amount = sum(row.c_amount for row in rows)
         total_d_amount = sum(row.d_amount for row in rows)
         total_count = sum(row.count for row in rows)
@@ -1616,6 +1634,8 @@ def submit_data(request):
 
         print(select_dealer,"############")
 
+        print(data)
+
         time = get_object_or_404(PlayTime,id=timeId)
 
         try:
@@ -1623,6 +1643,105 @@ def submit_data(request):
             if blocked_numbers:
                 messages.info(request, "This number and LSK is blocked!")
                 return redirect('agent:play_game',id=timeId)
+        except:
+            pass
+
+        try:
+            game_limit = GameLimit.objects.get(time=time)
+            print("tried this")
+            limits = {
+                'Super': game_limit.super,
+                'Box': game_limit.box,
+                'AB' : game_limit.ab,
+                'BC' : game_limit.bc,
+                'AC' : game_limit.ac,
+                'A' : game_limit.a,
+                'B' : game_limit.b,
+                'C' : game_limit.c,
+            }
+            print(limits)
+            agent_games_super = AgentGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
+            dealer_games_super = DealerGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
+            agent_games_box = AgentGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
+            dealer_games_box = DealerGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
+            agent_games_ab = AgentGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
+            dealer_games_ab = DealerGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
+            agent_games_bc = AgentGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
+            dealer_games_bc = DealerGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
+            agent_games_ac = AgentGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
+            dealer_games_ac = DealerGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
+            agent_games_a = AgentGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
+            dealer_games_a = DealerGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
+            agent_games_b = AgentGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
+            dealer_games_b = DealerGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
+            agent_games_c = AgentGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
+            dealer_games_c = DealerGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
+
+            print("test",agent_games_super)
+            print("test",dealer_games_super)
+
+            games_super = (agent_games_super['total_super'] or 0) + (dealer_games_super['total_super'] or 0)
+            games_box = (agent_games_box['total_box'] or 0) + (dealer_games_box['total_box'] or 0)
+            games_ab = (agent_games_ab['total_ab'] or 0) + (dealer_games_ab['total_ab'] or 0)
+            games_bc = (agent_games_bc['total_bc'] or 0) + (dealer_games_bc['total_bc'] or 0)
+            games_ac = (agent_games_ac['total_ac'] or 0) + (dealer_games_ac['total_ac'] or 0)
+            games_a = (agent_games_a['total_a'] or 0) + (dealer_games_a['total_a'] or 0)
+            games_b = (agent_games_b['total_b'] or 0) + (dealer_games_b['total_b'] or 0)
+            games_c = (agent_games_c['total_c'] or 0) + (dealer_games_c['total_c'] or 0)
+
+            print("box",games_box)
+
+            print(int(games_box)+int(value2))
+
+            if link_text == 'Super':
+                total_super = int(games_super) + int(value2)
+                total = int(total_super) + int(value2)
+                if total > game_limit.super:
+                    print("Limit exceeded")
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game', id=timeId)
+            elif link_text == 'Box':
+                total_box = int(games_box)+int(value2)
+                total = int(total_box) + int(value2)
+                if total > game_limit.box:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'AB':
+                total_ab = int(games_ab)+int(value2)
+                total = int(total_ab) + int(value2)
+                if total > game_limit.ab:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'BC':
+                total_bc = int(games_bc)+int(value2)
+                total = int(total_bc) + int(value2)
+                if total > game_limit.bc:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'AC':
+                total_ac = int(games_ac)+int(value2)
+                total = int(total_ac) + int(value2)
+                if total > game_limit.ac:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'A':
+                total_a = int(games_a)+int(value2)
+                total = int(total_a) + int(value2)
+                if total > game_limit.a:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'B':
+                total_b = int(games_b)+int(value2)
+                total = int(total_b) + int(value2)
+                if total > game_limit.b:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
+            elif link_text == 'C':
+                total_c = int(games_c)+int(value2)
+                total = int(total_c) + int(value2)
+                if total > game_limit.c:
+                    messages.info(request, "Limit of this LSK is exceeded!")
+                    return redirect('agent:play_game',id=timeId)
         except:
             pass
         
@@ -1654,7 +1773,7 @@ def submit_data(request):
             blocked_numbers = BlockedNumber.objects.filter().all()
         except:
             pass
-        return JsonResponse({'status': 'success'})
+        return redirect('agent:play_game',id=timeId)
     return JsonResponse({'status': 'success'})
 
 def save_data(request, id):

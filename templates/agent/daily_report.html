@@ -225,11 +225,11 @@
                                     <tbody>
                                         {% for bill in dealer_bills %}
                                             <tr>
-                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 <td>{{ bill.user }}</td>
-                                                <td>{{ bill.total_c_amount }}</td>
-                                                <td>{{ bill.win_amount }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
+                                                <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>

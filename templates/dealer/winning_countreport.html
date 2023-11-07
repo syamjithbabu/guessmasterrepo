@@ -214,14 +214,14 @@
                                                 <tr>
                                                     <td class="td2">{{winning.position}}</td>
                                                     <td class="td3">{{winning.count}}</td>
-                                                    <td class="td2">{{winning.prize}}</td>                                                  
+                                                    <td class="td2">{{winning.prize|floatformat:2}}</td>                                                  
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
                                         </table>
                                         <div class="col-md-12 text-right" id="total">
                                             <h6>TOTAL COUNT : {{totals.total_count}}</h6>
-                                            <h6>TOTAL AMOUNT : {{totals.total_prize}}</h6>
+                                            <h6>TOTAL AMOUNT : {{totals.total_prize|floatformat:2}}</h6>
                 
                                         </div>
                                     </div>
@@ -240,7 +240,7 @@
         <tbody>
             <tr>
                 <td class="td1">{{totals.total_count}}</td>
-                <td class="td1">{{totals.total_prize}}</td>
+                <td class="td1">{{totals.total_prize|floatformat:2}}</td>
             </tr>
         </tbody>
     </table>

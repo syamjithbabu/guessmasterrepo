@@ -218,8 +218,8 @@
                                                 <tr>
                                                     <td class="td2">{{collection.date}}</td>
                                                     <td class="td3">{{collection.dealer}}</td>
-                                                    <td class="td2">{{collection.from_or_to}}</td>
-                                                    <td class="td3">{{collection.amount}}</td>                                                 
+                                                    <td class="td2">{{collection.from_or_to|floatformat:2}}</td>
+                                                    <td class="td3">{{collection.amount|floatformat:2}}</td>                                                 
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -230,7 +230,7 @@
                                             {% else %}
                                             <h6 class="th1">Loss</h6>
                                             {% endif %}
-                                            <h6 class="th1">{{profit_or_loss}}</h6>
+                                            <h6 class="th1">{{profit_or_loss|floatformat:2}}</h6>
 
                                         </div>
                                         <div  style="padding-top: 50px;"></div>
@@ -266,7 +266,7 @@
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{profit_or_loss}}</td>
+                <td class="td1">{{profit_or_loss|floatformat:2}}</td>
             </tr>
         </tbody>
     </table>

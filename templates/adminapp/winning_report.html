@@ -218,7 +218,7 @@
                 
                                             </div>
                                             <thead>
-                                                <tr>
+                                                <tr class="l-blue">
                                                      <th class="th">B</th>
                                                      <th class="th">U</th>
                                                      <th class="th">T</th>
@@ -233,7 +233,7 @@
                                             </thead>
                                             <tbody class="not-summary">
                                                 {% for winning in winnings %}
-                                                <tr>
+                                                <tr class="l-pink">
                                                     <td class="td2">{{winning.bill}}</td>
                                                     {% if winning.agent %}
                                                     <td class="td3">{{winning.agent}}</td>
@@ -244,20 +244,20 @@
                                                     <td class="td3">{{winning.number}}</td>
                                                     <td class="td2">{{winning.count}}</td>
                                                     <td class="td3">{{winning.position}}</td>
-                                                    <td class="td2">{{winning.commission}}</td>
-                                                    <td class="td3">{{winning.prize}}</td>
-                                                    <td class="td2">{{winning.total}}</td>                                                  
+                                                    <td class="td2">{{winning.commission|floatformat:2}}</td>
+                                                    <td class="td3">{{winning.prize|floatformat:2}}</td>
+                                                    <td class="td2">{{winning.total|floatformat:2}}</td>                                                  
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
                                             <tbody style="display: none;" class="summary-row">
                                                 {% for winning in aggr %}
-                                                <tr>
+                                                <tr class="l-turquoise">
                                                     <td class="td2">{{winning.bill}}</td>
                                                     {% if winning.agent %}
-                                                    <td class="td3">{{winning.agent}}</td>
+                                                    <td class="td3">{{winning.agent.user}}</td>
                                                     {% else %}
-                                                    <td class="td3">{{winning.dealer}}</td>
+                                                    <td class="td3">{{winning.dealer.user}}</td>
                                                     {% endif %}
                                                     <td class="td2">{{winning.LSK}}</td>
                                                     <td class="td3">{{winning.number}}</td>
@@ -279,7 +279,6 @@
                                         </div>
                                     </div>
                                     <div  style="padding-top: 50px;"></div>
-                                  >
                                     </div>
                                    
                     
@@ -288,8 +287,8 @@
     </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
-    <table>
+<nav class="navbar-bottom l-parpl" id="btotal">
+    <table> 
         <thead>
             <tr>
                  <th class="th1">COUNT</th>

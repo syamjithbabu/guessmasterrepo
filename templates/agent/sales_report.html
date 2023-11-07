@@ -258,7 +258,7 @@
                                     <tbody>
                                         {% for bill in agent_bills %}
                                             <tr class="main-row">
-                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 <td>{{ bill.user }}</td>
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>
@@ -299,7 +299,7 @@
                                     <tbody>
                                         {% for bill in dealer_bills %}
                                             <tr>
-                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 <td>{{ bill.user }}</td>
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>

@@ -43,6 +43,9 @@ def login(request):
             messages.success(request, "Your account is not active. Contact the admin for assistance.")
     return render(request,'website/login.html')
 
+def lock(request):
+    return render(request,'website/lock.html')
+
 def logout_view(request):
     logout(request)
     return redirect("website:login")

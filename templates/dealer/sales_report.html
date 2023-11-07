@@ -240,12 +240,12 @@
                                     <tbody>
                                         {% for bill in dealer_bills %}
                                             <tr>
-                                                <td>{{ bill.date }}</td>
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 <td>{{ bill.user }}</td>
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
-                                                <td>{{ bill.total_c_amount }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                             </tr>
                                             {% for game in bill.dealer_games.all %}
                                                 {% if game in dealer_games %}
@@ -254,8 +254,8 @@
                                                         <td>{{ game.LSK }}</td>
                                                         <td>{{ game.number }}</td>
                                                         <td>{{ game.count }}</td>
-                                                        <td>{{ game.d_amount }}</td>
-                                                        <td>{{ game.c_amount }}</td>
+                                                        <td>{{ game.d_amount|floatformat:2 }}</td>
+                                                        <td>{{ game.c_amount|floatformat:2 }}</td>
                                                     </tr>
                                                 {% endif %}
                                             {% endfor %}

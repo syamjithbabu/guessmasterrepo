@@ -91,7 +91,7 @@
                                                 {% for bill in bills %}
                                                 <!-- hello -->
                                                 <tr data-dealer="{{ bill.agent.user }}">
-                                                    <td class="table-cell">{{bill.date}}</td>
+                                                    <td class="table-cell">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                     <td class="table-cell">{{bill.user}}</td>
                                                     <td class="table-cell">{{bill.id}}</td>
                                                     <td class="table-cell">{{bill.total_count}}</td>

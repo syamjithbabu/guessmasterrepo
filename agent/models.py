@@ -3,6 +3,8 @@ from website.models import Dealer,User
 from adminapp.models import Agent,PlayTime
 from dealer.models import DealerGame
 from django.db.models import Sum
+from django.utils import timezone
+import datetime
 
 # Create your models here.
 
@@ -81,15 +83,37 @@ class Bill(models.Model):
     total_d_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_count = models.DecimalField(max_digits=10, decimal_places=0)
     win_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'Bill for {self.user} on {self.date}'
+    
+    def delete(self, using=None, keep_parents=False):
+        # First, delete the associated games
+        for game in self.agent_games.all():
+            game.delete()
+        for game in self.dealer_games.all():
+            game.delete()
+        
+        # Then, delete the Bill object itself
+        super(Bill, self).delete(using, keep_parents)
     
     def update_totals(self):
         # Calculate and update total_count, total_c_amount, and total_d_amount
         total_count = self.agent_games.aggregate(total_count=Sum('count'))['total_count'] or 0
         total_c_amount = self.agent_games.aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
         total_d_amount = self.agent_games.aggregate(total_d_amount=Sum('d_amount'))['total_d_amount'] or 0
+
+        self.total_count = total_count
+        self.total_c_amount = total_c_amount
+        self.total_d_amount = total_d_amount
+        self.save()
+    
+    def update_totals_dealer(self):
+        # Calculate and update total_count, total_c_amount, and total_d_amount
+        total_count = self.dealer_games.aggregate(total_count=Sum('count'))['total_count'] or 0
+        total_c_amount = self.dealer_games.aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        total_d_amount = self.dealer_games.aggregate(total_d_amount=Sum('d_amount'))['total_d_amount'] or 0
 
         self.total_count = total_count
         self.total_c_amount = total_c_amount

@@ -217,7 +217,7 @@
         
                                     </div>
                                     <thead>
-                                        <tr>
+                                        <tr class="l-pink">
                                             <th>Date</th>
                                             <th>Dealer</th>
                                             <th>T.Sale</th>
@@ -227,16 +227,16 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in dealer_bills %}
-                                            <tr>
-                                                <td>{{ bill.date }}</td>
+                                            <tr class="l-blue">
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 {% if bill.user.agent %}
                                                     <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
                                                 {% else %}
                                                     <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
                                                 {% endif %}
-                                                <td>{{ bill.total_c_amount }}</td>
-                                                <td>{{ bill.win_amount }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
+                                                <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -259,10 +259,10 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
-        <table>
+    <nav class="navbar-bottom  l-parpl" id="btotal" >
+        <table >
             <thead>
-                <tr>
+                <tr >
                      <th class="th">Sales Amount</th>
                      <th class="th">Win Amount</th>
                      <th class="th">Balance</th>
@@ -337,12 +337,13 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Get the select element by its ID
-        var selectTime = document.getElementById("time");
         var selectFrom = document.getElementById("from-date");
         var selectTo = document.getElementById("to-date");
-        var selectDealer = document.getElementById("agent");
+        var selectDealer = document.getElementById("aioConceptName");
+        var selectTime = document.getElementById("time");
 
         // Set the selected value based on the selected_dealer variable
+        console.log("{{selected_dealer}}")
         selectDealer.value = "{{ selected_dealer }}";
         selectTime.value = "{{ selected_time }}";
         selected_lsk = "{{ selected_lsk }}";

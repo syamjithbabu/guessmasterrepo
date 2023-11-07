@@ -25,7 +25,8 @@ urlpatterns = [
     path('change-time',views.change_time,name="change_time"),
     path('change-game-time/<int:id>',views.change_game_time,name="change_game_time"),
     path('monitor',views.monitor,name="monitor"),
-    path('set-monitor',views.set_monitor,name="set_monitor"),
+    path('set-monitor/<int:id>',views.set_monitor,name="set_monitor"),
+    path('set-monitor-times',views.set_monitor_times,name="set_monitor_times"),
     path('dailyreport',views.daily_report,name="dailyreport"),
     path('countwise-report',views.countwise_report,name="countwise_report"),
     path('countsales-report',views.countsales_report,name="countsales_report"),
@@ -48,6 +49,8 @@ urlpatterns = [
     path('new-block',views.new_block,name="new_block"),
     path('delete-block/<int:id>',views.delete_block,name="delete_block"),
     path('clear-limit/<int:id>',views.clear_limit,name="clear_limit"),
-    path('clear-all',views.clear_all,name="clear_all")
+    path('clear-all',views.clear_all,name="clear_all"),
+    path('settings',views.settings,name="settings"),
+    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")
     
 ]

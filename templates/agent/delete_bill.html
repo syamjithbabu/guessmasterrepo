@@ -43,7 +43,8 @@
                     </tr>
                 </thead>
                     <tbody>
-                        {% for game in games %}
+                        {% if bill.user.agent %}
+                        {% for game in bill.agent_games.all %}
                     <tr>
                         <td>{{game.LSK}}</td>
                         <td>{{game.number}}</td> 
@@ -53,6 +54,18 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% else %}
+                    {% for game in bill.dealer_games.all %}
+                    <tr>
+                        <td>{{game.LSK}}</td>
+                        <td>{{game.number}}</td> 
+                        <td>{{game.count}}</td>                                  
+                        <td>
+                            <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>

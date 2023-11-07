@@ -13,8 +13,6 @@
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
-                                class="fa fa-arrow-left"></i></a> View Result</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a>
                         </li>
@@ -39,7 +37,6 @@
                             <label for="time" class="control-label">Time</label>
                             <select class="form-control show-tick ms select2" data-placeholder="Select"
                                 name="time" id="time">
-                                <option value="all">All Times</option>
                                 {% for time in times %}
                                 <option value="{{time.id}}">{{time.game_time}}</option>
                                 {% endfor %}
@@ -49,6 +46,26 @@
                     <div class="col-lg-2 col-md-6 col-6">
                         <div class="form-group">
                             <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                    <div style="padding-top: 30px;"></div>
+                    <div class="col-lg-2 col-md-6 col-6 text-right">
+                        <div class="form-group">
+                            <a       href="whatsapp://send?text= {{results.date}} - {{results.time}}
+                            %0a1 : {{results.first}}
+                            %0a2 : {{results.second}}
+                            %0a3 : {{results.third}}
+                            %0a4 : {{results.fourth}}
+                            %0a5 : {{results.fifth}}
+                            %0a{{results.field1}}&nbsp;&nbsp;{{results.field2}}&nbsp;&nbsp;{{results.field3}}&nbsp;&nbsp;{{results.field4}}&nbsp;&nbsp;{{results.field5}}&nbsp;&nbsp;{{results.field6}}
+                            %0a{{results.field7}}&nbsp;&nbsp;{{results.field8}}&nbsp;&nbsp;{{results.field9}}&nbsp;&nbsp;{{results.field10}}&nbsp;&nbsp;{{results.field11}}&nbsp;&nbsp;{{results.field12}}&nbsp;&nbsp;
+                            %0a{{results.field13}}&nbsp;&nbsp;{{results.field14}}&nbsp;&nbsp;{{results.field15}}&nbsp;&nbsp;{{results.field16}}&nbsp;&nbsp;{{results.field17}}&nbsp;&nbsp;{{results.field18}}&nbsp;&nbsp;
+                            %0a{{results.field19}}&nbsp;&nbsp;{{results.field20}}&nbsp;&nbsp;{{results.field21}}&nbsp;&nbsp;{{results.field22}}&nbsp;&nbsp;{{results.field23}}&nbsp;&nbsp;{{results.field24}}&nbsp;&nbsp;
+
+                            %0a{{results.field25}}&nbsp;&nbsp;{{results.field26}}&nbsp;&nbsp;{{results.field27}}&nbsp;&nbsp;{{results.field28}}&nbsp;&nbsp;{{results.field29}}&nbsp;&nbsp;{{results.field30}}&nbsp;&nbsp;
+                            "
+                           
+                            >Share  To whatsapp  </a> <img src="{% static 'whatsapp.png' %}" width="18" height="18"  alt="Lucid">
                         </div>
                     </div>
                 </div>
@@ -187,10 +204,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var selectTime = document.getElementById("time");
-        selectTime.value = "{{ results.time.id }}";
+        var selectedTime = "{{selected_time}}";
+        if (selectedTime){
+            selectTime.value = "{{selected_time}}";
+        }
+        else{
+            selectTime.value = "{{ results.time.id }}";
+        }
     })
 </script>
-
 
 
 

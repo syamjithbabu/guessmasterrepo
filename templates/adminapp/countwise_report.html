@@ -208,7 +208,7 @@
                                         <thead>
 
 
-                                            <tr>
+                                            <tr  class="l-blue">
                                                 <th class="th">Particular</th>
                                                 <th class="th">Number</th>
                                                 <th class="th">Count</th>
@@ -217,14 +217,14 @@
                                         </thead>
                                         <tbody>
                                             {% for game in agent_games %}
-                                            <tr>
+                                            <tr class="l-pink">
                                                 <td class="td2">{{game.LSK}}</td>
                                                 <td class="td3">{{game.number}}</td>
                                                 <td class="td2">{{game.count}}</td>
                                             </tr>
                                             {% endfor %}
                                             {% for game in dealer_games %}
-                                            <tr>
+                                            <tr class="l-turquoise">
                                                 <td class="td2">{{game.LSK}}</td>
                                                 <td class="td3">{{game.number}}</td>
                                                 <td class="td2">{{game.count}}</td>
@@ -259,7 +259,7 @@
 </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom  l-parpl" id="btotal">
     <table>
         <thead>
             <tr>

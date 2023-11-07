@@ -227,9 +227,9 @@
                                                     <td class="td3">{{winning.number}}</td>
                                                     <td class="td2">{{winning.count}}</td>
                                                     <td class="td3">{{winning.position}}</td>
-                                                    <td class="td2">{{winning.commission}}</td>
-                                                    <td class="td3">{{winning.prize}}</td>
-                                                    <td class="td2">{{winning.total}}</td>                                                  
+                                                    <td class="td2">{{winning.commission|floatformat:2}}</td>
+                                                    <td class="td3">{{winning.prize|floatformat:2}}</td>
+                                                    <td class="td2">{{winning.total|floatformat:2}}</td>                                                  
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>

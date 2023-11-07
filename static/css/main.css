@@ -2821,7 +2821,7 @@ html.fullscreen-bg #wrapper {
     margin-top: 61px;
     position: fixed;
     left: 5px;
-    background-color: #f4f7f6;
+    background-color: #ffcbbd !important;
     z-index: 11;
     overflow-y: scroll;
     scrollbar-width: none;

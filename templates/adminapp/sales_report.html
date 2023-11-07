@@ -240,7 +240,7 @@
         
                                     </div>
                                     <thead>
-                                        <tr>
+                                        <tr class="l-blue">
                                             <th>Date</th>
                                             <th>Agent</th>
                                             <th>Bill</th>
@@ -251,8 +251,8 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in bills %}
-                                        <tr class="main-row">
-                                            <td>{{ bill.date }}</td>
+                                        <tr class="main-row l-pink">
+                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                             {% if bill.user.agent.user %}
                                             <td>{{ bill.user }}</td>
                                             {% else %}
@@ -260,8 +260,8 @@
                                             {% endif %}
                                             <td>{{ bill.id }}</td>
                                             <td>{{ bill.total_count }}</td>
-                                            <td>{{ bill.total_d_amount }}</td>
-                                            <td>{{ bill.total_c_amount }}</td>
+                                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                         </tr>
                                         
                                         
@@ -272,8 +272,8 @@
                                                 <td>{{ game.LSK }}</td>
                                                 <td>{{ game.number }}</td>
                                                 <td>{{ game.count }}</td>
-                                                <td>{{ game.d_amount }}</td>
-                                                <td>{{ game.c_amount }}</td>
+                                                <td>{{ game.d_amount|floatformat:2 }}</td>
+                                                <td>{{ game.c_amount|floatformat:2 }}</td>
                                             </tr>
                                             {% endif %}
                                         {% endfor %}
@@ -286,8 +286,8 @@
                                                     <td>{{ game.LSK }}</td>
                                                     <td>{{ game.number }}</td>
                                                     <td>{{ game.count }}</td>
-                                                    <td>{{ game.d_amount }}</td>
-                                                    <td>{{ game.c_amount }}</td>
+                                                    <td>{{ game.d_amount|floatformat:2 }}</td>
+                                                    <td>{{ game.c_amount|floatformat:2 }}</td>
                                                 </tr>
                                             {% endif %}
                                         {% endfor %}
@@ -313,7 +313,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
+    <nav class="navbar-bottom  l-parpl" id="btotal">
         <table>
             <thead>
                 <tr>
