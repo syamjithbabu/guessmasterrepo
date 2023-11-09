@@ -68,7 +68,7 @@
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card" style="margin-bottom: 10px !important;">
                     <div class="header" style="padding: 10px !important;">
-                        <h2>{{time.end_time}} [ {{request.user}} ]</h2>
+                        <h2>{{time.game_time}} [ {{request.user}} ]</h2>
                     </div>
                     <form method="POST">
                         <a onclick="bill()" href="{% url 'dealer:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
@@ -243,6 +243,16 @@
 
 <script>
     var rowId = {{ row_id }};
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // When the page is fully loaded, focus on the input element
+        var inputElement = document.getElementById("numberInput");
+        if (inputElement) {
+            inputElement.focus();
+        }
+    });
 </script>
 
 <script>

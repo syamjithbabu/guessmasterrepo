@@ -33,7 +33,7 @@
                             <div class="col-lg-3 col-md-6">
                                 <div class="mb-3">
                                     <label>Select Dealer</label>
-                                    <select name="dealer" class="form-control show-tick ms select2" data-placeholder="Select">
+                                    <select name="dealer" class="form-control show-tick ms select2" id="dealer" data-placeholder="Select">
                                         {% for dealer in dealers %}
                                         <option value="{{ dealer.id }}">{{dealer.user}}</option>
                                         {% endfor %}
@@ -224,6 +224,17 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the select element by its ID
+        var selectDealer = document.getElementById("dealer");
 
+        console.log("{{selected_dealer}}");
+
+        // Set the selected value based on the selected_dealer variable
+        selectDealer.value = "{{ selected_dealer }}";
+
+    });
+</script>
 
 {% endblock %} 

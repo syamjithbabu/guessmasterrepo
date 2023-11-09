@@ -79,9 +79,9 @@
                             <div class="row clearfix">
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
-                                        <select class="form-control show-tick ms select2" name="select-dealer" data-placeholder="Select">
-                                            {% for dealer in dealers %}
+                                        <select class="form-control show-tick ms select2" name="select-dealer" id="selected-dealer" data-placeholder="Select">
                                             <option>Select Dealer</option>
+                                            {% for dealer in dealers %}
                                             <option value="{{dealer.id}}">{{dealer.user}}</option>
                                             {% endfor %}
                                         </select>
@@ -251,6 +251,16 @@
 </script>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // When the page is fully loaded, focus on the input element
+        var inputElement = document.getElementById("numberInput");
+        if (inputElement) {
+            inputElement.focus();
+        }
+    });
+</script>
+
+<script>
 
     var button1 = document.getElementById("button1");
     var button2 = document.getElementById("button2");
@@ -336,6 +346,12 @@
 
 
 <script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var selectedDealer = document.getElementById("selected-dealer");
+        console.log(selectedDealer)
+    });
+
     var agentPackageData = {
         package_name: "{{ agent_package.package_name }}",
         single_rate: {{ agent_package.single_rate }},

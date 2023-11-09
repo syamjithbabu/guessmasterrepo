@@ -55,6 +55,7 @@
                                                 <tr class="l-blue">
                                                      <th>LSK</th>
                                                      <th>Number</th>
+                                                     <th>Count</th>
                                                      <th>Action </th>
                                                 </tr>
                                             </thead>
@@ -64,8 +65,13 @@
                                                 <tr data-dealer="{{ bill.agent.user }}" class="l-pink">
                                                     <td class="table-cell">{{block.LSK}}</td>
                                                     <td class="table-cell">{{block.number}}</td>
-                                                    <td class="table-cell"><a href="{% url 'adminapp:delete_block' block.id %}" class="btn btn-danger" title="Edit">
+                                                    <td class="table-cell">{{block.count}}</td>
+                                                    <td class="table-cell">
+                                                        <a href="{% url 'adminapp:edit_block' block.id %}" class="btn btn-info" title="Edit">
+                                                            <i class="fa fa-edit"></i></a>
+                                                        <a href="{% url 'adminapp:delete_block' block.id %}" class="btn btn-danger" title="Edit">
                                                         <i class="fa fa-trash-o"></i></a>
+                                                        
                                                     </td>
                                                 </tr>
                                                 {% endfor %}

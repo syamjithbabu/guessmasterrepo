@@ -5,7 +5,7 @@ import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
 from adminapp.models import PlayTime, Result, Winning, BlockedNumber, GameLimit
-from agent.models import DealerPackage,Bill,DealerCollectionReport,AgentGame
+from agent.models import DealerPackage,Bill,DealerCollectionReport,AgentGame,AgentGameTest
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
 from django.utils import timezone
@@ -602,12 +602,13 @@ def balance_report(request):
         print(dealer_games)
         collection = DealerCollectionReport.objects.filter(date__range=[from_date, to_date], dealer=dealer_obj)
         print(collection)
+        winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
         dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
         total_d_amount = dealer_total_d_amount
         from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
-        balance = float(total_collection_amount) - float(total_d_amount)
+        balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
         if total_d_amount > 0:
             report_data.append({
                 'date' : current_date,
@@ -629,12 +630,13 @@ def balance_report(request):
     print(dealer_games)
     collection = DealerCollectionReport.objects.filter(date=current_date, dealer=dealer_obj)
     print(collection)
+    winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
     dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
     total_d_amount = dealer_total_d_amount
     from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     total_collection_amount = from_agent - to_agent
-    balance = float(total_collection_amount) - float(total_d_amount)
+    balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
     if total_d_amount > 0:
         report_data.append({
             'date' : current_date,
@@ -706,8 +708,23 @@ def submit_data(request):
         try:
             blocked_numbers = BlockedNumber.objects.filter(LSK=link_text, number=value1)
             if blocked_numbers:
-                messages.info(request, "This number and LSK is blocked!")
-                return redirect('agent:play_game',id=timeId)
+                print("it is blocked")
+                agent_game_count = AgentGame.objects.filter(date=current_date,time=time,LSK=link_text).aggregate(total_count=Sum('count')) or {'total_count': 0}
+                dealer_game_count = DealerGame.objects.filter(date=current_date,time=time,LSK=link_text).aggregate(total_count=Sum('count')) or {'total_count': 0}
+                agent_game_test_count = AgentGameTest.objects.filter(date=current_date,time=time,LSK=link_text).aggregate(total_count=Sum('count')) or {'total_count': 0}
+                dealer_game_test_count = DealerGameTest.objects.filter(date=current_date,time=time,LSK=link_text).aggregate(total_count=Sum('count')) or {'total_count': 0}
+                print("hello")
+                print(agent_game_count)
+                print(dealer_game_count)
+                blocked_number_count = (agent_game_count['total_count'] or 0) + (dealer_game_count['total_count'] or 0) + (agent_game_test_count['total_count'] or 0) + (dealer_game_test_count['total_count'] or 0) + int(value2)
+                print(blocked_number_count)
+                for block in blocked_numbers:
+                    if blocked_number_count > block.count:
+                        messages.info(request, "This number and LSK is blocked!")
+                        print("this is working")
+                        return redirect('agent:play_game',id=timeId)
+                    else:
+                        pass
         except:
             pass
 

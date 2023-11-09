@@ -47,10 +47,10 @@ urlpatterns = [
     path('edit-limit/<int:id>',views.edit_limit,name="edit_limit"),
     path('blocked-numbers',views.blocked_numbers,name="blocked_numbers"),
     path('new-block',views.new_block,name="new_block"),
+    path('edit-block/<int:id>',views.edit_block,name="edit_block"),
     path('delete-block/<int:id>',views.delete_block,name="delete_block"),
     path('clear-limit/<int:id>',views.clear_limit,name="clear_limit"),
     path('clear-all',views.clear_all,name="clear_all"),
     path('settings',views.settings,name="settings"),
-    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")
-    
+    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")   
 ]
