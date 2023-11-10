@@ -47,6 +47,8 @@ def index(request):
     }
     return render(request,"agent/index.html",context)
 
+@login_required
+@agent_required
 @csrf_exempt
 def add_dealer(request):
     login_form = LoginForm()
@@ -70,6 +72,8 @@ def add_dealer(request):
             return redirect("agent:new_package")
     return render(request,'agent/add_dealer.html',{"login_form": login_form, "dealer_form": dealer_form})
 
+@login_required
+@agent_required
 def view_dealer(request):
     agent = Agent.objects.get(user=request.user)
     print(agent)
@@ -79,6 +83,8 @@ def view_dealer(request):
     }
     return render(request,'agent/view_dealer.html',context)
 
+@login_required
+@agent_required
 def edit_dealer(request,id):
     dealer = get_object_or_404(Dealer, id=id)
     user = dealer.user
@@ -95,12 +101,16 @@ def edit_dealer(request,id):
     return render(request, 'agent/edit_dealer.html', {'dealer': dealer,'dealer_form': dealer_form,'login_form':login_form})
 
 
+@login_required
+@agent_required
 def delete_dealer(request,id):
     dealer = get_object_or_404(Dealer, id=id)
     dealer_user = dealer.user
     dealer_user.delete()
     return redirect('agent:view_dealer')
 
+@login_required
+@agent_required
 def ban_dealer(request,id):
     dealer = get_object_or_404(Dealer, id=id)
     user = dealer.user
@@ -108,6 +118,8 @@ def ban_dealer(request,id):
     user.save()
     return redirect('agent:view_dealer')
 
+@login_required
+@agent_required
 def remove_ban(request,id):
     dealer = get_object_or_404(Dealer,id=id)
     user = dealer.user
@@ -115,9 +127,13 @@ def remove_ban(request,id):
     user.save()
     return redirect('agent:view_dealer')
 
+@login_required
+@agent_required
 def booking(request):
     return render(request,'agent/booking.html')
 
+@login_required
+@agent_required
 def results(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -143,6 +159,8 @@ def results(request):
     }
     return render(request,'agent/results.html',context)
 
+@login_required
+@agent_required
 def sales_report(request):
     print("Sales report function")
     agent_obj = Agent.objects.get(user=request.user)
@@ -417,6 +435,8 @@ def sales_report(request):
         }
     return render(request,'agent/sales_report.html',context)
 
+@login_required
+@agent_required
 def daily_report(request):
     print("Daily report function")
     agent_obj = Agent.objects.get(user=request.user)
@@ -644,6 +664,8 @@ def daily_report(request):
         }
         return render(request,'agent/daily_report.html',context)
 
+@login_required
+@agent_required
 def winning_report(request):
     times = PlayTime.objects.filter().all()
     print(times)
@@ -724,6 +746,8 @@ def winning_report(request):
         }
         return render(request,'agent/winning_report.html',context) 
 
+@login_required
+@agent_required
 def count_salereport(request):
     times = PlayTime.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -1020,6 +1044,8 @@ def count_salereport(request):
     }
     return render(request,'agent/count_salereport.html',context) 
 
+@login_required
+@agent_required
 def winning_countreport(request):
     agent_obj = Agent.objects.get(user=request.user)
     print(agent_obj)
@@ -1149,6 +1175,8 @@ def winning_countreport(request):
     }
     return render(request,'agent/winning_countreport.html',context) 
 
+@login_required
+@agent_required
 def payment_report(request):
     agent_obj = Agent.objects.get(user=request.user)
     ist = pytz_timezone('Asia/Kolkata')
@@ -1285,6 +1313,8 @@ def payment_report(request):
         }
     return render(request,'agent/payment_report.html',context) 
 
+@login_required
+@agent_required
 def add_collection(request):
     dealers = Dealer.objects.filter().all()
     if request.method == 'POST':
@@ -1301,6 +1331,8 @@ def add_collection(request):
     }
     return render(request,'agent/add_collection.html',context) 
 
+@login_required
+@agent_required
 def balance_report(request):
     agent_obj = Agent.objects.get(user=request.user)
     dealers = Dealer.objects.filter(agent=agent_obj).all()
@@ -1455,7 +1487,20 @@ def balance_report(request):
     }
     return render(request, 'agent/balance_report.html',context)
 
-def edit_bill(request):
+@login_required
+@agent_required
+def edit_bill_times(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_time = timezone.now().astimezone(ist).time()
+    matching_play_times = PlayTime.objects.filter(Q(start_time__lte=current_time) & Q(end_time__gte=current_time))
+    context = {
+        'times' : matching_play_times
+    }
+    return render(request,'agent/edit_bill_times.html',context)
+
+@login_required
+@agent_required
+def edit_bill(request,id):
     agent_obj = Agent.objects.get(user=request.user)
     print(agent_obj.user,"agent id")
     ist = pytz_timezone('Asia/Kolkata')
@@ -1463,8 +1508,7 @@ def edit_bill(request):
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
     try:
-        matching_play_times = PlayTime.objects.filter().all()
-        print(matching_play_times.id,"times available")
+        time = PlayTime.objects.get(id=id)
     except:
         matching_play_times = []
     if request.method == 'POST':
@@ -1475,37 +1519,38 @@ def edit_bill(request):
         else:
             pass
         try:
-            bill_search = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).all()
-            totals = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            bills = Bill.objects.filter(user=search_dealer,time_id=time,date=current_date).all()
+            totals = Bill.objects.filter(user=search_dealer,time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
             dealers = Dealer.objects.filter(agent=agent_obj).all()
-            print(bill_search,"search bill")
             context = {
-                'dealers': dealers,
-                'bills': bill_search,
-                'totals' : totals
-            }
+                'bills' : bills,
+                'dealers' : dealers,
+                'totals': totals,
+            } 
             return render(request,'agent/edit_bill.html',context)
         except:
-            bill_search = []
+            bills = []
             totals = []
             dealers = Dealer.objects.filter(agent=agent_obj).all()
             context = {
-                'dealers': dealers,
-                'bills': bill_search,
-                'totals' : totals
-            }
+                'bills' : bills,
+                'dealers' : dealers,
+                'totals': totals,
+            } 
             return render(request,'agent/edit_bill.html',context)
     else:
         try:
-            bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).all()
-            totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=time).all()
+            print(bills,"time is",time.game_time)
+            totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date,time_id=time).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
             dealers = Dealer.objects.filter(agent=agent_obj).all()
             print(agent_obj.user,"agent id")
             context = {
-                'bills':bills,
+                'bills' : bills,
                 'dealers' : dealers,
-                'totals' : totals
-            }
+                'totals': totals,
+            }    
+            return render(request,'agent/edit_bill.html',context)
         except:
             bill_search = []
             totals = []
@@ -1517,6 +1562,8 @@ def edit_bill(request):
             }
     return render(request,'agent/edit_bill.html',context)
 
+@login_required
+@agent_required
 def delete_bill(request,id):
     print(id)
     bill = Bill.objects.get(id=id)
@@ -1531,12 +1578,16 @@ def delete_bill(request,id):
     }
     return render(request,'agent/delete_bill.html',context)     
 
+@login_required
+@agent_required
 def deleting_bill(request,id):
     bill = get_object_or_404(Bill,id=id)
     print(bill,"deleting bill")
     bill.delete()
     return redirect('agent:index')
 
+@login_required
+@agent_required
 def delete_row(request,id,bill_id):
     print(id,"this row")
     bill = get_object_or_404(Bill, id=bill_id)
@@ -1549,6 +1600,8 @@ def delete_row(request,id,bill_id):
     bill.update_totals()
     return redirect('agent:delete_bill',id=bill_id)
 
+@login_required
+@agent_required
 def play_game(request,id):
     agent_package = []
     time = PlayTime.objects.get(id=id)
@@ -1584,6 +1637,8 @@ def play_game(request,id):
     }
     return render(request,'agent/play_game.html',context)
 
+@login_required
+@agent_required
 def package(request):
     user_obj = Agent.objects.get(user=request.user)
     packages = DealerPackage.objects.filter(created_by=user_obj.user).all()
@@ -1593,6 +1648,8 @@ def package(request):
     }
     return render(request,'agent/package.html',context)
 
+@login_required
+@agent_required
 def new_package(request):
     user_obj = Agent.objects.get(user=request.user)
     dealer = Dealer.objects.filter(agent=user_obj).all()
@@ -1649,6 +1706,8 @@ def new_package(request):
     }
     return render(request,'agent/new_package.html',context)
 
+@login_required
+@agent_required
 def edit_package(request,id):
     package = DealerPackage.objects.get(id=id)
     user_obj = request.user
@@ -1699,16 +1758,22 @@ def edit_package(request,id):
     }
     return render(request,'agent/edit_package.html',context)
 
+@login_required
+@agent_required
 def delete_package(request,id):
     package = DealerPackage.objects.get(id=id)
     package.delete()
     return redirect('agent:package')
 
+@login_required
+@agent_required
 def agent_game_test_delete(request,id):
     row = get_object_or_404(AgentGameTest,id=id)
     row.delete()
     return JsonResponse({'status':'success'})
 
+@login_required
+@agent_required
 def agent_game_test_update(request,id):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
@@ -1717,6 +1782,8 @@ def agent_game_test_update(request,id):
         AgentGameTest.objects.filter(id=id).update(count=edited_count)
     return JsonResponse({'status':'success'})
 
+@login_required
+@agent_required
 @csrf_exempt
 def submit_data(request):
     ist = pytz_timezone('Asia/Kolkata')
@@ -1896,6 +1963,8 @@ def submit_data(request):
         return redirect('agent:play_game',id=timeId)
     return JsonResponse({'status': 'success'})
 
+@login_required
+@agent_required
 def save_data(request, id):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -1952,6 +2021,8 @@ def save_data(request, id):
 
     return redirect('agent:play_game',id=id)
 
+@login_required
+@agent_required
 def set_limit(request):
     agent_obj = Agent.objects.get(user=request.user)
     dealers = Dealer.objects.filter(agent=agent_obj).all()
@@ -1984,6 +2055,8 @@ def set_limit(request):
     }
     return render(request,'agent/set_limit.html',context)
 
+@login_required
+@agent_required
 def change_password(request):
     if request.method == "POST":
         form = PasswordChangeForm(user=request.user,data=request.POST)

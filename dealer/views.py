@@ -46,9 +46,13 @@ def index(request):
     }
     return render(request,"dealer/index.html",context)
 
+@dealer_required
+@login_required
 def booking(request):
     return render(request,'dealer/booking.html')
 
+@dealer_required
+@login_required
 def result(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -74,7 +78,20 @@ def result(request):
     }
     return render(request,'dealer/results.html',context)
 
-def edit_bill(request):
+@dealer_required
+@login_required
+def edit_bill_times(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_time = timezone.now().astimezone(ist).time()
+    matching_play_times = PlayTime.objects.filter(Q(start_time__lte=current_time) & Q(end_time__gte=current_time))
+    context = {
+        'times' : matching_play_times
+    }
+    return render(request,'dealer/edit_bill_times.html',context)
+
+@dealer_required
+@login_required
+def edit_bill(request,id):
     dealer_obj = Dealer.objects.get(user=request.user)
     print(dealer_obj.user,"dealer id")
     ist = pytz_timezone('Asia/Kolkata')
@@ -82,27 +99,27 @@ def edit_bill(request):
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
     try:
-        matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
-        print(matching_play_times.id)
+        time = PlayTime.objects.get(id=id)
     except:
         matching_play_times = []
     try:
-        totals = Bill.objects.filter(user=dealer_obj.user,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
-        bills = Bill.objects.filter(user=dealer_obj.user,time_id=matching_play_times.id,date=current_date).all
-        print (bills , "serch bill")
+        totals = Bill.objects.filter(user=dealer_obj.user,time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+        bills = Bill.objects.filter(user=dealer_obj.user,time_id=time,date=current_date).all
         context = {
-            'bills':bills,
-            'totals':totals
-        }
+            'bills' : bills,
+            'totals': totals,
+        } 
     except:
         totals = []
         bills = []
         context = {
-            'bills':bills,
-            'totals':totals
+            'bills' : bills,
+            'totals': totals,
         }
     return render(request,'dealer/edit_bill.html',context)
 
+@dealer_required
+@login_required
 def delete_bill(request,id):
     print(id)
     bill = Bill.objects.get(id=id)
@@ -119,13 +136,16 @@ def delete_bill(request,id):
         }
     return render(request,'dealer/delete_bill.html',context)  
 
+@dealer_required
+@login_required
 def deleting_bill(request,id):
     bill = get_object_or_404(Bill,id=id)
     print(bill,"deleting bill")
     bill.delete()
     return redirect('dealer:index')
 
-
+@dealer_required
+@login_required
 def delete_row(request,id,bill_id):
     print(id,"this row")
     bill = get_object_or_404(Bill, id=bill_id)
@@ -134,11 +154,15 @@ def delete_row(request,id,bill_id):
     bill.update_totals_dealer()
     return redirect('dealer:delete_bill',id=bill_id)
 
+@dealer_required
+@login_required
 def dealer_game_test_delete(request,id):
     row = get_object_or_404(DealerGameTest,id=id)
     row.delete()
     return JsonResponse({'status':'success'})
 
+@dealer_required
+@login_required
 def dealer_game_test_update(request,id):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
@@ -147,7 +171,8 @@ def dealer_game_test_update(request,id):
         DealerGameTest.objects.filter(id=id).update(count=edited_count)
     return JsonResponse({'status':'success'})
 
-
+@dealer_required
+@login_required
 def sales_report(request):
     print("Daily report function")
     dealer_bills={}
@@ -238,6 +263,8 @@ def sales_report(request):
         }
     return render(request,'dealer/sales_report.html',context)
 
+@dealer_required
+@login_required
 def daily_report(request):
     print("Daily report function")
     dealer_bills={}
@@ -325,6 +352,8 @@ def daily_report(request):
         }
     return render(request,'dealer/daily_report.html',context)
 
+@dealer_required
+@login_required
 def winning_report(request):
     times = PlayTime.objects.filter().all()
     print(times)
@@ -415,6 +444,8 @@ def winning_report(request):
         }
         return render(request,'dealer/winning_report.html',context) 
 
+@dealer_required
+@login_required
 def count_salereport(request):
     times = PlayTime.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
@@ -539,7 +570,8 @@ def count_salereport(request):
      
     return render(request,'dealer/count_salereport.html',context) 
  
-
+@dealer_required
+@login_required
 def winning_countreport(request):
     dealer_obj = Dealer.objects.get(user=request.user)
     times = PlayTime.objects.filter().all()
@@ -585,6 +617,8 @@ def winning_countreport(request):
     }
     return render(request,'dealer/winning_countreport.html',context) 
 
+@dealer_required
+@login_required
 def balance_report(request):
     dealer_obj = Dealer.objects.get(user=request.user)
     collection = DealerCollectionReport.objects.filter().all()
@@ -649,6 +683,8 @@ def balance_report(request):
     }
     return render(request, 'dealer/balance_report.html',context)
 
+@dealer_required
+@login_required
 def play_game(request,id):
     dealer_package = []
     time = PlayTime.objects.get(id=id)
@@ -683,6 +719,8 @@ def play_game(request,id):
     }
     return render(request,'dealer/play_game.html',context)
 
+@dealer_required
+@login_required
 @csrf_exempt
 def submit_data(request):
     ist = pytz_timezone('Asia/Kolkata')
@@ -839,6 +877,8 @@ def submit_data(request):
         return redirect('dealer:play_game',id=timeId)
     return JsonResponse({'status': 'success'})
 
+@dealer_required
+@login_required
 def save_data(request, id):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -896,7 +936,8 @@ def save_data(request, id):
     print("###################")
     return redirect('dealer:play_game',id=id)
 
-
+@dealer_required
+@login_required
 def change_password(request):
     if request.method== "POST":
          form= PasswordChangeForm(user=request.user,data=request.POST)

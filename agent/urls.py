@@ -23,7 +23,8 @@ urlpatterns = [
     path('collection-report',views.payment_report,name="collection_report"),
     path('add-collection',views.add_collection,name="add_collection"),
     path('balance-report',views.balance_report,name="balance_report"),
-    path('edit-bill',views.edit_bill,name="edit_bill"),
+    path('edit-bill-times',views.edit_bill_times,name="edit_bill_times"),
+    path('edit-bill/<int:id>',views.edit_bill,name="edit_bill"),
 
     path('play-game/<int:id>',views.play_game,name="play_game"),
 
