@@ -1673,7 +1673,7 @@ def daily_report(request):
         select_time = request.POST.get('select-time')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
-        print(select_dealer, select_time, from_date, to_date)
+        print(select_dealer, select_time, from_date, to_date,"@@@")
         if select_dealer != 'all':
             if select_time != 'all':
                 print("its agent")
@@ -1701,6 +1701,8 @@ def daily_report(request):
                         'total_balance' : total_balance,
                         'selected_dealer' : select_dealer,
                         'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
@@ -1730,6 +1732,8 @@ def daily_report(request):
                         'total_balance' : total_balance,
                         'selected_dealer' : select_dealer,
                         'selected_time' : 'all',
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
                     }
                 return render(request,'adminapp/daily_report.html',context)
         else:
@@ -1758,13 +1762,16 @@ def daily_report(request):
                         'total_balance' : total_balance,
                         'selected_dealer' : 'all',
                         'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
-                bills = Bill.objects.filter(date=current_date).all()
+                bills = Bill.objects.filter(date__range=[from_date, to_date]).all()
                 print(bills)
+                print("***")
                 for bill in bills:
-                    winnings = Winning.objects.filter(bill=bill.id,date=current_date)
+                    winnings = Winning.objects.filter(bill=bill.id,date__range=[from_date, to_date])
                     print(winnings)
                     total_winning = sum(winning.total for winning in winnings)
                     bill.win_amount += total_winning
@@ -1774,7 +1781,7 @@ def daily_report(request):
                         bill.total_d_amount = total_winning - bill.total_c_amount
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                total_c_amount = Bill.objects.filter(date=current_date).aggregate(total_c_amount=Sum('total_c_amount'))
+                total_c_amount = Bill.objects.filter(date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))
                 select_dealer = 'all'
                 select_time = 'all'
                 context = {
@@ -1786,11 +1793,14 @@ def daily_report(request):
                     'total_balance' : total_balance,
                     'selected_dealer' : select_dealer,
                     'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request,'adminapp/daily_report.html',context)
     else:
         bills = Bill.objects.filter(date=current_date).all()
         print(bills)
+        print("###")
         for bill in bills:
             winnings = Winning.objects.filter(bill=bill.id,date=current_date)
             print(winnings)
@@ -2470,6 +2480,8 @@ def payment_report(request):
     to_agent_amount = to_agent_total['to_agent'] if to_agent_total['to_agent'] else 0
     profit_or_loss = from_agent_amount - to_agent_amount
     print(profit_or_loss)
+    for collection in collections:
+        print(collection.from_or_to,"this is")
     if request.method == 'POST':
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
@@ -2483,12 +2495,15 @@ def payment_report(request):
                 from_agent_amount = collections.aggregate(amount=Sum('amount'))
                 profit_or_loss = from_agent_amount['amount'] if from_agent_amount['amount'] else 0
                 print(profit_or_loss, "hello")
+                print(from_or_to,"$$$$$$$$$")
                 context = {
                     'agents': agents,
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
             if from_or_to != 'all' and from_or_to == 'to-agent':
@@ -2504,7 +2519,9 @@ def payment_report(request):
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
             else:
@@ -2519,7 +2536,9 @@ def payment_report(request):
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
         else:
@@ -2535,7 +2554,9 @@ def payment_report(request):
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
             if from_or_to != 'all' and from_or_to == 'to-agent':
@@ -2551,7 +2572,9 @@ def payment_report(request):
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
             else:
@@ -2568,7 +2591,9 @@ def payment_report(request):
                     'collections': collections,
                     'profit_or_loss': profit_or_loss,
                     'selected_agent' : select_agent,
-                    'from_or_to' : from_or_to
+                    'from_or_to' : from_or_to,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
                 }
                 return render(request, 'adminapp/payment_report.html', context)
     else:
@@ -2614,20 +2639,21 @@ def balance_report(request):
             dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=select_agent)
             collection = CollectionReport.objects.filter(date__range=[from_date, to_date], agent=select_agent)
             winning = Winning.objects.filter(Q(agent=select_agent) | Q(dealer__agent=select_agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
-            agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('d_amount'))['agent_total_d_amount'] or 0
-            dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
-            total_d_amount = agent_total_d_amount + dealer_total_d_amount
+            agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
+            dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
             from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             total_collection_amount = from_agent - to_agent
-            balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
-            if total_d_amount > 0:
+            total_d_amount = float(winning) - float(agent_total_d_amount + dealer_total_d_amount)
+            print(total_d_amount)
+            balance =  float(total_d_amount) + float(total_collection_amount)
+            if total_d_amount:
                 report_data.append({
                     'date' : current_date,
                     'agent': agent_instance,
                     'total_d_amount': total_d_amount,
                     'from_or_to' : total_collection_amount,
-                    'balance' : balance
+                    'balance' : balance,
                 })
             total_balance = sum(entry['balance'] for entry in report_data)
             context = {
@@ -2640,22 +2666,62 @@ def balance_report(request):
             }
             return render(request, 'adminapp/balance_report.html',context)
         else:
-            pass
+            for agent in agents:
+                print(agent)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=agent)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=agent)
+                collection = CollectionReport.objects.filter(date__range=[from_date, to_date], agent=agent)
+                winning = Winning.objects.filter(Q(agent=agent) | Q(dealer__agent=agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+                print(winning)
+                agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
+                dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
+                from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+                to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+                total_collection_amount = from_agent - to_agent
+                print(total_collection_amount, "collection")
+                total_d_amount = float(winning) - float(agent_total_d_amount + dealer_total_d_amount)
+                print(total_d_amount)
+                balance =  float(total_d_amount) + float(total_collection_amount)
+                print(f"Agent: {agent}, Total D Amount: {total_d_amount}")
+                print(balance)
+                if total_d_amount:
+                    report_data.append({
+                        'date' : current_date,
+                        'agent': agent,
+                        'total_d_amount': total_d_amount,
+                        'from_or_to' : total_collection_amount,
+                        'balance' : balance
+                    })
+                    print(report_data)
+            total_balance = sum(entry['balance'] for entry in report_data)
+            context = {
+                'agents' : agents,
+                'selected_agent' : 'all',
+                'report_data': report_data,
+                'total_balance' : total_balance,
+                'selected_from' : from_date,
+                'selected_to' : to_date
+            }
+            return render(request, 'adminapp/balance_report.html',context)
     for agent in agents:
+        print(agent)
         agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
         dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
         collection = CollectionReport.objects.filter(date=current_date, agent=agent)
-        winning = Winning.objects.filter(date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        winning = Winning.objects.filter(Q(agent=agent) | Q(dealer__agent=agent),date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
         print(winning)
-        agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('d_amount'))['agent_total_d_amount'] or 0
-        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
-        total_d_amount = agent_total_d_amount + dealer_total_d_amount
+        agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
         from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
-        balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
+        print(total_collection_amount, "collection")
+        total_d_amount = float(winning) - float(agent_total_d_amount + dealer_total_d_amount)
+        print(total_d_amount)
+        balance =  float(total_d_amount) + float(total_collection_amount)
         print(f"Agent: {agent}, Total D Amount: {total_d_amount}")
-        if total_d_amount > 0:
+        print(balance)
+        if total_d_amount:
             report_data.append({
                 'date' : current_date,
                 'agent': agent,
@@ -2663,6 +2729,7 @@ def balance_report(request):
                 'from_or_to' : total_collection_amount,
                 'balance' : balance
             })
+            print(report_data)
     total_balance = sum(entry['balance'] for entry in report_data)
     context = {
         'agents' : agents,

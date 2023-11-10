@@ -345,6 +345,17 @@
         var selectDealer = document.getElementById("aioConceptName");
         var selectTime = document.getElementById("time");
 
+        var selectedFrom = "{{selected_from}}";
+        var selectedTo = "{{selected_to}}";
+
+        if (selectedFrom && selectedTo) {
+            document.getElementById('from-date').value = selectedFrom;
+            document.getElementById('to-date').value = selectedTo;
+        } else {
+            document.getElementById('from-date').value = getCurrentDate();
+            document.getElementById('to-date').value = getCurrentDate();
+        }
+
         // Set the selected value based on the selected_dealer variable
         console.log("{{selected_dealer}}")
         selectDealer.value = "{{ selected_dealer }}";

@@ -138,7 +138,7 @@
         </div>
 
         <div class="row clearfix" style="padding-bottom: 50px;">
-            <a href="{% url 'adminapp:add_collection' %}" id="collection" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Add Collection</a>
+            <a href="{% url 'adminapp:add_collection' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Add Collection</a>
             <form method="POST">
                 
                 {% csrf_token %}
@@ -227,7 +227,7 @@
                                                 <tr class="l-pink">
                                                     <td class="td2">{{collection.date}}</td>
                                                     <td class="td3">{{collection.agent}}</td>
-                                                    <td class="td2">{{collection.from_or_to|floatformat:2}}</td>
+                                                    <td class="td2">{{collection.from_or_to}}</td>
                                                     <td class="td3">{{collection.amount|floatformat:2}}</td>                                                 
                                                 </tr>
                                                 {% endfor %}
@@ -309,11 +309,12 @@
     document.addEventListener("DOMContentLoaded", function () {
         // Get the select element by its ID
         var selectDealer = document.getElementById("agent");
-        var selectTime = document.getElementById("collection");
+        var selectCollection = document.getElementById("collection");
 
         console.log("{{selected_agent}}")
+        console.log("{{from_or_to}}")
         selectDealer.value = "{{ selected_agent }}";
-        selectTime.value = "{{ selected_time }}";
+        selectCollection.value = "{{ from_or_to }}";
 
     });
 </script>

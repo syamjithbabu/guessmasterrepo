@@ -343,12 +343,11 @@ def winning_report(request):
         if select_time != 'all':
             winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date],time=select_time)
             print(winnings)
-            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+            aggregated_winnings = winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
                 total_commission=Sum('commission'),
                 total_prize=Sum('prize'),
                 total_net=Sum('total'),
-                agent=F('agent__agent_name'),
                 dealer=F('dealer__dealer_name'),
                 position=F('position'),
             )
@@ -366,12 +365,11 @@ def winning_report(request):
         else:
             winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date])
             print(winnings)
-            aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+            aggregated_winnings = winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
                 total_commission=Sum('commission'),
                 total_prize=Sum('prize'),
                 total_net=Sum('total'),
-                agent=F('agent__agent_name'),
                 dealer=F('dealer__dealer_name'),
                 position=F('position'),
             )
@@ -391,12 +389,11 @@ def winning_report(request):
             matching_play_times = Winning.objects.filter().last()
             if matching_play_times:
                 winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date, time=matching_play_times.time)
-                aggregated_winnings = winnings.values('bill', 'LSK', 'number').annotate(
+                aggregated_winnings = winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
-                    agent=F('agent__agent_name'),
                     dealer=F('dealer__dealer_name'),
                     position=F('position'),
                 )
@@ -603,13 +600,13 @@ def balance_report(request):
         collection = DealerCollectionReport.objects.filter(date__range=[from_date, to_date], dealer=dealer_obj)
         print(collection)
         winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
-        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
-        total_d_amount = dealer_total_d_amount
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
         from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
-        balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
-        if total_d_amount > 0:
+        total_d_amount = float(winning) - dealer_total_d_amount
+        balance = float(total_d_amount) + float(total_collection_amount)
+        if total_d_amount:
             report_data.append({
                 'date' : current_date,
                 'total_d_amount': total_d_amount,
@@ -631,13 +628,13 @@ def balance_report(request):
     collection = DealerCollectionReport.objects.filter(date=current_date, dealer=dealer_obj)
     print(collection)
     winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
-    dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('d_amount'))['dealer_total_d_amount'] or 0
-    total_d_amount = dealer_total_d_amount
+    dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
     from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     total_collection_amount = from_agent - to_agent
-    balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
-    if total_d_amount > 0:
+    total_d_amount = float(winning) - dealer_total_d_amount
+    balance = float(total_d_amount) + float(total_collection_amount)
+    if total_d_amount:
         report_data.append({
             'date' : current_date,
             'total_d_amount': total_d_amount,

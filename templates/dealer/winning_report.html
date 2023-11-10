@@ -237,7 +237,7 @@
                                                 {% for winning in aggr %}
                                                 <tr>
                                                     <td class="td2">{{winning.bill}}</td>
-                                                    <td class="td3">{{winning.dealer}}</td>
+                                                    <td class="td3">$</td>
                                                     <td class="td2">{{winning.LSK}}</td>
                                                     <td class="td3">{{winning.number}}</td>
                                                     <td class="td2">{{winning.total_count}}</td>
@@ -327,11 +327,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Get the select element by its ID
-        var selectDealer = document.getElementById("agent");
         var selectTime = document.getElementById("time");
 
-        // Set the selected value based on the selected_dealer variable
-        selectDealer.value = "{{ selected_agent }}";
+        console.log("{{selected_time}}")
+
         selectTime.value = "{{ selected_time }}";
 
     });

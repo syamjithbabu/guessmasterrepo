@@ -137,7 +137,7 @@
         </div>
 
         <div class="row clearfix" style="padding-bottom: 50px;">
-            <a href="{% url 'agent:add_collection' %}" class="btn btn-primary mt-3 mr-2" id="collection" style="position: absolute; top: 0; right: 0;">Add Collection</a>
+            <a href="{% url 'agent:add_collection' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Add Collection</a>
             <form method="POST">
                 
                 {% csrf_token %}
@@ -214,11 +214,19 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
+                                                {% for collection in agent_collection %}
+                                                <tr>
+                                                    <td class="td2">{{collection.date}}</td>
+                                                    <td class="td3">{{collection.agent}}</td>
+                                                    <td class="td2">{{collection.from_or_to}}</td>
+                                                    <td class="td3">{{collection.amount|floatformat:2}}</td>                                                 
+                                                </tr>
+                                                {% endfor %}
                                                 {% for collection in collections %}
                                                 <tr>
                                                     <td class="td2">{{collection.date}}</td>
                                                     <td class="td3">{{collection.dealer}}</td>
-                                                    <td class="td2">{{collection.from_or_to|floatformat:2}}</td>
+                                                    <td class="td2">{{collection.from_or_to}}</td>
                                                     <td class="td3">{{collection.amount|floatformat:2}}</td>                                                 
                                                 </tr>
                                                 {% endfor %}
