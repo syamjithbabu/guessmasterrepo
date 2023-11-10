@@ -1463,7 +1463,7 @@ def edit_bill(request):
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
     try:
-        matching_play_times = PlayTime.objects.filter()
+        matching_play_times = PlayTime.objects.filter().all()
         print(matching_play_times.id,"times available")
     except:
         matching_play_times = []
