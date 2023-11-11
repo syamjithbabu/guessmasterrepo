@@ -153,6 +153,7 @@ class CombinedGame(models.Model):
         return f"{self.LSK} - {self.number}"
     
 class BlockedNumber(models.Model):
+    time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     from_date = models.DateField()
     to_date = models.DateField()
     LSK = models.CharField(max_length=100)
