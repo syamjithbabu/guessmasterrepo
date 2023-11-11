@@ -1799,7 +1799,7 @@ def submit_data(request):
     if request.method == 'POST':
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
         print(data)
-        select_dealer = data.get('selectDealer')
+        select_dealer = data.get('selectedDealer')
         link_text = data.get('linkText')
         value1 = data.get('value1')
         value2 = data.get('value2')

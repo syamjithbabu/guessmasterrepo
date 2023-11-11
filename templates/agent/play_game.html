@@ -80,7 +80,7 @@
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
                                         <select class="form-control show-tick ms select2" name="select-dealer" id="selected-dealer" data-placeholder="Select">
-                                            <option>Select Dealer</option>
+                                            <option value="False">Select Dealer</option>
                                             {% for dealer in dealers %}
                                             <option value="{{dealer.id}}">{{dealer.user}}</option>
                                             {% endfor %}
@@ -349,7 +349,12 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         var selectedDealer = document.getElementById("selected-dealer");
-        console.log(selectedDealer)
+
+        // Add an event listener for the "change" event
+        selectedDealer.addEventListener("change", function() {
+            // Log the selected value when it changes
+            console.log("Selected Dealer: " + selectedDealer.value);
+        });
     });
 
     var agentPackageData = {
@@ -2011,14 +2016,24 @@
 </script>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var selectedDealer = document.getElementById("selected-dealer");
+
+        // Add an event listener for the "change" event
+        selectedDealer.addEventListener("change", function() {
+            // Log the selected value when it changes
+            console.log("Selected Dealer: " + selectedDealer.value);
+        });
+    });
     // Create a queue to hold the data objects
     const dataQueue = [];
     
     async function sendDataToDjango(linkText, value1, value2, value3, value4) {
         const timeId = {{time.id}};
+        const selectedDealer = document.getElementById("selected-dealer").value;
     
         // Define the order of properties
-        const propertyOrder = ['linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
+        const propertyOrder = ['selectedDealer', 'linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
     
         // Create an object with properties in the specified order
         const data = {};
