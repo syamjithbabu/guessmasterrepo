@@ -151,6 +151,8 @@ def sales_report(request):
     times = PlayTime.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    day_of_week = current_date.strftime('%A')
+    print(day_of_week)
     print(current_date)
     if request.method == 'POST':
         select_dealer = request.POST.get('select-dealer')
@@ -392,6 +394,7 @@ def sales_report(request):
             'selected_lsk' : lsk,
             'agent_games' : agent_games,
             'dealer_games' : dealer_games,
+            'day_of_week':day_of_week,
         }
         return render(request, 'agent/sales_report.html', context)
     else:
