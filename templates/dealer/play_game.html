@@ -52,6 +52,20 @@
 
 /* Add more CSS styling as needed */
 
+
+
+    .bgtext:after { 
+            margin: 3rem; 
+            content: "Background text"; 
+            position: absolute; 
+            transform: rotate(300deg); 
+            -webkit-transform: rotate(300deg); 
+            color: rgb(187, 182, 182); 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
+        } 
+
 </style>
 
 <div id="main-content">
@@ -178,12 +192,16 @@
     </div>
 
     <div class="container-fluid">
-        <div class="row clearfix">
+        <div class="row clearfix ">
             <div class="col-lg-12">
+
+                
                 <div class="card">
+                    
                     <div class="body" style="padding: 10px !important;">
                         <div class="table-container" style="max-height: 500px; overflow-y: auto;">
-                            <table id="mainTable" class="table table-hover" style="table-layout: fixed; width: 100%;">
+                           
+                            <table id="mainTable" class="table table-hover " style="table-layout: fixed; width: 100%;">
                                 <thead>
                                     <tr>
                                         <th colspan="2">Count: <span id="totalCount">{{total_count}}</span></th>
@@ -211,6 +229,7 @@
                                     </tr>
                                     {% endfor %}
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -1993,18 +2012,6 @@
     const csrftoken = "{{ csrf_token }}";
 </script>
 
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<script>
-    function bill() {
-        swal({
-            title: "Success!",
-            text: "Your bill created successfully.",
-            icon: "success",
-            buttons: "OK",
-        });
-    }
-</script>
-
 
 
 <script>
@@ -2016,43 +2023,65 @@
 </script>
 
 <script>
-
-    function sendDataToDjango(linkText, value1, value2, value3, value4){
+    // Create a queue to hold the data objects
+    const dataQueue = [];
+    
+    async function sendDataToDjango(linkText, value1, value2, value3, value4) {
         const timeId = {{time.id}};
-        
-        // Define the data to be sent to the Django backend
-        console.log(linkText, value1, value2, value3, value4);
-        var data = {
-            linkText: linkText,
-            value1: value1,
-            value2: value2,
-            value3: value3,
-            value4: value4,
-            timeId: timeId,
-        };
-
-        console.log(data);
-
-        fetch('/dealer/submit-data/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload()
-            } else {
-                // Handle error
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+    
+        // Define the order of properties
+        const propertyOrder = ['linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
+    
+        // Create an object with properties in the specified order
+        const data = {};
+        propertyOrder.forEach(property => {
+            data[property] = eval(property);  // Assuming the variables are in the local scope
         });
+    
+        console.log('Adding to queue:', data);
+        dataQueue.push(data);
+    
+        // Check if there's data in the queue
+        if (dataQueue.length === 1) {
+            // If the queue was empty, start processing the queue
+            processQueue();
+        }
     }
-</script>
+    
+    async function processQueue() {
+        // Get the first data object in the queue
+        const data = dataQueue[0];
+    
+        try {
+            // Make the AJAX request and wait for it to complete
+            const response = await $.ajax({
+                url: '/dealer/submit-data/',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                data: JSON.stringify(data),
+            });
+    
+            console.log('Data sent successfully:', data);
+            console.log('Stringified Data:', JSON.stringify(data));
+    
+            // Remove the processed data from the queue
+            dataQueue.shift();
+    
+            // If there are more items in the queue, process the next one
+            if (dataQueue.length > 0) {
+                processQueue();
+            } else {
+                location.reload();
+            }
+        } catch (error) {
+            // Handle error if needed
+            console.error('Error sending data:', error.statusText);
+        }
+    }
+    </script>
 
 <script>
     let rowToEdit;
@@ -2138,5 +2167,50 @@
 
 
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function bill() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Your bill created successfully.',
+            buttons: "OK",
+        });
+    }
+</script>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if 'blocked_message' in message.tags %}
+            <script>
+                console.log("blocked")
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Blocked Number!',
+                        text: 'This number and LSK is blocked!',
+                        showConfirmButton: false,
+                        timer: 3000  // Automatically close after 3 seconds
+                    });
+                });
+            </script>
+        {% else %}
+            <script>
+                console.log("Limit exceeded")
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Limit Exceeded!',
+                        text: 'Limit of this LSK is exceeded!',
+                        showConfirmButton: false,
+                        timer: 3000  // Automatically close after 3 seconds
+                    });
+                });
+            </script>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% endblock %}

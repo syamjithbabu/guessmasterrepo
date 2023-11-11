@@ -29,7 +29,6 @@
         <div class="block-header">
             <div class="row">
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
-                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>  Edit Bill </h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'agent:index' %}"><i class="icon-home"></i></a></li>                            
                         <li class="breadcrumb-item">Edit Bill</li>
@@ -89,7 +88,6 @@
                                             </thead>
                                             <tbody id="bill-table">
                                                 {% for bill in bills %}
-                                                <!-- hello -->
                                                 <tr data-dealer="{{ bill.agent.user }}">
                                                     <td class="table-cell">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                     <td class="table-cell">{{bill.user}}</td>

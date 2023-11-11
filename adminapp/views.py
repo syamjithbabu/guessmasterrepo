@@ -41,6 +41,8 @@ def index(request):
 def agent(request):
     return render(request,'adminapp/customer/agent.html')
 
+@login_required
+@admin_required
 @csrf_exempt
 def add_agent(request):
     login_form = LoginForm()
@@ -62,6 +64,8 @@ def add_agent(request):
             return redirect("adminapp:new_package")
     return render(request,'adminapp/add_agent.html',{"login_form": login_form, "agent_form": agent_form})
 
+@login_required
+@admin_required
 def view_agent(request):
     agents = Agent.objects.filter().all()
     packages = AgentPackage.objects.filter().all()
@@ -71,6 +75,8 @@ def view_agent(request):
     }
     return render(request,'adminapp/view_agent.html',context)
 
+@login_required
+@admin_required
 def view_limits(request):
     limits = Limit.objects.filter().all()
     context = {
@@ -78,8 +84,10 @@ def view_limits(request):
     }
     return render(request,'adminapp/view_limits.html',context)
 
+@login_required
+@admin_required
 def edit_limit(request, id):
-    times = PlayTime.objects.all()
+    times = PlayTime.objects.all().order_by('id')
     if request.method == 'POST':
         limit = request.POST.get('limit')
         selected_times = request.POST.getlist('checkbox')
@@ -102,7 +110,8 @@ def edit_limit(request, id):
     }
     return render(request, 'adminapp/edit_limit.html', context)
 
-
+@login_required
+@admin_required
 def edit_agent(request,id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
@@ -118,6 +127,8 @@ def edit_agent(request,id):
         login_form = UserUpdateForm(instance=user)
     return render(request, 'adminapp/edit_agent.html', {'agent': agent,'agent_form': agent_form,'login_form':login_form})
 
+@login_required
+@admin_required
 def delete_agent(request,id):
     agent = get_object_or_404(Agent, id=id)
     agent_user = agent.user
@@ -131,6 +142,8 @@ def delete_agent(request,id):
     agent_user.delete()
     return redirect('adminapp:view_agent')
 
+@login_required
+@admin_required
 def ban_agent(request,id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
@@ -147,6 +160,8 @@ def ban_agent(request,id):
         pass
     return redirect('adminapp:view_agent')
 
+@login_required
+@admin_required
 def remove_ban(request,id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
@@ -163,6 +178,8 @@ def remove_ban(request,id):
         pass
     return redirect('adminapp:view_agent')
 
+@login_required
+@admin_required
 def package(request):
     packages = AgentPackage.objects.filter().all()
     print(packages)
@@ -171,6 +188,8 @@ def package(request):
     }
     return render(request,'adminapp/package.html',context)
 
+@login_required
+@admin_required
 def new_package(request):
     user_obj = request.user
     try:
@@ -231,9 +250,11 @@ def new_package(request):
     }
     return render(request,'adminapp/new_package.html',context)
 
+@login_required
+@admin_required
 def set_limit(request):
     agents = Agent.objects.filter().all()
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     if request.method == 'POST':
         limit = request.POST.get('limit')
         print(limit)
@@ -262,6 +283,8 @@ def set_limit(request):
     }
     return render(request,'adminapp/set_limit.html',context)
 
+@login_required
+@admin_required
 def edit_package(request,id):
     package = AgentPackage.objects.get(id=id)
     user_obj = request.user
@@ -312,13 +335,17 @@ def edit_package(request,id):
     }
     return render(request,'adminapp/edit_package.html',context)
 
+@login_required
+@admin_required
 def delete_package(request,id):
     package = AgentPackage.objects.get(id=id)
     package.delete()
     return redirect('adminapp:package')
 
+@login_required
+@admin_required
 def add_result(request):
-    timings = PlayTime.objects.filter().all()
+    timings = PlayTime.objects.filter().all().order_by('id')
     print(timings)
     if request.method == 'POST':
         date = request.POST.get('date')
@@ -626,9 +653,11 @@ def add_result(request):
     }
     return render(request,'adminapp/add_result.html',context)
 
+@login_required
+@admin_required
 def sales_report(request):
     agents = Agent.objects.filter().all()
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     print(current_date)
@@ -671,7 +700,6 @@ def sales_report(request):
                     print(dealer_games)
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    print(bills)
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     totals = {
@@ -992,6 +1020,8 @@ def sales_report(request):
         }
         return render(request,'adminapp/sales_report.html',context)
 
+@login_required
+@admin_required
 def add_time(request):
     if request.method == 'POST':
         start_time = request.POST.get('start_time')
@@ -1003,6 +1033,8 @@ def add_time(request):
         return redirect('adminapp:change_time')
     return render(request,'adminapp/add_time.html')
 
+@login_required
+@admin_required
 def change_time(request):
     try:
         times = PlayTime.objects.filter().all()
@@ -1013,6 +1045,8 @@ def change_time(request):
     }
     return render(request,'adminapp/change_time.html',context)
 
+@login_required
+@admin_required
 def change_game_time(request,id):
     time = get_object_or_404(PlayTime,id=id)
     print(time.start_time)
@@ -1026,23 +1060,35 @@ def change_game_time(request,id):
         return redirect('adminapp:change_time')
     return render(request,'adminapp/change_game_time.html',{'time': time})
 
-def monitor(request):
+@login_required
+@admin_required
+def monitor_times(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_time = timezone.now().astimezone(ist).time()
+    matching_play_times = PlayTime.objects.filter(Q(start_time__lte=current_time) & Q(end_time__gte=current_time)).order_by('id')
+    context = {
+        'times' : matching_play_times
+    }
+    return render(request,'adminapp/monitor_times.html',context)
+
+@login_required
+@admin_required
+def monitor(request,id):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     print(current_date)
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     matching_play_times = []
     try:
-        matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
-        print(matching_play_times.id)
+        time = PlayTime.objects.get(id=id)
     except:
         pass
-    if matching_play_times:
-        agent_games = AgentGame.objects.filter(date=current_date,time=matching_play_times)
-        dealer_games = DealerGame.objects.filter(date=current_date,time=matching_play_times)
-        monitor_game = CombinedGame.objects.filter(date=current_date,time=matching_play_times).all()
-        set_monitor_limit = Monitor.objects.get(time=matching_play_times)
+    if time:
+        agent_games = AgentGame.objects.filter(date=current_date,time=time)
+        dealer_games = DealerGame.objects.filter(date=current_date,time=time)
+        monitor_game = CombinedGame.objects.filter(date=current_date,time=time).all()
+        set_monitor_limit = Monitor.objects.get(time=time)
     else:
         return render(request,'adminapp/monitor.html')
     try:
@@ -1061,7 +1107,7 @@ def monitor(request):
 
     combined_games = {}
 
-    existing_combined_games = CombinedGame.objects.filter(date=current_date, time=matching_play_times)
+    existing_combined_games = CombinedGame.objects.filter(date=current_date, time=time)
 
     existing_combined_games_dict = {(game.LSK, game.number): game for game in existing_combined_games}
 
@@ -1136,7 +1182,7 @@ def monitor(request):
         print(total_count,"Total count")
         combined_game = CombinedGame(
             date=current_date,
-            time=matching_play_times,
+            time=time,
             LSK=LSK,
             number=number,
             count=count,
@@ -1200,6 +1246,8 @@ def monitor(request):
         }
     return render(request,'adminapp/monitor.html',context)
 
+@login_required
+@admin_required
 def clear_limit(request,id):
     combined_game = get_object_or_404(CombinedGame,id=id)
     print(combined_game)
@@ -1207,18 +1255,24 @@ def clear_limit(request,id):
     print("cleared")
     return redirect('adminapp:monitor')
 
+@login_required
+@admin_required
 def clear_all(request):
     clear_limit = CombinedGame.objects.filter().update(remaining_limit=0)
     print("cleared")
     return redirect('adminapp:monitor')
 
+@login_required
+@admin_required
 def set_monitor_times(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     context = {
         'times' : times
     }
     return render(request,'adminapp/set_monitor_times.html',context)
 
+@login_required
+@admin_required
 def set_monitor(request,id):
     time = PlayTime.objects.get(id=id)
     if request.method == 'POST':
@@ -1250,8 +1304,10 @@ def set_monitor(request,id):
         pass
     return render(request,'adminapp/set_monitor.html')
 
+@login_required
+@admin_required
 def republish_results(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     last_result = Result.objects.filter(date=current_date).last()
@@ -1633,8 +1689,10 @@ def republish_results(request):
     }
     return render(request,'adminapp/republish_results.html',context)
 
+@login_required
+@admin_required
 def view_results(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     results = Result.objects.filter().last()
     if request.method == 'POST':
         date = request.POST.get('date')
@@ -1656,9 +1714,11 @@ def view_results(request):
     }
     return render(request,'adminapp/view_results.html',context)
 
+@login_required
+@admin_required
 def daily_report(request):
     agents = Agent.objects.filter().all()
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     print(current_date)
@@ -1827,9 +1887,11 @@ def daily_report(request):
         }
         return render(request,'adminapp/daily_report.html',context)
 
+@login_required
+@admin_required
 def countwise_report(request):
     ist = pytz.timezone('Asia/Kolkata')
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     agent_games = AgentGame.objects.filter(date=current_date).all()
@@ -1910,8 +1972,10 @@ def countwise_report(request):
     }
     return render(request,'adminapp/countwise_report.html',context)
 
+@login_required
+@admin_required
 def countsales_report(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     agents = Agent.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -2143,8 +2207,10 @@ def countsales_report(request):
     }
     return render(request,'adminapp/countsales_report.html',context) 
 
+@login_required
+@admin_required
 def winning_report(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     print(times)
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -2279,9 +2345,10 @@ def winning_report(request):
         }
         return render(request,'adminapp/winning_report.html',context) 
 
-
+@login_required
+@admin_required
 def winningcount_report(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     agents = Agent.objects.filter().all()
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -2365,70 +2432,116 @@ def winningcount_report(request):
     }
     return render(request,'adminapp/winningcount_report.html',context)
 
-def blocked_numbers(request):
-    return render(request,'adminapp/blocked_numbers.html')
+@login_required
+@admin_required
+def blocked_number_times(request):
+    times = PlayTime.objects.filter().all().order_by('id')
+    context = {
+        'times' : times
+    }
+    return render(request,'adminapp/blocked_number_times.html',context)
 
-def edit_bill(request):
+@login_required
+@admin_required
+def blocked_numbers(request,id):
+    time = PlayTime.objects.get(id=id)
+    blocked = BlockedNumber.objects.filter(time=time)
+    context = {
+        'time' : time,
+        'blocked' : blocked
+    }
+    return render(request,'adminapp/blocked_numbers.html',context)
+
+@login_required
+@admin_required
+def edit_bill_times(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_time = timezone.now().astimezone(ist).time()
+    matching_play_times = PlayTime.objects.filter(Q(start_time__lte=current_time) & Q(end_time__gte=current_time)).order_by('id')
+    context = {
+        'times' : matching_play_times
+    }
+    return render(request,'adminapp/edit_bill_times.html',context)
+
+@login_required
+@admin_required
+def edit_bill(request,id):
     agents = Agent.objects.filter().all()
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     print(current_time)
     try:
-        matching_play_times = PlayTime.objects.get(start_time__lte=current_time, end_time__gte=current_time)
-        print(matching_play_times.id)
+        time = PlayTime.objects.get(id=id)
+        print(matching_play_times,"matching")
     except:
         matching_play_times = []
     if request.method == 'POST':
         search_dealer = request.POST.get('agent-select')
         print(search_dealer,"the user id")
         if search_dealer == 'all':
-            return redirect('adminapp:edit_bill')
-        else:
-            pass
-        try:
-            bill_search = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).all()
-            totals = Bill.objects.filter(user=search_dealer,time_id=matching_play_times.id,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
-            agents = Agent.objects.filter(agent=search_dealer).all()
-            print(bill_search,"search bill")
-            context = {
-                'agents': agents,
-                'bills': bill_search,
-                'totals' : totals
-            }
-            return render(request,'adminapp/edit_bill.html',context)
-        except:
-            bill_search = []
-            totals = []
-            agents = Agent.objects.filter(agent=search_dealer).all()
-            print(bill_search,"search bill")
-            context = {
-                'agents': agents,
-                'bills': bill_search,
-                'totals' : totals
-            }
-            return render(request,'adminapp/edit_bill.html',context)
-    else:
-        try:
-            bills = Bill.objects.filter(date=current_date,time_id=matching_play_times.id).all()
-            totals = Bill.objects.filter(date=current_date,time_id=matching_play_times.id).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            bills = Bill.objects.filter(time_id=time,date=current_date).all()
+            totals = Bill.objects.filter(time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
             agents = Agent.objects.filter().all()
             context = {
-                'bills':bills,
+                'bills' : bills,
                 'agents' : agents,
-                'totals' : totals
-            }
+                'totals': totals,
+                'selected_agent' : search_dealer
+            } 
+            return render(request,'adminapp/edit_bill.html',context)
+        else:
+            agent_instance = Agent.objects.get(id=search_dealer)
+        try:
+            bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).all()
+            totals = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            agents = Agent.objects.filter().all()
+            context = {
+                'bills' : bills,
+                'agents' : agents,
+                'totals': totals,
+                'selected_agent' : search_dealer
+            } 
+            return render(request,'adminapp/edit_bill.html',context)
         except:
             bills = []
             totals = []
             agents = Agent.objects.filter().all()
             context = {
-                'bills':bills,
+                'bills' : bills,
                 'agents' : agents,
-                'totals' : totals
-            }
+                'totals': totals,
+                'selected_agent' : search_dealer
+            } 
+            return render(request,'adminapp/edit_bill.html',context)
+    else:
+        try:
+            print("this")
+            bills = Bill.objects.filter(date=current_date,time_id=time).all()
+            print(bills)
+            totals = Bill.objects.filter(date=current_date,time_id=time).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            agents = Agent.objects.filter().all()
+            context = {
+                'bills' : bills,
+                'agents' : agents,
+                'totals': totals,
+                'selected_agent' : 'all'
+            } 
+            return render(request,'adminapp/edit_bill.html',context)
+        except:
+            bills = []
+            totals = []
+            agents = Agent.objects.filter().all()
+            context = {
+                'bills' : bills,
+                'agents' : agents,
+                'totals': totals,
+                'selected_agent' : 'all'
+            } 
     return render(request,'adminapp/edit_bill.html',context)
 
+@login_required
+@admin_required
 def delete_bill(request,id):
     print(id)
     bill = Bill.objects.get(id=id)
@@ -2449,12 +2562,16 @@ def delete_bill(request,id):
     }
     return render(request,'adminapp/delete_bill.html',context)
 
+@login_required
+@admin_required
 def deleting_bill(request,id):
     bill = get_object_or_404(Bill,id=id)
     print(bill,"deleting bill")
     bill.delete()
     return redirect('adminapp:index')
 
+@login_required
+@admin_required
 def delete_row(request,id,bill_id):
     print(id,"this row")
     bill = get_object_or_404(Bill, id=bill_id)
@@ -2467,6 +2584,8 @@ def delete_row(request,id,bill_id):
     bill.update_totals()
     return redirect('adminapp:delete_bill',id=bill_id)    
 
+@login_required
+@admin_required
 def payment_report(request):
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
@@ -2606,6 +2725,8 @@ def payment_report(request):
         }
     return render(request,'adminapp/payment_report.html',context)
 
+@login_required
+@admin_required
 def add_collection(request):
     agents = Agent.objects.filter().all()
     if request.method == 'POST':
@@ -2622,6 +2743,8 @@ def add_collection(request):
     }
     return render(request,'adminapp/add_collection.html',context)
 
+@login_required
+@admin_required
 def balance_report(request):
     agents = Agent.objects.filter().all()
     collection = CollectionReport.objects.filter().all()
@@ -2739,6 +2862,8 @@ def balance_report(request):
     }
     return render(request, 'adminapp/balance_report.html',context)
 
+@login_required
+@admin_required
 def change_password(request):
     if request.method == "POST":
         form = AdminPasswordChangeForm(user=request.user,data=request.POST)
@@ -2752,14 +2877,10 @@ def change_password(request):
         form= AdminPasswordChangeForm(user=request.user)
     return render(request,'adminapp/change_password.html',{'form':form})
 
-def blocked_numbers(request):
-    blocked = BlockedNumber.objects.filter().all()
-    context = {
-        'blocked' : blocked
-    }
-    return render(request,'adminapp/blocked_numbers.html',context)
-
-def new_block(request):
+@login_required
+@admin_required
+def new_block(request,id):
+    time = PlayTime.objects.get(id=id)
     if request.method == 'POST':
         lsk = request.POST.get('select-lsk')
         number = request.POST.get('numberInput')
@@ -2768,12 +2889,15 @@ def new_block(request):
         to_date = request.POST.get('to-date')
         print(lsk)
         print(number)
-        block_number = BlockedNumber.objects.create(from_date=from_date,to_date=to_date,LSK=lsk,number=number,count=count)
-        return redirect('adminapp:blocked_numbers')
+        block_number = BlockedNumber.objects.create(time=time,from_date=from_date,to_date=to_date,LSK=lsk,number=number,count=count)
+        return redirect('adminapp:blocked_numbers',id=id)
     return render(request,'adminapp/new_block.html')
 
-def edit_block(request,id):
+@login_required
+@admin_required
+def edit_block(request,id,time_id):
     block = BlockedNumber.objects.get(id=id)
+    time = PlayTime.objects.get(id=time_id)
     print(block)
     if request.method == 'POST':
         lsk = request.POST.get('select-lsk')
@@ -2783,25 +2907,32 @@ def edit_block(request,id):
         to_date = request.POST.get('to-date')
         print(lsk)
         print(number)
-        block_number = BlockedNumber.objects.filter(id=id).update(from_date=from_date,to_date=to_date,LSK=lsk,number=number,count=count)
-        return redirect('adminapp:blocked_numbers')
+        block_number = BlockedNumber.objects.filter(id=id).update(time=time_id,from_date=from_date,to_date=to_date,LSK=lsk,number=number,count=count)
+        return redirect('adminapp:blocked_numbers',id=time_id)
     context = {
         'block' : block
     }
     return render(request,'adminapp/edit_blocked_number.html',context)
 
-def delete_block(request,id):
+@login_required
+@admin_required
+def delete_block(request,id,time_id):
     block = get_object_or_404(BlockedNumber,id=id)
+    time = PlayTime.objects.get(id=time_id)
     block.delete()
-    return redirect('adminapp:blocked_numbers')
+    return redirect('adminapp:blocked_numbers',id=time_id)
 
+@login_required
+@admin_required
 def settings(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     context = {
         'times' : times
     }
     return render(request,'adminapp/settings.html',context)
 
+@login_required
+@admin_required
 def lsk_limit(request,id):
     time = PlayTime.objects.get(id=id)
     if request.method == 'POST':
