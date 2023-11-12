@@ -3,6 +3,22 @@
 {% block content %}
 
 <style>
+
+.bgtext {
+        position: relative;
+    }
+
+    .bgtext:before {
+        content: "{{time.game_time}} "; /* Replace with your desired background text */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-weight: bold;
+        transform: translate(-50%, -50%); /* Center the text */
+        font-size: 30px; /* Adjust the font size as needed */
+        color:gray; /* Set the color and opacity of the background text */
+        pointer-events: none; /* Ignore mouse events on the background text */
+    }
     #mainTable th {
         position: sticky;
         top: 0;
@@ -50,6 +66,7 @@
         color: white;
     }
 
+    
 /* Add more CSS styling as needed */
 
 </style>
@@ -184,7 +201,7 @@
 
     <div class="container-fluid">
         <div class="row clearfix">
-            <div class="col-lg-12">
+            <div class="col-lg-12 ">
                 <div class="card">
                     <div class="body" style="padding: 10px !important;">
                         <div class="table-container" style="max-height: 500px; overflow-y: auto;">
@@ -206,6 +223,16 @@
                                 </thead>
                                 <tbody>
                                     {% for row in rows %}
+                                    <tr data-row-id="{{ row.id }}">
+                                        <td>{{row.LSK}}</td>
+                                        <td>{{row.number}}</td>
+                                        <td>{{row.count}}</td>
+                                        <td>{{row.d_amount|floatformat:2}}</td>
+                                        <td>{{row.c_amount|floatformat:2}}</td>
+                                        <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% for row in dealer_rows %}
                                     <tr data-row-id="{{ row.id }}">
                                         <td>{{row.LSK}}</td>
                                         <td>{{row.number}}</td>

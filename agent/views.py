@@ -1625,9 +1625,14 @@ def play_game(request,id):
     dealers = Dealer.objects.filter(agent=agent_obj).all()
     try:
         rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date).order_by('-id')
+        dealer_rows = DealerGameTest.objects.filter(agent=agent_obj,created_by=agent_obj,date=current_date,time=id).order_by('-id')
         total_c_amount = sum(row.c_amount for row in rows)
         total_d_amount = sum(row.d_amount for row in rows)
         total_count = sum(row.count for row in rows)
+        if dealer_rows.exists():
+            total_c_amount += sum(dealer_row.c_amount for dealer_row in dealer_rows)
+            total_d_amount += sum(dealer_row.d_amount for dealer_row in dealer_rows)
+            total_count += sum(dealer_row.count for dealer_row in dealer_rows)
     except:
         pass
     blocked_message = request.session.pop('blocked_message', None)
@@ -1636,6 +1641,7 @@ def play_game(request,id):
         'dealers' : dealers,
         'agent_package' : agent_package,
         'rows' : rows,
+        'dealer_rows' : dealer_rows,
         'total_c_amount': total_c_amount,
         'total_d_amount': total_d_amount,
         'total_count': total_count,
@@ -1986,6 +1992,8 @@ def submit_data(request):
             dealer = Dealer.objects.get(id=select_dealer)
             print(dealer)
             dealer_game_test = DealerGameTest(
+                agent=agent_obj,
+                created_by=agent_obj,
                 dealer=dealer,
                 time=time,
                 LSK=link_text,
@@ -2030,6 +2038,7 @@ def save_data(request, id):
 
         # Create AgentGame records based on AgentGameTest
         agent_game_records = []
+
         for test_record in agent_game_test:
             agent_game_record = AgentGame(
                 agent=test_record.agent,
@@ -2043,6 +2052,7 @@ def save_data(request, id):
                 combined=False
             )
             agent_game_records.append(agent_game_record)
+    
 
         # Save the AgentGame records
         AgentGame.objects.bulk_create(agent_game_records)

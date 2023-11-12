@@ -5,7 +5,8 @@ from adminapp.models import PlayTime
 # Create your models here.
 
 class DealerGameTest(models.Model):
-    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True, related_name='agent_dealergametests')
+    created_by = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
     dealer = models.ForeignKey(Dealer,on_delete=models.CASCADE,null=True)
     time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField(auto_now_add=True)
