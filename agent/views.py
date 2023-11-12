@@ -170,6 +170,8 @@ def sales_report(request):
     times = PlayTime.objects.filter().all().order_by('id')
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
+    day_of_week = current_date.strftime('%A')
+    print(day_of_week)
     print(current_date)
     if request.method == 'POST':
         select_dealer = request.POST.get('select-dealer')
@@ -411,6 +413,7 @@ def sales_report(request):
             'selected_lsk' : lsk,
             'agent_games' : agent_games,
             'dealer_games' : dealer_games,
+            'day_of_week':day_of_week,
         }
         return render(request, 'agent/sales_report.html', context)
     else:
@@ -1953,30 +1956,59 @@ def submit_data(request):
         except:
             pass
         
-        agent_game_test = AgentGameTest(
-            agent=agent_obj,
-            time=time,
-            LSK=link_text,
-            number=value1,
-            count=value2,
-            d_amount=value3,
-            c_amount=value4
-        )
-        agent_game_test.save()
-        total_c_amount = AgentGameTest.objects.filter(agent=agent_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-        print(total_c_amount,"@@@@@")
-        try:
-            agent_total_c_amount = AgentGame.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-            print(agent_total_c_amount,"$$$$$$")
-            print(agent_game_test.id,"id")
-            if total_c_amount + agent_total_c_amount > limit.daily_limit:
-                print("Your daily limit is exceeded")
-                agent_game_test.delete()
-                messages.info(request, "Your daily limit is exceeded")
-            else:
-                print("You have limit balance")
-        except:
-            pass
+        if select_dealer == 'False':
+            agent_game_test = AgentGameTest(
+                agent=agent_obj,
+                time=time,
+                LSK=link_text,
+                number=value1,
+                count=value2,
+                d_amount=value3,
+                c_amount=value4
+            )
+            agent_game_test.save()
+            total_c_amount = AgentGameTest.objects.filter(agent=agent_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            print(total_c_amount,"@@@@@")
+            try:
+                agent_total_c_amount = AgentGame.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                print(agent_total_c_amount,"$$$$$$")
+                print(agent_game_test.id,"id")
+                if total_c_amount + agent_total_c_amount > limit.daily_limit:
+                    print("Your daily limit is exceeded")
+                    agent_game_test.delete()
+                    messages.info(request, "Your daily limit is exceeded")
+                else:
+                    print("You have limit balance")
+            except:
+                pass
+        else:
+            print(select_dealer)
+            dealer = Dealer.objects.get(id=select_dealer)
+            print(dealer)
+            dealer_game_test = DealerGameTest(
+                dealer=dealer,
+                time=time,
+                LSK=link_text,
+                number=value1,
+                count=value2,
+                d_amount=value3,
+                c_amount=value4
+            )
+            dealer_game_test.save()
+            total_c_amount = DealerGameTest.objects.filter(dealer=dealer).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            print(total_c_amount,"@@@@@")
+            try:
+                dealer_total_c_amount = DealerGame.objects.filter(dealer=dealer, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                print(dealer_total_c_amount,"$$$$$$")
+                print(dealer_game_test.id,"id")
+                if total_c_amount + dealer_total_c_amount > limit.daily_limit:
+                    print("Your daily limit is exceeded")
+                    dealer_game_test.delete()
+                    messages.info(request, "Your daily limit is exceeded")
+                else:
+                    print("You have limit balance")
+            except:
+                pass
         try:
             blocked_numbers = BlockedNumber.objects.filter().all()
         except:

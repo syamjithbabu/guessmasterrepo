@@ -3,22 +3,24 @@
 {% block content %}
 
 <style>
-    .expand-row{
+    .expand-row {
         background-color: rgb(46, 206, 255);
     }
 </style>
 
 <style>
     .table-cell {
-        border: 1px solid #d2d2d2; /* Add a 1px black border to each cell */
+        border: 1px solid #d2d2d2;
+        /* Add a 1px black border to each cell */
         text-align: center;
-}
+    }
+
     .navbar-bottom {
         position: fixed;
         bottom: 0;
         width: 100%;
         height: 55px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         background-color: #ffffff;
         overflow-x: auto;
         justify-content: space-evenly;
@@ -26,29 +28,36 @@
         flex-direction: column;
     }
 
-    .th, .td{
+    .th,
+    .td {
         text-align: center;
     }
 
-    th, td{
+    th,
+    td {
         text-align: center;
     }
 
-/* print start here */
+    /* print start here */
 
 
-@media screen {
-        
+    @media screen {
+
 
         #dateprint {
             display: none;
         }
+
         #totalcount {
             display: none;
         }
 
-    }
+    
 
+    #printThisDiv {
+        display: none;
+    }
+    }
 
 
     @media print {
@@ -83,11 +92,13 @@
             padding-top: 0%;
         }
 
-        #table , th, td {
+        #table,
+        th,
+        td {
             table-layout: fixed;
             size: 36cm;
             width: 142%;
-          
+
             table-layout: auto;
             border: 1px solid black;
             border-collapse: collapse;
@@ -107,19 +118,21 @@
             padding-top: 0px;
         }
 
-       
-        
+
+
         #btotal {
             display: none;
         }
-        th, .td{
-        text-align: center;
-    }
+
+        th,
+        .td {
+            text-align: center;
+        }
 
 
     }
-/* print css end */
-    
+
+    /* print css end */
 </style>
 
 <div id="main-content">
@@ -151,13 +164,14 @@
                                     <div class="form-group">
                                         <label for="tax-id" class="control-label">Select Dealer</label>
                                         <div class="mb-3">
-                                            <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="agent">
+                                            <select class="form-control show-tick" data-placeholder="Select"
+                                                name="select-dealer" id="agent">
                                                 <option value="all">All</option>
                                                 <option value="{{ request.user }}">Myself</option>
                                                 {% for dealer in dealers %}
                                                 <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
                                                 {% endfor %}
-                                             </select>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -192,22 +206,27 @@
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <label class="fancy-radio"><input name="select-lsk" value="all" type="radio" checked><span><i></i>ALL</span></label>
-                                    <label class="fancy-radio"><input name="select-lsk" value="a_b_c" type="radio"><span><i></i>A/B/C</span></label>
-                                    <label class="fancy-radio"><input name="select-lsk" value="ab_bc_ac" type="radio"><span><i></i>AB/BC/AC</span></label>
-                                    <label class="fancy-radio"><input name="select-lsk" value="super" type="radio"><span><i></i>Super</span></label>
-                                    <label class="fancy-radio"><input name="select-lsk" value="box" type="radio"><span><i></i>Box</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="all" type="radio"
+                                            checked><span><i></i>ALL</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="a_b_c"
+                                            type="radio"><span><i></i>A/B/C</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="ab_bc_ac"
+                                            type="radio"><span><i></i>AB/BC/AC</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="super"
+                                            type="radio"><span><i></i>Super</span></label>
+                                    <label class="fancy-radio"><input name="select-lsk" value="box"
+                                            type="radio"><span><i></i>Box</span></label>
                                 </div>
-                                
+
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Search</button> 
+                                        <button type="submit" class="btn btn-primary">Search</button>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
-                                        type="submit">Print </button>
+                                        <button class="btn btn-primary" id="printbutton"
+                                            onclick="printDiv('printThisDiv')" type="submit">Print </button>
 
 
 
@@ -222,9 +241,9 @@
                                         </label>
                                     </div>
                                 </div>
-                               
-                            
-                              
+
+
+
                             </ul>
                         </form>
                     </div>
@@ -240,15 +259,15 @@
                             {% if agent_bills %}
                             <div class="table-responsive">
                                 <table class="table m-b-0">
-                                    <div class="col-lg-12 text-right" id="dateprint">
+                                    <!-- <div class="col-lg-12 text-right" id="dateprint">
                                         <h6 id="demo2"></h6>
                                         <h6>Sales Report</h6>
 
                                         <h6 id="demo"></h6>
                                         <h6 id="demo1"></h6>
                                         <h6 id="demo3"></h6>
-        
-                                    </div>
+
+                                    </div> -->
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -261,27 +280,28 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in agent_bills %}
-                                            <tr class="main-row">
-                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
-                                                <td>{{ bill.user }}</td>
-                                                <td>{{ bill.id }}</td>
-                                                <td>{{ bill.total_count }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
-                                                <td>{{ bill.total_c_amount }}</td>
-                                            </tr>
-                                            {% for game in bill.agent_games.all %}
-                                                {% if game in agent_games %}
-                                                    <tr class="expand-row grouped-row" style="display: none;">
-                                                        <td>#</td>
-                                                        <td>{{ game.LSK }}</td>
-                                                        <td>{{ game.number }}</td>
-                                                        <td>{{ game.count }}</td>
-                                                        <td>{{ game.d_amount }}</td>
-                                                        <td>{{ game.c_amount }}</td>
-                                                    </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                            {% endfor %}
+                                        <tr class="main-row">
+                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                                            </td>
+                                            <td>{{ bill.user }}</td>
+                                            <td>{{ bill.id }}</td>
+                                            <td>{{ bill.total_count }}</td>
+                                            <td>{{ bill.total_d_amount }}</td>
+                                            <td>{{ bill.total_c_amount }}</td>
+                                        </tr>
+                                        {% for game in bill.agent_games.all %}
+                                        {% if game in agent_games %}
+                                        <tr class="expand-row grouped-row" style="display: none;">
+                                            <td>#</td>
+                                            <td>{{ game.LSK }}</td>
+                                            <td>{{ game.number }}</td>
+                                            <td>{{ game.count }}</td>
+                                            <td>{{ game.d_amount }}</td>
+                                            <td>{{ game.c_amount }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -302,27 +322,28 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in dealer_bills %}
-                                            <tr>
-                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
-                                                <td>{{ bill.user }}</td>
-                                                <td>{{ bill.id }}</td>
-                                                <td>{{ bill.total_count }}</td>
-                                                <td>{{ bill.total_d_amount }}</td>
-                                                <td>{{ bill.total_c_amount }}</td>
-                                            </tr>
-                                            {% for game in bill.dealer_games.all %}
-                                                {% if game in dealer_games %}
-                                                    <tr class="expand-row" style="display: none;">
-                                                        <td>#</td>
-                                                        <td>{{ game.LSK }}</td>
-                                                        <td>{{ game.number }}</td>
-                                                        <td>{{ game.count }}</td>
-                                                        <td>{{ game.d_amount }}</td>
-                                                        <td>{{ game.c_amount }}</td>
-                                                    </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                            {% endfor %}
+                                        <tr>
+                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                                            </td>
+                                            <td>{{ bill.user }}</td>
+                                            <td>{{ bill.id }}</td>
+                                            <td>{{ bill.total_count }}</td>
+                                            <td>{{ bill.total_d_amount }}</td>
+                                            <td>{{ bill.total_c_amount }}</td>
+                                        </tr>
+                                        {% for game in bill.dealer_games.all %}
+                                        {% if game in dealer_games %}
+                                        <tr class="expand-row" style="display: none;">
+                                            <td>#</td>
+                                            <td>{{ game.LSK }}</td>
+                                            <td>{{ game.number }}</td>
+                                            <td>{{ game.count }}</td>
+                                            <td>{{ game.d_amount }}</td>
+                                            <td>{{ game.c_amount }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -337,56 +358,161 @@
                         <!-- <div  style="padding-top: 50px;"></div> -->
                         <div class="text-right" style="padding-top: 50px;">
                         </div>
-                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
+
+    </div>
+</div>
+
+<nav class="navbar-bottom" id="btotal">
+    <table>
+        <thead>
+            <tr>
+                <th class="th">Total Count</th>
+                <th class="th">A.Amount</th>
+                <th class="th">C.Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td">{{totals.total_count}}</td>
+                <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
+                <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
+<div id="printThisDiv">
+    <h3 style="display: inline-block">Sales Report</h3>
+    <h3 id="demo" style="display: inline-block"></h3>
+    <h3 id="demo1" style="display: inline-block"></h3>
+
+    <h3 id="demo"></h3>
+    <h3 id="demo1"></h3>
+    <h3 id="demo3"></h3>
+    <hr>
+    <div class="body">
+        {% if agent_bills %}
+        <div class="table-responsive">
+            <table class="table m-b-0" style=" width: 100%; height: 30%;">
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Agent</th>
+                        <th>Bill</th>
+                        <th>Count</th>
+                        <th>S.Amt</th>
+                        <th>C.Amt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in agent_bills %}
+                    <tr class="main-row" style="text-align: center;">
+                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                        </td>
+                        <td>{{ bill.user }}</td>
+                        <td>{{ bill.id }}</td>
+                        <td>{{ bill.total_count }}</td>
+                        <td>{{ bill.total_d_amount }}</td>
+                        <td>{{ bill.total_c_amount }}</td>
+                    </tr>
+                    {% for game in bill.agent_games.all %}
+                    {% if game in agent_games %}
+                    <tr class="expand-row grouped-row" style="text-align: center;">
+                        <td>#</td>
+                        <td>{{ game.LSK }}</td>
+                        <td>{{ game.number }}</td>
+                        <td>{{ game.count }}</td>
+                        <td>{{ game.d_amount }}</td>
+                        <td>{{ game.c_amount }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        {% endif %}
+       
+        {% if dealer_bills %}
+        <div class="table-responsive">
+            <table class="table m-b-0" style=" width: 100%; height: 30%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Dealer</th>
+                        <th>Bill</th>
+                        <th>Count</th>
+                        <th>S.Amt</th>
+                        <th>C.Amt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in dealer_bills %}
+                    <tr style="text-align: center;">
+                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                        </td>
+                        <td>{{ bill.user }}</td>
+                        <td>{{ bill.id }}</td>
+                        <td>{{ bill.total_count }}</td>
+                        <td>{{ bill.total_d_amount }}</td>
+                        <td>{{ bill.total_c_amount }}</td>
+                    </tr>
+                    {% for game in bill.dealer_games.all %}
+                    {% if game in dealer_games %}
+                    <tr class="expand-row" style="text-align: center;">
+                        <td>#</td>
+                        <td>{{ game.LSK }}</td>
+                        <td>{{ game.number }}</td>
+                        <td>{{ game.count }}</td>
+                        <td>{{ game.d_amount }}</td>
+                        <td>{{ game.c_amount }}</td>
+                    </tr>
+
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <div class="col-md-12 text-right" id="totalcount">
+                <h5>Total Count:{{totals.total_count}}</h5>
+                <h5>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h5>
+                <h5>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h5>
+            </div>
+        </div>
+        {% else %}
+        {% endif %}
+
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
-        <table>
-            <thead>
-                <tr>
-                     <th class="th">Total Count</th>
-                     <th class="th">A.Amount</th>
-                     <th class="th">C.Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="td">{{totals.total_count}}</td>
-                    <td class="td">{{totals.total_d_amount|floatformat:2 }}</td>
-                    <td class="td">{{totals.total_c_amount|floatformat:2 }}</td>
-                </tr>
-            </tbody>
-        </table>
-</nav>
+</div>
 
+<script>
+    function printDiv(elem) {
+        var mywindow = window.open();
+        var content = document.getElementById(elem).innerHTML;
+        var realContent = document.body.innerHTML;
+        mywindow.document.write(content);
+        mywindow.document.close(); // necessary for IE >= 10
+        mywindow.focus(); // necessary for IE >= 10*/
+        mywindow.print();
+        document.body.innerHTML = realContent;
+        mywindow.close();
+        return true;
+    }
+</script>
 
-    <script>
-        function printcontent() {
-
-            var divToPrint = document.getElementById("printcontent");
-            newWin = window.open("");
-            newWin.document.write(divToPrint.outerHTML);
-            newWin.document.close();
-            newWin.print();
-            //newWin.close();
-        }
-
-        document.querySelector("#button").addEventListener("click", function () {
-            printcontent();
-        });
-
-    </script>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $("#expand-button").change(function() {
+    $(document).ready(function () {
+        $("#expand-button").change(function () {
             if (this.checked) {
                 $(".expand-row").show(); // Show the row when the checkbox is checked
             } else {
@@ -403,6 +529,7 @@
         const year = now.getFullYear();
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
+
         return `${year}-${month}-${day}`;
     }
 
@@ -429,6 +556,7 @@
         var selectTo = document.getElementById("to-date");
         var radioInputs = document.getElementsByName("select-lsk");
 
+
         // Set the selected value based on the selected_dealer variable
         selectDealer.value = "{{ selected_dealer }}";
         selectTime.value = "{{ selected_time }}";
@@ -442,32 +570,31 @@
 
     });
 </script>
+
+
 <script>
-
-    // print table
-    function makeprint(table) {
-        window.print();
-    }
-
-
-
-    // get date and inputs 
-    const b = document.getElementById("time");
-
     const x = document.getElementById("from-date");
     const y = document.getElementById("to-date");
-    // const a = document.getElementById("agent");
+
     let currentVal = x.value;
     let currentValue = y.value;
-    let timev = b.value;
-    // let agent = a.value;
-    document.getElementById("demo3").innerHTML = "<br>Time : " + timev;
-    document.getElementById("demo").innerHTML = "<br>From Date : " + currentVal;
-    document.getElementById("demo1").innerHTML = "<br>To Date: " + currentValue;
-    // document.getElementById("demo2").innerHTML = "<br>  " + agent;
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    let fromDate = new Date(currentVal);
+    let toDate = new Date(currentValue);
+
+    let fromDayOfWeek = daysOfWeek[fromDate.getDay()];
+    let toDayOfWeek = daysOfWeek[toDate.getDay()];
+
+    document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
+    document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
+
+
+
 
 
 </script>
 
 
-    {% endblock %}
+{% endblock %}

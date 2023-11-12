@@ -40,86 +40,97 @@
 
 
 @media screen {
-        
-
-        #dateprint {
-            display: none;
-        }
-        #totalcount {
-            display: none;
-        }
-
-    }
 
 
+#dateprint {
+    display: none;
+}
 
-    @media print {
-
-        #header,
-        #left-sidebar,
-        .navbar-toggler,
-        .a,
-        .serch,
-        .header,
-        .button,
-        #printbutton {
-            display: none !important;
-            content: none !important;
-        }
-
-        .page-titles,
-        h1,
-        h2,
-        h3 {
-            display: none;
-
-        }
-
-        .page-wrapper>.content {
-            padding: 0 !important;
-            padding-left: 0%;
-            padding-right: 0%;
-        }
-
-        .page-wrapper {
-            padding-top: 0%;
-        }
-
-        #table , th, td {
-            table-layout: fixed;
-            size: 36cm;
-            width: 142%;
-          
-            table-layout: auto;
-            border: 1px solid black;
-            border-collapse: collapse;
+#totalcount {
+    display: none;
+}
 
 
-        }
 
-        #dateprint {
-            display: block;
-        }
+#printThisDiv {
+display: none;
+}
 
-        #total {
-            display: block;
-        }
+}
 
-        .page-main-content {
-            padding-top: 0px;
-        }
+@media print {
 
-       
-        
-        #btotal {
-            display: none;
-        }
-        th, .td{
-        text-align: center;
-    }
+#header,
+#left-sidebar,
+.navbar-toggler,
+.a,
+.serch,
+.header,
+.button,
+#printbutton {
+    display: none !important;
+    content: none !important;
+}
+
+.page-titles,
+h1,
+h2,
+h3 {
+    display: none;
+
+}
+
+.page-wrapper>.content {
+    padding: 0 !important;
+    padding-left: 0%;
+    padding-right: 0%;
+}
+
+.page-wrapper {
+    padding-top: 0%;
+}
+
+#table,
+th,
+td {
+    table-layout: fixed;
+
+    width: 100%;
+    height: 30%;
+    table-layout: auto;
+    border: 1px solid black;
+    border-collapse: collapse;
 
 
-    }
+}
+
+#dateprint {
+    display: block;
+}
+
+#total {
+    display: block;
+}
+
+.page-main-content {
+    padding-top: 0px;
+}
+
+
+
+#btotal {
+    display: none;
+}
+
+th,
+.td {
+    text-align: center;
+    padding: 5px;
+    border-collapse: collapse;
+}
+
+
+}
 /* print css end */
 
 </style>
@@ -191,8 +202,7 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
-                                        type="submit">Print </button>                                        
+                                        <button class="btn btn-primary" id="printbutton" onclick="printDiv('printThisDiv')" type="submit">Print </button>
                                     </div>
                                 </div>
                                
@@ -210,15 +220,7 @@
                         <div class="body">
                             <div class="table-responsive">
                                 <table class="table m-b-0">
-                                    <div class="col-lg-12 text-right" id="dateprint">
-                                        <p class="result"></p>
-                                        <h6>Daily Report</h6>
-
-                                        <h6 id="demo"></h6>
-                                        <h6 id="demo1"></h6>
-                                        <h6 id="demo3"></h6>
-        
-                                    </div>
+                                    
                                     <thead>
                                         <tr class="l-pink">
                                             <th>Date</th>
@@ -281,24 +283,55 @@
         </table>
 </nav>
 
+<div id="printThisDiv">
+    <h3 style="display: inline-block">Daily Report</h3>
+    <h3 id="demo" style="display: inline-block"></h3>
+    <h3 id="demo1" style="display: inline-block"></h3>
 
-    <script>
-        function printcontent() {
+    <h3 id="demo"></h3>
+    <h3 id="demo1"></h3>
+    <h3 id="demo3"></h3>
+    <hr>
+    <div class="body">
+        <div class="table-responsive">
+            <table class="table m-b-0" style="border: 2px ; width: 100%;">
+               
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Dealer</th>
+                        <th>T.Sale</th>
+                        <th>T.W.Amount</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in dealer_bills %}
+                        <tr class="l-blue" style="text-align: center;">
+                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                            {% if bill.user.agent %}
+                                <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
+                            {% else %}
+                                <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
+                            {% endif %}
+                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                            <td>{{ bill.win_amount|floatformat:2 }}</td>
+                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <div class="col-md-12 text-right" id="totalcount">
+                <h5>Sales Amount :{{total_c_amount.total_c_amount|floatformat:2}}</h5>
+                <h5>Win Amount : {{total_winning|floatformat:2 }}</h5>
+                <h5>Balance : {{total_balance|floatformat:2 }}</h5>
+            </div>
+        </div>
+    </div>
 
-            var divToPrint = document.getElementById("printcontent");
-            newWin = window.open("");
-            newWin.document.write(divToPrint.outerHTML);
-            newWin.document.close();
-            newWin.print();
-            //newWin.close();
-        }
-
-        document.querySelector("#button").addEventListener("click", function () {
-            printcontent();
-        });
-
-    </script>
-
+</div>
+    
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -371,29 +404,7 @@
     });
 </script>
 
-<script>
 
-    // print table
-    function makeprint(table) {
-        window.print();
-    }
-
-
-
-    // get date and inputs 
-    const b = document.getElementById("time");
-
-    const x = document.getElementById("from-date");
-    const y = document.getElementById("to-date");
-    let currentVal = x.value;
-    let currentValue = y.value;
-    let timev = b.value;
-    document.getElementById("demo3").innerHTML = "<br>Time : " + timev;
-    document.getElementById("demo").innerHTML = "<br>From Date : " + currentVal;
-    document.getElementById("demo1").innerHTML = "<br>To Date: " + currentValue;
-
-
-</script>
 
 
 <!-- selected agent or dealer or all -->
@@ -406,4 +417,42 @@
 })
 </script>
 
+
+<script>
+    function printDiv(elem) {
+        var mywindow = window.open();
+        var content = document.getElementById(elem).innerHTML;
+        var realContent = document.body.innerHTML;
+        mywindow.document.write(content);
+        mywindow.document.close(); // necessary for IE >= 10
+        mywindow.focus(); // necessary for IE >= 10*/
+        mywindow.print();
+        document.body.innerHTML = realContent;
+        mywindow.close();
+        return true;
+    }
+</script>
+
+<script>
+
+    const x = document.getElementById("from-date");
+    const y = document.getElementById("to-date");
+
+    let currentVal = x.value;
+    let currentValue = y.value;
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    let fromDate = new Date(currentVal);
+    let toDate = new Date(currentValue);
+
+    let fromDayOfWeek = daysOfWeek[fromDate.getDay()];
+    let toDayOfWeek = daysOfWeek[toDate.getDay()];
+
+    document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
+    document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
+
+
+
+</script>
     {% endblock %}
