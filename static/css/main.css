@@ -2388,8 +2388,10 @@ html.fullscreen-bg #wrapper {
 .card .body {
     color: #444;
     padding: 2px;
-    font-weight: 400
+    font-weight: 400;
+    /* background-color: #49c5b6; */
 }
+
 
 .navbar-fixed-top {
     position: fixed;
