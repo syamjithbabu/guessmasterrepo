@@ -16,47 +16,44 @@
 
         <div class="row clearfix">
             {% for time, is_available in zipped_play_times %}
-            {% if is_available %}
-            <div class="col-lg-3 col-md-12">
-                <a href="{% url 'agent:play_game' time.id %}">
-                <div class="card top_counter currency_state bg-warning">
-                    <div class="body">
+              {% if is_available %}
+                <div class="col-lg-3 col-md-12">
+                  <a href="{% url 'agent:play_game' time.id %}">
+                    <div class="card top_counter currency_state {% if time.game_time == 'morning' %}bg-success{% elif time.game_time == 'afternoon' %}bg-warning{% else %}bg-info{% endif %}">
+                      <div class="body">
                         <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
                         <div class="content">
-                            <h5 class="number">{{ time.game_time }}</h5>
-                            {% if is_available %}
+                          <h5 class="number">{{ time.game_time }}</h5>
+                          {% if is_available %}
                             <p>Game is available!</p>
-                            {% else %}
+                          {% else %}
                             <p>Game is not available.</p>
-                            {% endif %}
+                          {% endif %}
                         </div>
+                      </div>
                     </div>
+                  </a>
                 </div>
-                </a>
-            </div>
-            {% else %}
-            <div class="col-lg-3 col-md-12">
+              {% else %}
+              <div class="col-lg-3 col-md-12">
                 <a href="#" onclick="noGame()" data-type="confirm" class="js-sweetalert">
-                <div class="card top_counter currency_state bg-warning">
+                  <div class="card top_counter currency_state bg-warning">
                     <div class="body">
-                        <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
-                        <div class="content">
-                            <h5 class="number">{{ time.game_time }}</h5>
-                            {% if is_available %}
-                            <p>Game is available!</p>
-                            {% else %}
-                            <p>Game is not available.</p>
-                            {% endif %}
-                        </div>
+                      <div class="icon"><img src="{% static 'images/game1.png' %}" width="35" /></div>
+                      <div class="content">
+                        <h5 class="number">{{ time.game_time }}</h5>
+                        {% if is_available %}
+                          <p>Game is available!</p>
+                        {% else %}
+                          <p>Game is not available.</p>
+                        {% endif %}
+                      </div>
                     </div>
-                </div>
-            </a>
-            </div>
+                  </div>
+                </a>
+              </div>
             {% endif %}
-            {% endfor %}
-
-
-
+          {% endfor %}
         </div>
 
 
@@ -65,6 +62,8 @@
        
 
 </div>
+</div>
+
 
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
