@@ -2299,6 +2299,9 @@ html.fullscreen-bg #wrapper {
 }
 
 .card {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
     background: #fff;
     transition: .5s;
     border: 0;

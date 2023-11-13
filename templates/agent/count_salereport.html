@@ -22,11 +22,9 @@
 
     .td2{
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
     .td3{
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
     .th1, .td1{
         text-align: center;
@@ -103,23 +101,23 @@
             </div>
         </div>
 
-        <div class="row clearfix" style="padding-bottom: 50px;">
+        <div class="row clearfix" style="padding-bottom: 0px;">
             <form method="POST">
                 {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card">
+                <div class="card" style="padding-bottom: 0px;">
                     <div class="body">
-                        <div class="col-lg-12">
-                            <div class="card serch">
+                        <div class="col-lg-12" style="padding-top: 0px;padding-bottom: 0px;">
+                            <div class="card serch" style="padding-bottom: 0px;">
                                 
                                 <div class="body">
                                     <div class="row clearfix">
-                                        <div class="col-md-6 col-6">
+                                        <div class="col-md-12 col-12">
                                             <div class="form-group">
                                                 <input type="date" class="form-control" id="from-date" name="from-date">
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-6">
+                                        <div class="col-md-12 col-12">
                                             <div class="form-group">
                                                 <input type="date" class="form-control" id="to-date" name="to-date">
                                             </div>
@@ -147,13 +145,21 @@
                                                 </select>
                                             </div>
                                         </div>
-                                    <div class="col-md-6 col-6">
-                                        <div class="form-group">                                               
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
                                                 <button type="submit" class="btn btn-primary">Search</button>
-                                                <button class="btn btn-primary" id="printbutton" onclick="printDiv('printThisDiv')" type="submit">Print </button>
-    
+
                                             </div>
                                         </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <button class="btn btn-primary" id="printbutton" onclick="printDiv('printThisDiv')" type="submit">Print </button>
+
+                                            </div>
+                                        </div>
+                                      
+                                    </div>
+    
                                     
                                     </div>
                                                                         
@@ -163,10 +169,10 @@
                                  </div></div></div></div></form></div>
                                 
                                 <div class="body">
-                                    <div class="table-responsive">
+                                    <div class="table-responsive" style="padding-bottom: 20px;">
                                         <table class="table m-b-0">
                                        
-                                            <thead>
+                                            <thead class="l-blue">
                                                 <tr>
                                                      <th class="th">Positon</th>
                                                      <th class="th">Count</th>
@@ -176,22 +182,22 @@
                                             </thead>
                                             <tbody class="not-summary">
 
-                                                <tr>
+                                                <tr class="l-parpl">
                                                     <td class="td2">Super</td>
                                                     <td class="td3">{{super_totals.total_count}}</td>
                                                     <td class="td2">{{super_totals.total_amount|floatformat:2}}</td>                                                  
                                                 </tr>
-                                                <tr>
+                                                <tr class="l-pink">
                                                     <td class="td2">Box</td>
                                                     <td class="td3">{{box_totals.total_count}}</td>
                                                     <td class="td2">{{box_totals.total_amount|floatformat:2}}</td>                                                  
                                                 </tr>
-                                                <tr>
+                                                <tr class="l-turquoise">
                                                     <td class="td2">Single</td>
                                                     <td class="td3">{{single_totals.total_count}}</td>
                                                     <td class="td2">{{single_totals.total_amount|floatformat:2}}</td>                                                  
                                                 </tr>
-                                                <tr>
+                                                <tr class="l-parpl">
                                                     <td class="td2">Double</td>
                                                     <td class="td3">{{double_totals.total_count}}</td>
                                                     <td class="td2">{{double_totals.total_amount|floatformat:2}}</td>                                                  
@@ -201,7 +207,7 @@
                                          <div  style="padding-top: 50px;"></div>
                                         <!-- <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
                                             type="submit">Print </button></div> -->
-                                        <div class="col-md-12 text-right" id="total">
+                                        <div class="col-md-12 text-right l-parpl" id="total">
                                             <h6>TOTAL COUNT : {{totals.net_count}}</h6>
                                             <h6>TOTAL AMOUNT : {{totals.net_amount|floatformat:2}}</h6>
                 
@@ -222,7 +228,7 @@
     </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom l-blue" id="btotal">
     <table>
         <thead>
             <tr>

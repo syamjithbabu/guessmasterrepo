@@ -3,6 +3,18 @@
 {% block content %}
 
 <style>
+     .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
     .bgtext {
         position: relative;
     }
@@ -12,10 +24,12 @@
         position: absolute;
         top: 50%;
         left: 50%;
+        opacity: 0.3;
+  transition: 0.3s;
         font-weight: bold;
         transform: translate(-50%, -50%); /* Center the text */
         font-size: 30px; /* Adjust the font size as needed */
-        color:gray; /* Set the color and opacity of the background text */
+        color:rgb(136, 135, 135); /* Set the color and opacity of the background text */
         pointer-events: none; /* Ignore mouse events on the background text */
     }
     #mainTable th {
@@ -133,16 +147,16 @@
 
                             <!-- only show when R is chacked -->
                             <div id="conditionalFields" class="row">
-                                <div class="form-group mt-3 col-lg-3 col-3">
+                                <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="text" class="form-control" id="start" placeholder="Start" required>
                                 </div>
-                                <div class="form-group mt-3 col-lg-3 col-3">
+                                <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="end" placeholder="End" required>
                                 </div>
-                                <div class="form-group mt-3 col-lg-3 col-3">
+                                <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="step" placeholder="Step" required>
                                 </div>
-                                <div class="form-group mt-3 col-lg-3 col-3">
+                                <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="count" placeholder="Count" required>
                                 </div>
                             </div>
@@ -204,10 +218,10 @@
     <div class="container-fluid">
        
         <div class="row clearfix ">
-            <div class="col-lg-12">
+            <div class="col-lg-12" style="padding-top: 0px;">
 
                 
-                <div class="card">
+                <div class="card bgtext " style="background-color:antiquewhite; padding-left: 1px;padding-right: 1px;">
                     
                     <div class="body " style="padding: 10px !important;">
                         
@@ -216,18 +230,18 @@
                             <table id="mainTable" class="table table-hover " style="table-layout: fixed; width: 100%;">
                                 
                                 <thead>
-                                    <tr>
+                                    <!-- <tr>
                                         <th colspan="2">Count: <span id="totalCount">{{total_count}}</span></th>
                                         <th colspan="2">AMT: <span id="totalDAmount">{{total_d_amount|floatformat:2}}</span></th>
                                         <th colspan="2">TOT: <span id="totalCAmount">{{total_c_amount|floatformat:2}}</span></th>
-                                    </tr>
-                                    <tr>
-                                        <th>LSK</th>
-                                        <th>No</th>
-                                        <th>Count</th>
-                                        <th>D.AMT</th>
-                                        <th>C.AMT</th>
-                                        <th>Action</th>
+                                    </tr> -->
+                                    <tr >
+                                        <th class="l-blue">LSK</th>
+                                        <th class="l-blue">No</th>
+                                        <th class="l-blue">Count</th>
+                                        <th class="l-blue">D.AMT</th>
+                                        <th class="l-blue" >C.AMT</th>
+                                        <th class="l-blue">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -270,7 +284,24 @@
         </div>
     </div>
 </div>
-
+<nav class="navbar-bottom" >
+    <table>
+        <thead>
+            <tr>
+                <th class="th"> Count</th>
+                <th class="th">Amount</th>
+                <th class="th">TOT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="td">{{total_count}}</td>
+                <td class="td">{{total_d_amount|floatformat:2}}</td>
+                <td class="td">{{total_c_amount|floatformat:2}}</td>
+            </tr>
+        </tbody>
+    </table>
+</nav>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 

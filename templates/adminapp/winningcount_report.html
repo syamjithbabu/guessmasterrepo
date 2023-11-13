@@ -22,11 +22,9 @@
 
     .td2{
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
     .td3{
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
     .th1, .td1{
         text-align: center;
@@ -108,10 +106,10 @@ td {
             <form method="POST">
                 {% csrf_token %}
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card">
+                <div class="card" style="background-color:rgb(213, 255, 205);">
                     <div class="body serch">
                         <div class="col-lg-12">
-                            <div class="card serch-form">
+                            <div class="card serch-form" style="background-color:antiquewhite">
                                 
                                 <div class="body">
                                     <div class="row clearfix">
@@ -186,6 +184,8 @@ td {
                                                 {% endfor %}
                                             </tbody>
                                         </table>
+                                        <div  style="padding-top: 50px;"></div>
+
                                         <div class="col-md-12 text-right" id="total">
                                             <h6>TOTAL COUNT : {{totals.total_count}}</h6>
                                             <h6>TOTAL AMOUNT : {{totals.total_prize|floatformat:2}}</h6>
