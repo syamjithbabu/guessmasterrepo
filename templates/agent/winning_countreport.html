@@ -22,12 +22,10 @@
 
     .td2 {
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
 
     .td3 {
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
 
     .th1,
@@ -103,15 +101,14 @@
                 </div>
             </div>
         </div>
-
-        <div class="row clearfix" style="padding-bottom: 00px;">
+        <div class="row clearfix" style="padding-bottom: 10px;">
             <form method="POST">
                 {% csrf_token %}
-                <div class="col-lg-12 col-md-12 col-sm-12">
-                    <div class="card">
-                        <div class="body serch">
-                            <div class="col-lg-12">
-                                <div class="card">
+                <div class="col-lg-12 col-md-12 col-sm-12" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
+                    <div class="body">
+                        <div class="col-lg-12">
+                            <div class="card  serch"
+                                style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                                     <div class="body">
                                         <div class="row clearfix">
@@ -152,6 +149,13 @@
                                             <div class="col-md-6 col-6">
                                                 <div class="form-group">
                                                     <button type="submit" class="btn btn-primary">Search</button>
+                                                    
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                   
                                                     <button class="btn btn-primary" id="printbutton"
                                                         onclick="printDiv('printThisDiv')" type="submit">Print </button>
 
@@ -166,10 +170,9 @@
                             </div>
 
                         </div>
-                    </div>
+                   
                 </div>
-        </div>
-    </div>
+     
     </form>
 </div>
 
@@ -177,21 +180,21 @@
     <div class="table-responsive">
         <table class="table m-b-0">
 
-            <thead>
+            <thead class="l-blue">
 
-                <tr>
+                <tr >
                     <th class="th">Positon</th>
                     <th class="th">Count</th>
                     <th class="th">Amount</th>
 
                 </tr>
             </thead>
-            <tbody class="not-summary">
+            <tbody class="not-summary ">
                 {% for winning in winnings %}
-                <tr>
-                    <td class="td2">{{winning.position}}</td>
-                    <td class="td3">{{winning.count}}</td>
-                    <td class="td2">{{winning.prize|floatformat:2}}</td>
+                <tr >
+                    <td class="td2 l-blush">{{winning.position}}</td>
+                    <td class="td3 l-pink">{{winning.count}}</td>
+                    <td class="td2 l-turquoise">{{winning.prize|floatformat:2}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -214,7 +217,7 @@
 </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom l-parpl" id="btotal">
     <table>
         <thead>
             <tr>

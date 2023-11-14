@@ -35,13 +35,20 @@
                                 
                             </ul>
                         </li>
-
+                        <li>
+                            <a href="{% url 'agent:sales_report' %}" ><i class="icon-notebook"></i> <span>Sales Report</span></a>
+                           
+                        </li>
+                        <li>
+                            <a href="{% url 'agent:daily_report' %}" ><i class="icon-book-open"></i> <span>Daily Report</span></a>
+                           
+                        </li>
                         <li>
                             <a href="{% url 'agent:results' %}" ><i class=" icon-trophy"></i> <span>Results</span></a>
                            
                         </li>
                         <li>
-                            <a href="#Limit" class="has-arrow"><i class=" icon-control-pause"></i> <span>Limit</span></a>
+                            <a href="#Limit" class="has-arrow"><i class="icon-bar-chart"></i> <span>Daily Limit</span></a>
                             <ul>
                                 <li><a href="{% url 'agent:set_limit' %}">Set Limit</a></li>                                    
                                 <li><a href="">Edit Limit</a></li>
@@ -49,7 +56,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="#Dashboard" class="has-arrow"><i class=" icon-control-pause"></i> <span>Package</span></a>
+                            <a href="#Dashboard" class="has-arrow"><i class="icon-present"></i> <span>Package</span></a>
                             <ul>
                                 <li><a href="{% url 'agent:package' %}">Package</a></li>                                    
                                 <li><a href="{% url 'agent:new_package' %}">New Package</a></li>
@@ -62,34 +69,30 @@
                             <a href="#uiElements" class="has-arrow"><i class="icon-book-open "></i> <span>Reports</span></a>
                             <ul>
                                 <li>
-                                    <a href=" {% url 'agent:sales_report' %}" ><i class="icon-bag"></i> <span>Sales Report</span></a>
-                                  
-                                </li>
-                                <li>
-                                    <a href=" {% url 'agent:daily_report' %}" ><i class="icon-screen-desktop"></i> <span>Daily Report</span></a>
-                                   
-                                </li>
-                                <li>
-                                    <a href=" {% url 'agent:winning_report' %}"><i class="icon-book-open "></i> <span>winning Report</span></a>
+                                    <a href=" {% url 'agent:winning_report' %}"><span>Winning Report</span></a>
                                  
                                 </li>
                                 
                                 <li>
-                                    <a href=" {% url 'agent:count_salereport' %}"><i class="icon-book-open "></i> <span>Count Sales Report</span></a>
+                                    <a href=" {% url 'agent:count_salereport' %}"><span>Count Sales Report</span></a>
                                  
                                 </li>
                                 <li>
-                                    <a href=" {% url 'agent:winning_countreport' %}"><i class="icon-book-open "></i> <span>Winnning Count Report</span></a>
+                                    <a href=" {% url 'agent:winning_countreport' %}"><span>Winnning Count Report</span></a>
                                  
                                 </li>
                                 <li>
-                                    <a href=" {% url 'agent:balance_report' %}"><i class="icon-book-open"></i> <span>Balance Report</span></a>
+                                    <a href=" {% url 'agent:balance_report' %}"><span>Balance Report</span></a>
                                  
                                 </li>
                                
                                
                            
                             </ul>
+                        </li>
+                        <li>
+                            <a href="{% url 'agent:edit_bill_times' %}" ><i class="icon-note"></i> <span>Edit Bill</span></a>
+                           
                         </li>
                         <li>
                             <a href="#" class="has-arrow"><i class="icon-grid"></i> <span>Collection</span></a>
@@ -110,22 +113,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="#" class="has-arrow"><i class="icon-settings"></i> <span>Settings</span></a>
-                            <ul>
-                               
-                                
-                                <li>
-                                        <a href="{% url 'agent:edit_bill_times' %}" ><i class="icon-note"></i> <span>Edit Bill</span></a>
-                                   
-                                </li>
-                                <li>
-                                    <a href="{% url 'agent:change_password' %}" ><i class="icon-note"></i> <span>Change Paasword</span></a>
-                                   
-                                </li>
-                                
-                               
-                           
-                            </ul>
+                            <a href="{% url 'agent:change_password' %}" class="has-arrow"><i class="icon-wrench"></i> <span>Change Password</span></a>
                         </li>
                        
                         

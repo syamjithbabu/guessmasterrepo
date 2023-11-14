@@ -22,12 +22,10 @@
 
     .td2 {
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
 
     .td3 {
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
 
     .th1,
@@ -108,14 +106,13 @@ td {
             </div>
         </div>
 
-        <div class="row clearfix" style="padding-bottom: 50px;">
+        <div class="row clearfix" style="padding-bottom: 10px;">
             <form method="POST">
                 {% csrf_token %}
-                <div class="col-lg-12 col-md-12 col-sm-12">
-                    <div class="card serch">
+                <div class="col-lg-12 col-md-12 col-sm-12" style="padding-left: 0px;padding-right: 0px;">
                         <div class="body">
-                            <div class="col-lg-12">
-                                <div class="card">
+                            <div class="col-lg-12" style="padding-top: 0px;">
+                                <div class="card" style="padding-left: 0px;padding-right: 0px;background-color:antiquewhite;">
 
                                     <div class="body">
                                         <div class="row clearfix">
@@ -162,7 +159,7 @@ td {
                                     </div>
 
                                 </div>
-                            </div>
+                        
 
                         </div>
                     </div>
@@ -176,10 +173,10 @@ td {
 
 
 <div class="body">
-    <div class="table-responsive">
+    <div class="table-responsive" style="padding-left: 0px;padding-right: 0px;">
         <table class="table m-b-0">
            
-            <thead>
+            <thead class="l-blush">
                 <tr>
                     <th class="th">Positon</th>
                     <th class="th">Count</th>
@@ -187,7 +184,7 @@ td {
 
                 </tr>
             </thead>
-            <tbody class="not-summary">
+            <tbody class="not-summary l-turquoise">
 
                 <tr>
                     <td class="td2">Super</td>
@@ -226,7 +223,7 @@ td {
 </div>
 
 
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom l-parpl" id="btotal">
     <table>
         <thead>
             <tr>

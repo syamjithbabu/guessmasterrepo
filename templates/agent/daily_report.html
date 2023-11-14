@@ -143,6 +143,8 @@
         <div class="block-header">
             <div class="row header">
                 <div class="col-lg-5 col-md-8 col-sm-12">
+                    <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Daily Report</h2>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'dealer:index' %}"><i class="icon-home"></i></a>
                         </li>
@@ -153,9 +155,9 @@
             </div>
         </div>
 
-        <div class="row clearfix">
+        <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
             <div class="col-md-12">
-                <div class="card  serch">
+                <div class="card  serch" style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                     <div class="body">
                         <form method="POST">
@@ -220,15 +222,15 @@
             </div>
         </div>
 
-        <div class="container-fluid">
-            <div class="row clearfix">
+        <div class="container-fluid" style="padding-left: 0px;padding-right: 0px;">
+            <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
                 <div class="col-lg-12" style="padding-left: 4px;padding-right: 4px;">
-                    <div class="card">
+                    <div class="card" style="padding-left: 0px;padding-right: 0px;background-color: lavender;">
                         <div class="body">
                             <div class="table-responsive">
                                 <table class="table m-b-0" style="background-color: lavender;">
                                    
-                                    <thead>
+                                    <thead class="l-blush">
                                         <tr>
                                             <th>Date</th>
                                             <th>Dealer</th>
@@ -237,7 +239,7 @@
                                             <th>Balance</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="l-turquoise">
                                         {% for bill in dealer_bills %}
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
@@ -268,7 +270,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom" id="btotal">
+    <nav class="navbar-bottom l-parpl" id="btotal">
         <table>
             <thead>
                 <tr>

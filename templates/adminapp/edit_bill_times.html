@@ -14,14 +14,14 @@
 
             <div class="row clearfix">
                 <div class="col-lg-3 col-md-6">
-                    <div class="card top_counter">
+                    <div class="card top_counter" style="background-color:antiquewhite"> 
                     
 
-
+                        {% if times %}
                         {% for time in times %}
                         <div class="col-lg-12 col-md-6 col-sm-6">
                             <a href="{% url 'adminapp:edit_bill' time.id %}">
-                            <div class="card text-center bg-info">
+                            <div class="card text-center bg-info" style="background-color:antiquewhite">
                                 <div class="body">
                                     <div class="p-15 text-light">
                                         <span style="font-size: 20px; color: black;">{{time.game_time}}</span>
@@ -31,6 +31,18 @@
                             </a>
                         </div>
                         {% endfor %}
+                        {% else %}
+                        <div class="col-lg-12 col-md-6 col-sm-6">
+                            <div class="card text-center bg-info">
+                                <div class="body">
+                                    <div class="p-15 text-light">
+                                        <span style="font-size: 20px; color: black;">No Games are available now!</span>
+                                    </div>
+                                </div>
+                            </div>
+                            </a>
+                        </div>
+                        {% endif %}
 
                         
 

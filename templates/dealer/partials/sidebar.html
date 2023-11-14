@@ -26,12 +26,16 @@
                                 <a href="{% url 'dealer:index' %}" ><i class="icon-home"></i> <span>Dashboard</span></a>
 
                             </li>
-                        <!-- <li>
-                            <a href="{% url 'dealer:booking' %}" ><i class=" icon-bag"></i> <span></span>Booking</a>
-                        
-                        </li> -->
+                            <li>
+                                <a href="{% url 'dealer:sales_report' %}" ><i class="icon-notebook"></i> <span>Sales Report</span></a>
+                              
+                            </li>
+                            <li>
+                                <a href="{% url 'dealer:daily_report' %}" ><i class="icon-book-open"></i> <span>Daily Report</span></a>
+                              
+                            </li>
                         <li>
-                            <a href="{% url 'dealer:result' %}" ><i class=" icon-refresh"></i> <span>Result</span></a>
+                            <a href="{% url 'dealer:result' %}" ><i class="icon-trophy"></i> <span>Result</span></a>
                           
                         </li>
                       
@@ -40,12 +44,8 @@
                          
                         </li>
                         <li>
-                            <a href="#uiElements" class="has-arrow"><i class="icon-grid"></i> <span>Others</span></a>
+                            <a href="#uiElements" class="has-arrow"><i class="icon-grid"></i> <span>Reports</span></a>
                             <ul>
-                                <!-- <li><a href="ui-typography.html">Customer</a></li> -->
-                                
-                                <li><a href="{% url 'dealer:sales_report' %}">Sales report</a></li>
-                                <li><a href="{% url 'dealer:daily_report' %}"> Daily Report</a></li>
                                 <li><a href="{% url 'dealer:winning_report' %}">Winning Report</a></li>   
 
                                 <li><a href="{% url 'dealer:count_salereport' %}">Sales Count Report</a></li>
@@ -57,7 +57,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="{% url 'dealer:change_password' %}" ><i class="icon-note"></i> <span>Change Password</span></a>
+                            <a href="{% url 'dealer:change_password' %}" ><i class="icon-wrench"></i> <span>Change Password</span></a>
                            
                         </li>
                         

@@ -13,7 +13,7 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row">
-                <div class="col-lg-5 col-md-8 col-sm-12">
+                <div class="col-lg-5 col-md-8 col-sm-12" style="padding-top: 5px;">
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
                         </li>
@@ -22,11 +22,11 @@
                 </div>
             </div>
         </div>
-        <div class="card">
+        <div class="card" style="background-color:antiquewhite;-webkit-padding-start: 0px;padding-right: 0px;">
             <div class="body">
                 <form method="POST">
                 {% csrf_token %}
-                <div class="row clearfix">
+                <div class="row clearfix" style="padding-left: 6px;padding-right: 6px;">
                     <div class="col-md-6 col-6">
                         <div class="form-group">
                             <label for="date" class="control-label">Date</label>
@@ -49,8 +49,8 @@
                             <button type="submit" class="btn btn-primary">Search</button>
                         </div>
                     </div>
-                    <div style="padding-top: 30px;"></div>
-                    <div class="col-lg-2 col-md-6 col-6 text-right">
+                    <div style="padding-top: 10px;"></div>
+                    <div class="col-lg-2 col-md-6 col-6 text-right" >
                         <div class="form-group">
                             <a       href="whatsapp://send?text= {{results.date}} - {{results.time.game_time}}
                             %0a1 : {{results.first}}
@@ -74,8 +74,8 @@
             </div>
         </div>
         <div class="row clearfix">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="padding-top: 0px;">
+                <div class="card" style="background-color:antiquewhite;padding-left: 0px;padding-right: 0px;">
                     <div class="body table-responsive">
                         <table class="table">
                             <thead>
@@ -110,8 +110,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-12">
-                <div class="card">
+            <div class="col-lg-12" style="padding-top: 0px;">
+                <div class="card" style="background-color:antiquewhite;padding-top: 5px;">
                     <div class="body table-responsive">
                         <table class="table table-striped">
                             <tbody>

@@ -8,7 +8,7 @@
         bottom: 0;
         width: 100%;
         height: 55px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         background-color: #ffffff;
         overflow-x: auto;
         justify-content: space-evenly;
@@ -16,19 +16,20 @@
         flex-direction: column;
     }
 
-    .th{
+    .th {
         text-align: center;
     }
 
-    .td2{
+    .td2 {
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
-    .td3{
+
+    .td3 {
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
-    .th1, .td1{
+
+    .th1,
+    .td1 {
         text-align: center;
     }
 
@@ -55,156 +56,157 @@
 
 
 
-#table,
-th,
-td {
-    table-layout: fixed;
-    text-align: center;
-    width: 100%;
-    height: 30%;
-    table-layout: auto;
-    border: 1px solid black;
-    border-collapse: separate;
+        #table,
+        th,
+        td {
+            table-layout: fixed;
+            text-align: center;
+            width: 100%;
+            height: 30%;
+            table-layout: auto;
+            border: 1px solid black;
+            border-collapse: separate;
 
-}
+        }
 
-td {
-    text-align: center;
-}
+        td {
+            text-align: center;
+        }
 
-#dateprint {
-    display: block;
-}
+        #dateprint {
+            display: block;
+        }
 
-#total {
-    display: block;
-}
+        #total {
+            display: block;
+        }
 
-.page-main-content {
-    padding-top: 0px;
-}
+        .page-main-content {
+            padding-top: 0px;
+        }
 
-.navbar-bottom {
-    display: none;
-}
+        .navbar-bottom {
+            display: none;
+        }
 
 
-}
+    }
 </style>
 <div id="main-content">
     <div class="container-fluid">
         <div class="block-header">
             <div class="row header">
-                <div class="col-lg-5 col-md-8 col-sm-12">                        
+                <div class="col-lg-5 col-md-8 col-sm-12">
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
+                        </li>
                         <li class="breadcrumb-item">Winning Count Report</li>
                     </ul>
-                </div> 
-            </div>
-        </div>
-
-        <div class="row clearfix" style="padding-bottom: 00px;">
-            <form method="POST">
-                {% csrf_token %}
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card">
-                    <div class="body serch">
-                        <div class="col-lg-12">
-                            <div class="card serch-form">
-                                
-                                <div class="body">
-                                    <div class="row clearfix">
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <input type="date" class="form-control" id="from-date" name="from-date">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <input type="date" class="form-control" id="to-date" name="to-date">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="select-agent" id="agent">
-                                                    <option value="all">All Agents</option>
-                                                    {% for agent in agents %}
-                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 col-6">
-                                            <div class="form-group">
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                    name="time" id="time">
-                                                    <option value="all">All Times</option>
-                                                    {% for time in times %}
-                                                    <option value="{{time.id}}">{{time.game_time}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-12  text-right">
-                                    
-                                            <button type="submit" class="btn btn-primary">Search</button>
-                                        
-                                        
-                                            <button class="btn btn-primary" id="printbutton"
-                                            onclick="printDiv('printThisDiv')" type="submit">Print </button>
-
-                                        
-                                    </div>
-                                    
-                                    </div>
-                                                                        
-                                    </div>
-                                   
-                                 </div>
-                                </form>
-                                <div class="body">
-                                    <div class="table-responsive">
-                                        <table class="table m-b-0">
-                                            
-                                            <thead>
-                                                <tr class="l-blue">
-                                                     <th class="th">Positon</th>
-                                                     <th class="th">Count</th>
-                                                     <th class="th">Amount</th>
-                                                    
-                                                </tr>
-                                            </thead>
-                                            <tbody class="not-summary">
-                                                {% for winning in winnings %}
-                                                <tr class="l-pink">
-                                                    <td class="td2">{{winning.position}}</td>
-                                                    <td class="td3">{{winning.count}}</td>
-                                                    <td class="td2">{{winning.prize|floatformat:2}}</td>                                                  
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                        <div class="col-md-12 text-right" id="total">
-                                            <h6>TOTAL COUNT : {{totals.total_count}}</h6>
-                                            <h6>TOTAL AMOUNT : {{totals.total_prize|floatformat:2}}</h6>
-                
-                                        </div>
-                                    </div>
-                                   
-                                </div>
-                                
-                            </div>
-                           
-                        </div>
-                    </div>
-                    </div>
                 </div>
             </div>
-        
         </div>
+
+        <div class="row clearfix" style="padding-bottom: 0px;padding-left: 0px;padding-right: 0px;">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="col-lg-12 col-md-12 col-sm-12" style="padding-top: 5px;">
+                    <div class="card" style="background-color:antiquewhite;padding-left: opx;padding-right: 0px;">
+                        <div class="body serch" style="padding-bottom: 0px;padding-left: 0px;padding-right: 0px;">
+                            <div class="col-lg-12" style="padding-top: 10px;">
+
+                                    <div class="body">
+                                        <div class="row clearfix" style="padding-bottom: 0px;padding-left: 0px;padding-right: 0px;">
+                                            <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <input type="date" class="form-control" id="from-date"
+                                                        name="from-date">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <input type="date" class="form-control" id="to-date" name="to-date">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <select class="form-control show-tick ms select2"
+                                                        data-placeholder="Select" name="select-agent" id="agent">
+                                                        <option value="all">All Agents</option>
+                                                        {% for agent in agents %}
+                                                        <option value="{{agent.user.id}}">{{agent.user}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <select class="form-control show-tick ms select2"
+                                                        data-placeholder="Select" name="time" id="time">
+                                                        <option value="all">All Times</option>
+                                                        {% for time in times %}
+                                                        <option value="{{time.id}}">{{time.game_time}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12  text-right">
+
+                                                <button type="submit" class="btn btn-primary">Search</button>
+
+
+                                                <button class="btn btn-primary" id="printbutton"
+                                                    onclick="printDiv('printThisDiv')" type="submit">Print </button>
+
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                </div></div></div></div>
+            </form>
+        </div>
+
+
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table m-b-0" style="padding-left: 0px;padding-right: 0px;">
+
+                        <thead>
+                            <tr class="l-blue">
+                                <th class="th">Positon</th>
+                                <th class="th">Count</th>
+                                <th class="th">Amount</th>
+
+                            </tr>
+                        </thead>
+                        <tbody class="not-summary">
+                            {% for winning in winnings %}
+                            <tr class="l-pink">
+                                <td class="td2">{{winning.position}}</td>
+                                <td class="td3">{{winning.count}}</td>
+                                <td class="td2">{{winning.prize|floatformat:2}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="padding-top: 50px;"></div>
+
+                    <div class="col-md-12 text-right" id="total">
+                        <h6>TOTAL COUNT : {{totals.total_count}}</h6>
+                        <h6>TOTAL AMOUNT : {{totals.total_prize|floatformat:2}}</h6>
+
+                    </div>
+                </div>
+
+            </div>
+
         
+
+
+
     </div>
 </div>
 
@@ -212,8 +214,8 @@ td {
     <table>
         <thead>
             <tr>
-                 <th class="th1">TOTAL COUNT</th>
-                 <th class="th1">TOTAL AMOUNT</th>
+                <th class="th1">TOTAL COUNT</th>
+                <th class="th1">TOTAL AMOUNT</th>
             </tr>
         </thead>
         <tbody>
@@ -239,13 +241,13 @@ td {
 
         <div class="table-responsive">
             <table class="table m-b-0" style="border: 2px ; width: 100%;height: 30%;">
-               
+
                 <thead>
                     <tr class="l-blue">
-                         <th class="th">Positon</th>
-                         <th class="th">Count</th>
-                         <th class="th">Amount</th>
-                        
+                        <th class="th">Positon</th>
+                        <th class="th">Count</th>
+                        <th class="th">Amount</th>
+
                     </tr>
                 </thead>
                 <tbody class="not-summary">
@@ -253,7 +255,7 @@ td {
                     <tr class="l-pink" style="text-align: center;">
                         <td class="td2">{{winning.position}}</td>
                         <td class="td3">{{winning.count}}</td>
-                        <td class="td2">{{winning.prize|floatformat:2}}</td>                                                  
+                        <td class="td2">{{winning.prize|floatformat:2}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -303,7 +305,7 @@ td {
         // Set the selected value based on the selected_dealer variable
         selectTime.value = "{{ selected_time }}";
         selectAgent.value = "{{ selected_agent }}"
-        
+
 
     });
 </script>
@@ -349,4 +351,4 @@ td {
 </script>
 
 
-{% endblock %} 
+{% endblock %}

@@ -22,11 +22,9 @@
 
     .td2{
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
     .td3{
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
     .th1, .td1{
         text-align: center;
@@ -102,14 +100,13 @@ td {
             </div>
         </div>
 
-        <div class="row clearfix serch" style="padding-bottom: 50px;">
+        <div class="row clearfix serch" style="padding-bottom: 10px;padding-bottom: 0px;">
             <form method="POST">
                 {% csrf_token %}
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card serch">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="padding-left: 0px;padding-right: 0px;">
                     <div class="body">
                         <div class="col-lg-12">
-                            <div class="card serch">
+                            <div class="card serch" style="padding-left: 0px;padding-right: 0px;background-color:antiquewhite;">
                                 
                                 <div class="body ">
                                     <div class="row clearfix">
@@ -166,7 +163,7 @@ td {
                         </div>
                     </form>
                     </div>
-                </div>
+                
             
             </div>
             
@@ -178,7 +175,7 @@ td {
                                     <div class="table-responsive">
                                         <table class="table m-b-0">
                                            
-                                            <thead>
+                                            <thead class="l-blue">
                                                 <tr>
                                                      <th class="th">Positon</th>
                                                      <th class="th">Count</th>
@@ -186,7 +183,7 @@ td {
                                                     
                                                 </tr>
                                             </thead>
-                                            <tbody class="not-summary">
+                                            <tbody class="not-summary l-blush">
                                                 {% for winning in winnings %}
                                                 <tr>
                                                     <td class="td2">{{winning.position}}</td>
@@ -206,7 +203,7 @@ td {
                                 </div>
                                 
                   
-<nav class="navbar-bottom"  id="btotal">
+<nav class="navbar-bottom l-parpl"  id="btotal">
     <table>
         <thead>
             <tr>

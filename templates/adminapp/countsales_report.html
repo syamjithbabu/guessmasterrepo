@@ -23,12 +23,10 @@
 
     .td2 {
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
 
     .td3 {
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
 
     .th1,
@@ -111,16 +109,16 @@
             </div>
         </div>
 
-        <div class="row clearfix " style="padding-bottom: 50px;">
+        <div class="row clearfix " style="padding-bottom: 5px;">
             <form method="POST">
                 {% csrf_token %}
                 <div class="col-lg-12 col-md-12 col-sm-12 ">
 
 
-                    <div class="card serch">
+                    <div class="card serch" style="background-color:antiquewhite">
 
                         <div class="body">
-                            <div class="row clearfix">
+                            <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
                                 <div class="col-md-6 col-6">
                                     <div class="form-group">
                                         <input type="date" class="form-control" id="from-date" name="from-date">
@@ -155,10 +153,22 @@
                                 </div>
 
 
-                                <div class="col-md-6 col-6 text-right">
+                                <!-- <div class="col-md-6 col-6 text-right">
                                     
                                         <button type="submit" class="btn btn-primary">Search</button>
                                     
+                                        <button class="btn btn-primary" id="printbutton" onclick="printDiv('printThisDiv')" type="submit">Print </button>
+
+                                    </div> -->
+                                
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Search</button>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
                                         <button class="btn btn-primary" id="printbutton" onclick="printDiv('printThisDiv')" type="submit">Print </button>
 
                                     </div>
@@ -178,8 +188,8 @@
 
 <div class="body body-content">
     <div class="table-responsive">
-        <div class="col-lg-12 ">
-            <div class="card">
+        <div class="col-lg-12 " style="padding-top: 0px;">
+            <div class="card"style="background-color:rgb(213, 255, 205);padding-left: 0px;padding-right: 0px;">
 
                 <div class="body main-table">
 
