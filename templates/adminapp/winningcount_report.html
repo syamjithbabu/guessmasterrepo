@@ -243,14 +243,14 @@
             <table class="table m-b-0" style="border: 2px ; width: 100%;height: 30%;">
 
                 <thead>
-                    <tr class="l-blue">
-                        <th class="th">Positon</th>
-                        <th class="th">Count</th>
-                        <th class="th">Amount</th>
+                    <tr class="l-blue" style="text-align: center;">
+                        <th class="th" style="text-align: center;">Positon</th>
+                        <th class="th" style="text-align: center;">Count</th>
+                        <th class="th" style="text-align: center;">Amount</th>
 
                     </tr>
                 </thead>
-                <tbody class="not-summary">
+                <tbody class="not-summary" style="text-align: center;">
                     {% for winning in winnings %}
                     <tr class="l-pink" style="text-align: center;">
                         <td class="td2">{{winning.position}}</td>
@@ -336,17 +336,12 @@
 
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+    function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 

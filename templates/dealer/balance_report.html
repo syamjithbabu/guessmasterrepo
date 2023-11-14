@@ -230,7 +230,7 @@ td {
             <table class="table m-b-0"  style=" width: 100%;">
                                            
                 <thead>
-                    <tr>
+                    <tr style="text-align: center;">
                         <th class="th">Date</th>
                          <th class="th">Daily<br>Sales</th>
                          <th class="th">Collection<br>Amount</th>
@@ -337,17 +337,12 @@ td {
 
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+     function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 

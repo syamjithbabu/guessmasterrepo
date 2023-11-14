@@ -22,11 +22,9 @@
 
     .td2{
         text-align: center;
-        background-color: rgb(221, 221, 221);
     }
     .td3{
         text-align: center;
-        background-color: rgb(255, 255, 255);
     }
     .th1, .td1{
         text-align: center;
@@ -420,17 +418,12 @@ th,
 
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+    function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 <script>
