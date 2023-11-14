@@ -165,10 +165,11 @@ td {
                                         <table class="table m-b-0">
                                             
                                             <thead>
-                                                <tr class="l-blue">
+                                                <tr class="l-blue" style="text-align: center;">
                                                     <th class="th">Date</th>
                                                      <th class="th">Agent</th>
-                                                     <th class="th">Daily<br>Sales</th>
+                                                     <th class="th">Sales<br>Amount</th>
+                                                     <th class="th">Win<br>Amount</th>
                                                      <th class="th">Collection<br>Amount</th>
                                                      <th class="th">Balance</th>
                                                     
@@ -176,10 +177,11 @@ td {
                                             </thead>
                                             <tbody class="not-summary">
                                                 {% for data in report_data %}
-                                                <tr class="l-pink"> 
+                                                <tr class="l-pink" style="text-align: center;"> 
                                                     <td class="td2">{{data.date}}</td>
                                                     <td class="td3">{{data.agent.user}}</td>
                                                     <td class="td2">{{data.total_d_amount|floatformat:2}}</td>
+                                                    <td class="td2">0</td>
                                                     <td class="td3">{{data.from_or_to|floatformat:2}}</td>   
                                                     <td class="td2">{{data.balance|floatformat:2}}</td>                                              
                                                 </tr>
@@ -245,7 +247,8 @@ td {
                     <tr class="l-blue" style="text-align: center;">
                         <th class="th">Date</th>
                          <th class="th">Agent</th>
-                         <th class="th">Daily<br>Sales</th>
+                         <th class="th">Sales<br>Amount</th>
+                         <th class="th">Win<br>Amount</th>
                          <th class="th">Collection<br>Amount</th>
                          <th class="th">Balance</th>
                         
@@ -257,6 +260,7 @@ td {
                         <td class="td2">{{data.date}}</td>
                         <td class="td3">{{data.agent.user}}</td>
                         <td class="td2">{{data.total_d_amount|floatformat:2}}</td>
+                        <td class="td2">0</td>
                         <td class="td3">{{data.from_or_to|floatformat:2}}</td>   
                         <td class="td2">{{data.balance|floatformat:2}}</td>                                              
                     </tr>

@@ -206,7 +206,7 @@ def sales_report(request):
         print(lsk_value,"##################")
         if select_time != 'all':
             if lsk != 'all':
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                 for bill in dealer_bills:
@@ -218,12 +218,12 @@ def sales_report(request):
                     bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                     bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
             else:
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         else:
             if lsk != 'all':
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                 for bill in dealer_bills:
@@ -235,7 +235,7 @@ def sales_report(request):
                     bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                     bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
             else:
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         context = {
@@ -249,7 +249,7 @@ def sales_report(request):
             'selected_lsk' : lsk,
         }
     else:
-        dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all()
+        dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all().order_by('id')
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
         totals = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         select_time = 'all'
@@ -579,14 +579,14 @@ def winning_countreport(request):
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     winnings = Winning.objects.filter(date=current_date).all()
-    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
     if request.method == 'POST':
         select_time = request.POST.get('time')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
         if select_time != 'all':
             winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time)
-            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -598,7 +598,7 @@ def winning_countreport(request):
             return render(request,'dealer/winning_countreport.html',context)
         else:
             winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date])
-            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+            totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -696,7 +696,7 @@ def play_game(request,id):
     current_time = timezone.now().astimezone(ist).time()
     print(current_date)
     if current_time > time.end_time:
-        return redirect('agent:index')
+        return redirect('dealer:index')
     if DealerPackage.objects.filter(dealer=dealer_obj).exists():
         dealer_package = DealerPackage.objects.get(dealer=dealer_obj)
         print(dealer_package.single_rate)

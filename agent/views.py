@@ -207,7 +207,7 @@ def sales_report(request):
                     #time and agent is selected
                     if lsk != 'all':
                         #time, agent and lsk is selected
-                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK__in=lsk_value)
+                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK__in=lsk_value).order_by('id')
                         print(agent_games)
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time,agent_games__in=agent_games).distinct()
                         print(agent_bills)
@@ -222,14 +222,14 @@ def sales_report(request):
                             bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     else:
                         #lsk not selected, agent and time selected
-                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time).all()
+                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time).all().order_by('id')
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time).all()
                         totals = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time_id=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                 else:
                     #time not selected, agent selected
                     if lsk != 'all':
                         #lsk selected, time not selected, agent selected
-                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK__in=lsk_value)
+                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK__in=lsk_value).order_by('id')
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,agent_games__in=agent_games).distinct()
                         totals = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                         for bill in agent_bills:
@@ -242,7 +242,7 @@ def sales_report(request):
                             bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     else:
                         #time,lsk not selected, agent selected
-                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj).all()
+                        agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj).all().order_by('id')
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,agent_games__in=agent_games).distinct()
                         totals = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
             else:
@@ -251,7 +251,7 @@ def sales_report(request):
                     #dealer and time selected
                     if lsk != 'all':
                         #dealer,lsk and time selected
-                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,time=select_time,LSK__in=lsk_value)
+                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,time=select_time,LSK__in=lsk_value).order_by('id')
                         dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=select_dealer,time_id=select_time,dealer_games__in=dealer_games).distinct()
                         totals = DealerGame.objects.filter(date__range=[from_date, to_date],time_id=select_time,dealer__user=select_dealer,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                         for bill in dealer_bills:
@@ -264,14 +264,14 @@ def sales_report(request):
                             bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     else:
                         #dealer, time selcted and lsk not selected
-                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,time=select_time).all()
+                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,time=select_time).all().order_by('id')
                         dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=select_dealer,time_id=select_time,dealer_games__in=dealer_games).distinct()
                         totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,time_id=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                 else:
                     #dealer selected, time not selected
                     if lsk != 'all':
                         #dealer and lsk selected, time not selected
-                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,LSK__in=lsk_value)
+                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,LSK__in=lsk_value).order_by('id')
                         dealer_bills = Bill.objecountsales_reportcts.filter(date__range=[from_date, to_date],user=select_dealer,dealer_games__in=dealer_games).distinct()
                         totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                         for bill in dealer_bills:
@@ -284,7 +284,7 @@ def sales_report(request):
                             bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     else:
                         #dealer selected, time and lsk not selected
-                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer).all()
+                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer).all().order_by('id')
                         dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=select_dealer,dealer_games__in=dealer_games).distinct()
                         totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__user=select_dealer).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         if select_dealer == 'all':
@@ -293,8 +293,8 @@ def sales_report(request):
                 #all users, time is selected
                 if lsk != 'all':
                     #all users, time is selected, lsk is selected
-                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK__in=lsk_value)
-                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time,LSK__in=lsk_value)
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time,LSK__in=lsk_value).order_by('id')
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time,LSK__in=lsk_value).order_by('id')
                     agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time,agent_games__in=agent_games).distinct()
                     dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time,dealer_games__in=dealer_games).distinct()
                     totals_agent = AgentGame.objects.filter(Q(agent=agent_obj),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
@@ -322,8 +322,8 @@ def sales_report(request):
                             bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                 else:
                     #all users, time is selected, lsk is not selected
-                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time)
-                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time)
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,time=select_time).order_by('id')
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,time=select_time).order_by('id')
                     agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time,agent_games__in=agent_games).distinct()
                     dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time,dealer_games__in=dealer_games).distinct()
                     totals_agent = AgentGame.objects.filter(Q(agent=agent_obj),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
@@ -337,8 +337,8 @@ def sales_report(request):
                 #all users, time not selected
                 if lsk != 'all':
                     #all users, time not selected, lsk is selected
-                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK__in=lsk_value)
-                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,LSK__in=lsk_value)
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj,LSK__in=lsk_value).order_by('id')
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj,LSK__in=lsk_value).order_by('id')
                     agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,agent_games__LSK__in=lsk_value).distinct()
                     dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],dealer_games__LSK__in=lsk_value).distinct()
                     if not agent_bills:
@@ -389,8 +389,8 @@ def sales_report(request):
                                 bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                 else:
                     #all users, time not selected, lsk not selected
-                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj).all()
-                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj).all()
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],agent=agent_obj).all().order_by('id')
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_obj).all().order_by('id')
                     agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id).distinct()
                     dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date]).distinct()
                     totals_agent = AgentGame.objects.filter(Q(agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
@@ -418,8 +418,8 @@ def sales_report(request):
         return render(request, 'agent/sales_report.html', context)
     else:
         print("this is working")
-        agent_games = AgentGame.objects.filter(date=current_date,agent=agent_obj).all()
-        dealer_games = DealerGame.objects.filter(date=current_date,dealer__agent=agent_obj).all()
+        agent_games = AgentGame.objects.filter(date=current_date,agent=agent_obj).all().order_by('id')
+        dealer_games = DealerGame.objects.filter(date=current_date,dealer__agent=agent_obj).all().order_by('id')
         agent_bills = Bill.objects.filter(date=current_date,user=agent_obj.user.id).all()
         print(agent_bills)
         dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date)
@@ -581,7 +581,7 @@ def daily_report(request):
                     return render(request,'agent/daily_report.html',context)
         else:
             if select_time != 'all':
-                print("its agent")
+                print("daily report issue")
                 bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time).all()
                 print(bills)
                 for bill in bills:
@@ -1060,7 +1060,7 @@ def winning_countreport(request):
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     winnings = Winning.objects.filter(date=current_date).all()
-    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
     if request.method == 'POST':
         select_time = request.POST.get('time')
         select_agent = request.POST.get('select_agent')
@@ -1070,7 +1070,7 @@ def winning_countreport(request):
             if select_agent != 'all':
                 if select_agent == str(agent_obj.user):
                     winnings = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date],time=select_time)
-                    totals = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    totals = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
                     print(select_agent)
                     context = {
                         'times' : times,
@@ -1086,7 +1086,7 @@ def winning_countreport(request):
                     return render(request,'agent/winning_countreport.html',context)
                 else:
                     winnings = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date],time=select_time)
-                    totals = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                    totals = Winning.objects.filter(dealer__user=select_agent,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
                     print(winnings)
                     print(select_agent)
                     context = {
@@ -1103,7 +1103,7 @@ def winning_countreport(request):
                     return render(request,'agent/winning_countreport.html',context)
             else:
                 winnings = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date],time=select_time)
-                totals = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('prize'))
+                totals = Winning.objects.filter(Q(agent=agent_obj) | Q(dealer__agent=agent_obj),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
                 print(select_agent)
                 context = {
                     'times' : times,
@@ -1320,7 +1320,8 @@ def payment_report(request):
 @login_required
 @agent_required
 def add_collection(request):
-    dealers = Dealer.objects.filter().all()
+    agent_obj = Agent.objects.get(user=request.user)
+    dealers = Dealer.objects.filter(agent=agent_obj).all()
     if request.method == 'POST':
         date = request.POST.get('date')
         select_dealer = request.POST.get('select-dealer')
@@ -1625,23 +1626,16 @@ def play_game(request,id):
     dealers = Dealer.objects.filter(agent=agent_obj).all()
     try:
         rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date).order_by('-id')
-        dealer_rows = DealerGameTest.objects.filter(agent=agent_obj,created_by=agent_obj,date=current_date,time=id).order_by('-id')
         total_c_amount = sum(row.c_amount for row in rows)
         total_d_amount = sum(row.d_amount for row in rows)
         total_count = sum(row.count for row in rows)
-        if dealer_rows.exists():
-            total_c_amount += sum(dealer_row.c_amount for dealer_row in dealer_rows)
-            total_d_amount += sum(dealer_row.d_amount for dealer_row in dealer_rows)
-            total_count += sum(dealer_row.count for dealer_row in dealer_rows)
     except:
         pass
-    blocked_message = request.session.pop('blocked_message', None)
     context = {
         'time' : time,
         'dealers' : dealers,
         'agent_package' : agent_package,
         'rows' : rows,
-        'dealer_rows' : dealer_rows,
         'total_c_amount': total_c_amount,
         'total_d_amount': total_d_amount,
         'total_count': total_count,

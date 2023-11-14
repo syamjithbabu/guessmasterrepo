@@ -49,7 +49,7 @@
         </div>
 
         <div class="row clearfix">
-            <a href="{% url 'adminapp:set_monitor_times' %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
+            <a href="{% url 'adminapp:set_monitor' id %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
             <div class="col-md-12">
                 <div class="card">
 
@@ -118,7 +118,7 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-3">
                                     <div class="form-group">
-                                        <a href="{% url 'adminapp:clear_all' %}" class="btn btn-primary">Clear All</a>
+                                        <a href="{% url 'adminapp:clear_all' id %}" class="btn btn-primary">Clear All</a>
                                     </div>
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
@@ -174,7 +174,7 @@
                                             {% if game.remaining_limit <= 0 %}
                                             <td>#</td>
                                             {% else %}
-                                            <td><a href="{% url 'adminapp:clear_limit' game.id %}">clear</a></td>
+                                            <td><a href="{% url 'adminapp:clear_limit' game.id id %}">clear</a></td>
                                             {% endif %}
                                         </tr>
                                     {% endfor %}

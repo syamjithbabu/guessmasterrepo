@@ -52,8 +52,8 @@ urlpatterns = [
     path('new-block/<int:id>',views.new_block,name="new_block"),
     path('edit-block/<int:id>/<int:time_id>',views.edit_block,name="edit_block"),
     path('delete-block/<int:id>/<int:time_id>',views.delete_block,name="delete_block"),
-    path('clear-limit/<int:id>',views.clear_limit,name="clear_limit"),
-    path('clear-all',views.clear_all,name="clear_all"),
+    path('clear-limit/<int:id>/<int:time_id>',views.clear_limit,name="clear_limit"),
+    path('clear-all/<int:id>',views.clear_all,name="clear_all"),
     path('settings',views.settings,name="settings"),
     path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")   
 ]
