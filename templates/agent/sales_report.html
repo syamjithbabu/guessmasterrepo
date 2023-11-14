@@ -139,7 +139,7 @@
     <div class="container-fluid">
         <div class="block-header">
             <div class="row header">
-                <div class="col-lg-5 col-md-8 col-sm-12">
+                <div class="col-lg-5 col-md-8 col-sm-12" style="padding-top: 0px;">
                     <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
                                 class="fa fa-arrow-left"></i></a> Sales Report</h2>
                     <ul class="breadcrumb">
@@ -152,8 +152,8 @@
         </div>
 
         <div class="row clearfix serch">
-            <div class="col-md-12">
-                <div class="card">
+            <div class="col-md-12" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
+                <div class="card"   style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                     <div class="body ">
                         <form method="POST">
@@ -251,16 +251,16 @@
             </div>
         </div>
 
-        <div class="container-fluid">
-            <div class="row clearfix">
-                <div class="col-lg-12">
-                    <div class="card ">
+        <div class="container-fluid" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
+            <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
+                <div class="col-lg-12" style="padding-top: 0px;">
+                    <div class="card " style="padding-left: 0px;padding-right: 0px;background-color:lavender;">
                         <div class="body">
                             {% if agent_bills %}
                             <div class="table-responsive">
                                 <table class="table m-b-0">
                                     
-                                    <thead>
+                                    <thead class="l-blue">
                                         <tr>
                                             <th>Date</th>
                                             <th>Agent</th>
@@ -272,7 +272,7 @@
                                     </thead>
                                     <tbody>
                                         {% for bill in agent_bills %}
-                                        <tr class="main-row">
+                                        <tr class="main-row l-blush">
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
                                             <td>{{ bill.user }}</td>
@@ -283,7 +283,7 @@
                                         </tr>
                                         {% for game in bill.agent_games.all %}
                                         {% if game in agent_games %}
-                                        <tr class="expand-row grouped-row" style="display: none;">
+                                        <tr class="expand-row grouped-row l-pink" style="display: none;">
                                             <td>#</td>
                                             <td>{{ game.LSK }}</td>
                                             <td>{{ game.number }}</td>
@@ -302,7 +302,7 @@
                             {% if dealer_bills %}
                             <div class="table-responsive">
                                 <table class="table m-b-0">
-                                    <thead>
+                                    <thead class="l-blue">
                                         <tr>
                                             <th>Date</th>
                                             <th>Dealer</th>
@@ -312,7 +312,7 @@
                                             <th>C.Amt</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="l-turquoise">
                                         {% for bill in dealer_bills %}
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
@@ -358,7 +358,7 @@
     </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom l-parpl" id="btotal">
     <table>
         <thead>
             <tr>

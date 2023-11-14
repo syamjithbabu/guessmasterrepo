@@ -46,9 +46,10 @@
         #totalcount {
             display: none;
         }
+
         #printThisDiv {
-        display: none;
-    }
+            display: none;
+        }
 
     }
 
@@ -112,6 +113,7 @@
         .td {
             text-align: center;
         }
+
         #table,
         th,
         td {
@@ -144,136 +146,61 @@
             </div>
         </div>
 
-        <div class="row clearfix" style="padding-bottom: 50px;">
+        <div class="row clearfix" style="padding-bottom: 10px;">
             <form method="POST">
                 {% csrf_token %}
-                <div class="col-lg-12 col-md-12 col-sm-12">
-                    <div class="card ">
-                        <div class="body">
-                            <div class="col-lg-12">
-                                <div class="card  serch">
-
-                                    <div class="body">
-                                        <div class="row clearfix">
-                                            <div class="col-md-6 col-6">
-                                                <div class="form-group">
-                                                    <input type="date" class="form-control" id="from-date"
-                                                        name="from-date">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-6">
-                                                <div class="form-group">
-                                                    <input type="date" class="form-control" id="to-date" name="to-date">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-6">
-                                                <div class="form-group">
-                                                    <select class="form-control show-tick ms select2"
-                                                        data-placeholder="Select" name="time" id="time">
-                                                        <option value="all">All Times</option>
-                                                        {% for time in times %}
-                                                        <option value="{{time.id}}">{{time.game_time}}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-6">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Search</button>
-                                                   
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-6">
-                                                <div class="form-group">
-                                                    <button class="btn btn-primary" id="printbutton"
-                                                    onclick="printDiv('printThisDiv')" type="submit">Print </button>
-        
-        
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-6">
-                                                <label class="control-inline fancy-checkbox ml-auto">
-                                                    <input type="checkbox" name="checkbox2" id="summary-button">
-                                                    <span>Summary</span>
-                                                </label>
-                                            </div>
-
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
+                <div class="col-lg-12 col-md-12 col-sm-12" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
+                    <div class="body">
+                        <div class="col-lg-12">
+                            <div class="card  serch"
+                                style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                                 <div class="body">
-                                    <div class="table-responsive">
-                                        <table class="table m-b-0">
-                                          
-                                            <thead>
-                                                <tr>
-                                                    <th class="th">B</th>
-                                                    <th class="th">U</th>
-                                                    <th class="th">T</th>
-                                                    <th class="th">PN</th>
-                                                    <th class="th">C</th>
-                                                    <th class="th">PP</th>
-                                                    <th class="th">SU</th>
-                                                    <th class="th">RS</th>
-                                                    <th class="th">Net</th>
-
-                                                </tr>
-                                            </thead>
-                                            <tbody class="not-summary">
-                                                {% for winning in winnings %}
-                                                <tr>
-                                                    <td class="td2">{{winning.bill}}</td>
-                                                    {% if winning.agent %}
-                                                    <td class="td3">{{winning.agent}}</td>
-                                                    {% else %}
-                                                    <td class="td3">{{winning.dealer}}</td>
-                                                    {% endif %}
-                                                    <td class="td2">{{winning.LSK}}</td>
-                                                    <td class="td3">{{winning.number}}</td>
-                                                    <td class="td2">{{winning.count}}</td>
-                                                    <td class="td3">{{winning.position}}</td>
-                                                    <td class="td2">{{winning.commission|floatformat:2}}</td>
-                                                    <td class="td3">{{winning.prize|floatformat:2}}</td>
-                                                    <td class="td2">{{winning.total|floatformat:2}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                            <tbody style="display: none;" class="summary-row">
-                                                {% for winning in aggr %}
-                                                <tr>
-                                                    <td class="td2">{{winning.bill}}</td>
-                                                    {% if winning.agent %}
-                                                    <td class="td3">$</td>
-                                                    {% else %}
-                                                    <td class="td3">$</td>
-                                                    {% endif %}
-                                                    <td class="td2">{{winning.LSK}}</td>
-                                                    <td class="td3">{{winning.number}}</td>
-                                                    <td class="td2">{{winning.total_count}}</td>
-                                                    <td class="td3">{{winning.position}}</td>
-                                                    <td class="td2">{{winning.total_commission|floatformat:2}}</td>
-                                                    <td class="td3">{{winning.total_prize|floatformat:2}}</td>
-                                                    <td class="td2">{{winning.total_net|floatformat:2}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                        <div class="col-md-12 text-right" id="totalcount">
-                                            <h6>COUNT : {{totals.total_count}}</h6>
-                                            <h6>COMM: {{totals.total_commission|floatformat:2 }}</h6>
-                                            <h6>TOTAL: {{totals.total_rs|floatformat:2 }}</h6>
-                                            <h6>NET: {{totals.total_net|floatformat:2 }}</h6>
-
+                                    <div class="row clearfix">
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="from-date" name="from-date">
+                                            </div>
                                         </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <input type="date" class="form-control" id="to-date" name="to-date">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2"
+                                                    data-placeholder="Select" name="time" id="time">
+                                                    <option value="all">All Times</option>
+                                                    {% for time in times %}
+                                                    <option value="{{time.id}}">{{time.game_time}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-primary">Search</button>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <button class="btn btn-primary" id="printbutton"
+                                                    onclick="printDiv('printThisDiv')" type="submit">Print </button>
+
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <label class="control-inline fancy-checkbox ml-auto">
+                                                <input type="checkbox" name="checkbox2" id="summary-button">
+                                                <span>Summary</span>
+                                            </label>
+                                        </div>
+
+
                                     </div>
-                                    <div style="padding-top: 50px;"></div>
-                                    <!-- <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
-                                        type="submit">Print </button></div>
-                                    </div> -->
 
                                 </div>
 
@@ -282,17 +209,111 @@
                         </div>
 
                     </div>
+
                 </div>
+
+            </form>
         </div>
+
+        <div class="container-fluid" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
+            <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
+                <div class="col-lg-12" style="padding-left: 4px;padding-right: 4px;">
+                    <div class="card" style="padding-left: 0px;padding-right: 0px;background-color: lavender;">
+                        <div class="body">
+                            <div class="table-responsive">
+                                <table class="table m-b-0">
+
+                                    <thead class="l-blue">
+                                        <tr>
+                                            <th class="th">B</th>
+                                            <th class="th">U</th>
+                                            <th class="th">T</th>
+                                            <th class="th">PN</th>
+                                            <th class="th">C</th>
+                                            <th class="th">PP</th>
+                                            <th class="th">SU</th>
+                                            <th class="th">RS</th>
+                                            <th class="th">Net</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody class="not-summary l-blush">
+                                        {% for winning in winnings %}
+                                        <tr>
+                                            <td class="td2">{{winning.bill}}</td>
+                                            {% if winning.agent %}
+                                            <td class="td3">{{winning.agent}}</td>
+                                            {% else %}
+                                            <td class="td3">{{winning.dealer}}</td>
+                                            {% endif %}
+                                            <td class="td2">{{winning.LSK}}</td>
+                                            <td class="td3">{{winning.number}}</td>
+                                            <td class="td2">{{winning.count}}</td>
+                                            <td class="td3">{{winning.position}}</td>
+                                            <td class="td2">{{winning.commission|floatformat:2}}</td>
+                                            <td class="td3">{{winning.prize|floatformat:2}}</td>
+                                            <td class="td2">{{winning.total|floatformat:2}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tbody style="display: none;" class="summary-row l-blush">
+                                        {% for winning in aggr %}
+                                        <tr>
+                                            <td class="td2">{{winning.bill}}</td>
+                                            {% if winning.agent %}
+                                            <td class="td3">$</td>
+                                            {% else %}
+                                            <td class="td3">$</td>
+                                            {% endif %}
+                                            <td class="td2">{{winning.LSK}}</td>
+                                            <td class="td3">{{winning.number}}</td>
+                                            <td class="td2">{{winning.total_count}}</td>
+                                            <td class="td3">{{winning.position}}</td>
+                                            <td class="td2">{{winning.total_commission|floatformat:2}}</td>
+                                            <td class="td3">{{winning.total_prize|floatformat:2}}</td>
+                                            <td class="td2">{{winning.total_net|floatformat:2}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <div class="col-md-12 text-right" id="totalcount">
+                                    <h6>COUNT : {{totals.total_count}}</h6>
+                                    <h6>COMM: {{totals.total_commission|floatformat:2 }}</h6>
+                                    <h6>TOTAL: {{totals.total_rs|floatformat:2 }}</h6>
+                                    <h6>NET: {{totals.total_net|floatformat:2 }}</h6>
+
+                                </div>
+                            </div>
+                            <div style="padding-top: 50px;"></div>
+                            <!-- <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
+                                                        type="submit">Print </button></div>
+                                                    </div> -->
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
     </div>
 </div>
-</form>
-</div>
 
-</div>
-</div>
-
-<nav class="navbar-bottom" id="btotal">
+<nav class="navbar-bottom l-parpl" id="btotal">
     <table>
         <thead>
             <tr>
@@ -396,7 +417,7 @@
 
             </div>
         </div>
-       
+
     </div>
 
 </div>
@@ -465,21 +486,21 @@
     }
 
     const x = document.getElementById("from-date");
-        const y = document.getElementById("to-date");
+    const y = document.getElementById("to-date");
 
-        let currentVal = x.value;
-        let currentValue = y.value;
+    let currentVal = x.value;
+    let currentValue = y.value;
 
-        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        let fromDate = new Date(currentVal);
-        let toDate = new Date(currentValue);
+    let fromDate = new Date(currentVal);
+    let toDate = new Date(currentValue);
 
-        let fromDayOfWeek = daysOfWeek[fromDate.getDay()];
-        let toDayOfWeek = daysOfWeek[toDate.getDay()];
+    let fromDayOfWeek = daysOfWeek[fromDate.getDay()];
+    let toDayOfWeek = daysOfWeek[toDate.getDay()];
 
-        document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
-        document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
+    document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
+    document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
 
 
 </script>
