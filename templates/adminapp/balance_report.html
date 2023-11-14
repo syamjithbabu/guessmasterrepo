@@ -180,7 +180,7 @@ td {
                                                     <td class="td2">{{data.date}}</td>
                                                     <td class="td3">{{data.agent.user}}</td>
                                                     <td class="td2">{{data.total_d_amount|floatformat:2}}</td>
-                                                    <td class="td2">0</td>
+                                                    <td class="td2">{{data.win_amount|floatformat:2}}</td>
                                                     <td class="td3">{{data.from_or_to|floatformat:2}}</td>   
                                                     <td class="td2">{{data.balance|floatformat:2}}</td>                                              
                                                 </tr>
@@ -210,16 +210,24 @@ td {
     </div>
 </div>
 
-<nav class="navbar-bottom l-parpl"  id="btotal">
+<nav class="navbar-bottom"  id="btotal">
     <table>
         <thead>
             <tr>
-                <th class="th1">Balance</th>
+                {% if total_balance|default:0|add:0 >= 0 %}
+                <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
+                {% else %}
+                <th class="th1" style="color: red;">Balance</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{total_balance|floatformat:2}}</td>
+                {% if total_balance|default:0|add:0 >= 0 %}
+                <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
+                {% else %}
+                <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
+                {% endif %}
             </tr>
         </tbody>
     </table>

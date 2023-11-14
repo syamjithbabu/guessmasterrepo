@@ -2842,7 +2842,8 @@ def balance_report(request):
         to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
         print(total_collection_amount, "collection")
-        total_d_amount = float(winning) - float(agent_total_d_amount + dealer_total_d_amount)
+        total_d_amount = float(agent_total_d_amount + dealer_total_d_amount)
+        win_amount = float(winning)
         print(total_d_amount)
         balance =  float(total_d_amount) + float(total_collection_amount)
         print(f"Agent: {agent}, Total D Amount: {total_d_amount}")
@@ -2853,7 +2854,8 @@ def balance_report(request):
                 'agent': agent,
                 'total_d_amount': total_d_amount,
                 'from_or_to' : total_collection_amount,
-                'balance' : balance
+                'balance' : balance,
+                'win_amount' : win_amount
             })
             print(report_data)
     total_balance = sum(entry['balance'] for entry in report_data)

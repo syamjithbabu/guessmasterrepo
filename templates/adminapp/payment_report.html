@@ -251,20 +251,24 @@ td {
     </div>
 </div>
 
-<nav class="navbar-bottom l-parpl" id="btotal">
+<nav class="navbar-bottom" id="btotal">
     <table>
         <thead>
             <tr>
                 {% if profit_or_loss|default:0|add:0 >= 0 %}
-                <th class="th1">Profit</th>
+                <th class="th1" style="color: rgb(0, 192, 0);">Profit</th>
             {% else %}
-                <th class="th1">Loss</th>
+                <th class="th1" style="color: red;">Loss</th>
             {% endif %}
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="td1">{{profit_or_loss|floatformat:2}}</td>
+                {% if profit_or_loss|default:0|add:0 >= 0 %}
+                <td class="td1" style="color: rgb(0, 192, 0);">{{profit_or_loss|floatformat:2}}</td>
+                {% else %}
+                <td class="td1" style="color: red;">{{profit_or_loss|floatformat:2}}</td>
+                {% endif %}
             </tr>
         </tbody>
     </table>
