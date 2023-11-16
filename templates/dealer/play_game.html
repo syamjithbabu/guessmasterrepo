@@ -2246,6 +2246,19 @@ th, td{
                     });
                 });
             </script>
+        {% elif 'limit_message' in message.tags %}
+        <script>
+            console.log("blocked")
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Limit exceeded!',
+                    text: 'Your daily limit exceeded!',
+                    showConfirmButton: false,
+                    timer: 3000  // Automatically close after 3 seconds
+                });
+            });
+        </script>
         {% else %}
             <script>
                 console.log("Limit exceeded")

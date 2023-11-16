@@ -5,7 +5,7 @@ import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
 from adminapp.models import PlayTime, Result, Winning, BlockedNumber, GameLimit
-from agent.models import DealerPackage,Bill,DealerCollectionReport,AgentGame,AgentGameTest
+from agent.models import DealerPackage,Bill,DealerCollectionReport,AgentGame,AgentGameTest,DealerLimit
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
 from django.utils import timezone
@@ -638,14 +638,16 @@ def balance_report(request):
         from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
-        total_d_amount = float(winning) - dealer_total_d_amount
-        balance = float(total_d_amount) + float(total_collection_amount)
+        win_amount = float(winning)
+        total_d_amount = dealer_total_d_amount
+        balance = float(winning) - float(total_d_amount) + float(total_collection_amount)
         if total_d_amount:
             report_data.append({
                 'date' : current_date,
                 'total_d_amount': total_d_amount,
                 'from_or_to' : total_collection_amount,
-                'balance' : balance
+                'balance' : balance,
+                'win_amount' : win_amount
             })
         total_balance = sum(entry['balance'] for entry in report_data)
         context = {
@@ -666,14 +668,16 @@ def balance_report(request):
     from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     total_collection_amount = from_agent - to_agent
-    total_d_amount = float(winning) - dealer_total_d_amount
-    balance = float(total_d_amount) + float(total_collection_amount)
+    total_d_amount = dealer_total_d_amount
+    win_amount = float(winning)
+    balance = float(winning) - float(total_d_amount) + float(total_collection_amount)
     if total_d_amount:
         report_data.append({
             'date' : current_date,
             'total_d_amount': total_d_amount,
             'from_or_to' : total_collection_amount,
-            'balance' : balance
+            'balance' : balance,
+            'win_amount' : win_amount
         })
     total_balance = sum(entry['balance'] for entry in report_data)
     context = {
@@ -739,6 +743,12 @@ def submit_data(request):
         print(data)
 
         time = get_object_or_404(PlayTime,id=timeId)
+
+        try:
+            limit = DealerLimit.objects.get(dealer=dealer_obj)
+            print(limit.daily_limit,"daily limit")
+        except:
+            pass
 
         try:
             blocked_numbers = BlockedNumber.objects.filter(Q(from_date__lte=current_date) & Q(to_date__gte=current_date),LSK=link_text,time=time, number=value1)
@@ -891,6 +901,21 @@ def submit_data(request):
         )
         dealer_game_test.save()
         print(dealer_game_test.id,"id")
+        total_c_amount = DealerGameTest.objects.filter(dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        print(total_c_amount,"@@@@@")
+        try:
+            dealer_total_c_amount = DealerGame.objects.filter(dealer=dealer_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            print(dealer_total_c_amount,"$$$$$$")
+            print(dealer_game_test.id,"id")
+            if total_c_amount + dealer_total_c_amount > limit.daily_limit:
+                print("Your daily limit is exceeded")
+                dealer_game_test.delete()
+                messages.info(request,'Your daily limit is exceeded!',extra_tags='limit_message')
+                return render(request,'agent/index.html')
+            else:
+                print("You have limit balance")
+        except:
+            pass
         return redirect('dealer:play_game',id=timeId)
     return JsonResponse({'status': 'success'})
 

@@ -263,33 +263,33 @@
         
                 <thead>
                     <tr>
-                         <th class="th">Positon</th>
-                         <th class="th">Count</th>
-                         <th class="th">Amount</th>
+                         <th class="th" style="text-align: center;">Positon</th>
+                         <th class="th" style="text-align: center;">Count</th>
+                         <th class="th" style="text-align: center;">Amount</th>
                         
                     </tr>
                 </thead>
                 <tbody class="not-summary">
 
                     <tr style="text-align: center;">
-                        <td class="td2">Super</td>
-                        <td class="td3">{{super_totals.total_count}}</td>
-                        <td class="td2">{{super_totals.total_amount|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">Super</td>
+                        <td class="td3"style="text-align: center;">{{super_totals.total_count}}</td>
+                        <td class="td2" style="text-align: center;">{{super_totals.total_amount|floatformat:2}}</td>                                                  
                     </tr>
                     <tr style="text-align: center;">
-                        <td class="td2">Box</td>
-                        <td class="td3">{{box_totals.total_count}}</td>
-                        <td class="td2">{{box_totals.total_amount|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">Box</td>
+                        <td class="td3"style="text-align: center;">{{box_totals.total_count}}</td>
+                        <td class="td2" style="text-align: center;">{{box_totals.total_amount|floatformat:2}}</td>                                                  
                     </tr>
                     <tr style="text-align: center;">
-                        <td class="td2">Single</td>
-                        <td class="td3">{{single_totals.total_count}}</td>
-                        <td class="td2">{{single_totals.total_amount|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">Single</td>
+                        <td class="td3"style="text-align: center;">{{single_totals.total_count}}</td>
+                        <td class="td2" style="text-align: center;">{{single_totals.total_amount|floatformat:2}}</td>                                                  
                     </tr>
                     <tr  style="text-align: center;">
-                        <td class="td2">Double</td>
-                        <td class="td3">{{double_totals.total_count}}</td>
-                        <td class="td2">{{double_totals.total_amount|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">Double</td>
+                        <td class="td3"style="text-align: center;">{{double_totals.total_count}}</td>
+                        <td class="td2" style="text-align: center;">{{double_totals.total_amount|floatformat:2}}</td>                                                  
                     </tr>
                 </tbody>
             </table>
@@ -391,17 +391,12 @@
 
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+   function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 

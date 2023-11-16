@@ -331,54 +331,54 @@ td {
             <table class="table m-b-0" style="border: 2px; width: 100%;height: 30%;">
                 
                 <thead>
-                    <tr class="l-blue">
-                         <th class="th">B</th>
-                         <th class="th">U</th>
-                         <th class="th">T</th>
-                         <th class="th">PN</th>
-                         <th class="th">C</th>
-                         <th class="th">PP</th>
-                         <th class="th">SU</th>
-                         <th class="th">RS</th>
-                         <th class="th">Net</th>
+                    <tr class="l-blue" style="text-align: center;">
+                         <th class="th" style="text-align: center;">B</th>
+                         <th class="th" style="text-align: center;">U</th>
+                         <th class="th" style="text-align: center;">T</th>
+                         <th class="th" style="text-align: center;">PN</th>
+                         <th class="th" style="text-align: center;">C</th>
+                         <th class="th" style="text-align: center;">PP</th>
+                         <th class="th" style="text-align: center;">SU</th>
+                         <th class="th" style="text-align: center;">RS</th>
+                         <th class="th" style="text-align: center;">Net</th>
                         
                     </tr>
                 </thead>
                 <tbody class="not-summary">
                     {% for winning in winnings %}
                     <tr class="l-pink" style="text-align: center;">
-                        <td class="td2">{{winning.bill}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.bill}}</td>
                         {% if winning.agent %}
-                        <td class="td3">{{winning.agent}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.agent}}</td>
                         {% else %}
-                        <td class="td3">{{winning.dealer}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.dealer}}</td>
                         {% endif %}
-                        <td class="td2">{{winning.LSK}}</td>
-                        <td class="td3">{{winning.number}}</td>
-                        <td class="td2">{{winning.count}}</td>
-                        <td class="td3">{{winning.position}}</td>
-                        <td class="td2">{{winning.commission|floatformat:2}}</td>
-                        <td class="td3">{{winning.prize|floatformat:2}}</td>
-                        <td class="td2">{{winning.total|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">{{winning.LSK}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.number}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.count}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.position}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.commission|floatformat:2}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.prize|floatformat:2}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.total|floatformat:2}}</td>                                                  
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tbody style="display: none;" class="summary-row">
                     {% for winning in aggr %}
                     <tr class="l-turquoise" style="text-align: center;">
-                        <td class="td2">{{winning.bill}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.bill}}</td>
                         {% if winning.agent %}
-                        <td class="td3">$</td>
+                        <td class="td3"  style="text-align: center;">$</td>
                         {% else %}
-                        <td class="td3">$</td>
+                        <td class="td3"  style="text-align: center;">$</td>
                         {% endif %}
-                        <td class="td2">{{winning.LSK}}</td>
-                        <td class="td3">{{winning.number}}</td>
-                        <td class="td2">{{winning.total_count}}</td>
-                        <td class="td3">{{winning.position}}</td>
-                        <td class="td2">{{winning.total_commission|floatformat:2}}</td>
-                        <td class="td3">{{winning.total_prize|floatformat:2}}</td>
-                        <td class="td2">{{winning.total_net|floatformat:2}}</td>                                                  
+                        <td class="td2" style="text-align: center;">{{winning.LSK}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.number}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.total_count}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.position}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.total_commission|floatformat:2}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.total_prize|floatformat:2}}</td>
+                        <td class="td2" style="text-align: center;">{{winning.total_net|floatformat:2}}</td>                                                  
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -447,17 +447,12 @@ td {
 </script>
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+    function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 
     const x = document.getElementById("from-date");

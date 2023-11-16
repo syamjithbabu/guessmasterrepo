@@ -124,7 +124,7 @@
             display: none;
         }
 
-        th,
+        .th,
         .td {
             text-align: center;
         }
@@ -258,36 +258,36 @@
                             <div class="table-responsive">
                                 <table class="table m-b-0">
                                     
-                                    <thead class="l-blue">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Agent</th>
-                                            <th>Bill</th>
-                                            <th>Count</th>
-                                            <th>S.Amt</th>
-                                            <th>C.Amt</th>
+                                    <thead class="l-blue"  style="text-align: center;">
+                                        <tr style="text-align: center;">
+                                            <th style="text-align: center;">Date</th>
+                                            <th style="text-align: center;">Agent</th>
+                                            <th style="text-align: center;">Bill</th>
+                                            <th style="text-align: center;">Count</th>
+                                            <th style="text-align: center;">S.Amt</th>
+                                            <th style="text-align: center;">C.Amt</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for bill in agent_bills %}
-                                        <tr class="main-row l-blush">
-                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                                        <tr class="main-row l-blush" style="text-align: center;">
+                                            <td  style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
-                                            <td>{{ bill.user }}</td>
-                                            <td>{{ bill.id }}</td>
-                                            <td>{{ bill.total_count }}</td>
-                                            <td>{{ bill.total_d_amount }}</td>
-                                            <td>{{ bill.total_c_amount }}</td>
+                                            <td style="text-align: center;">{{ bill.user }}</td>
+                                            <td style="text-align: center;">{{ bill.id }}</td>
+                                            <td style="text-align: center;">{{ bill.total_count }}</td>
+                                            <td style="text-align: center;">{{ bill.total_d_amount }}</td>
+                                            <td  style="text-align: center;">{{ bill.total_c_amount }}</td>
                                         </tr>
                                         {% for game in bill.agent_games.all %}
                                         {% if game in agent_games %}
                                         <tr class="expand-row grouped-row l-pink" style="display: none;">
-                                            <td>#</td>
-                                            <td>{{ game.LSK }}</td>
-                                            <td>{{ game.number }}</td>
-                                            <td>{{ game.count }}</td>
-                                            <td>{{ game.d_amount }}</td>
-                                            <td>{{ game.c_amount }}</td>
+                                            <td  style="text-align: center;">#</td>
+                                            <td  style="text-align: center;">{{ game.LSK }}</td>
+                                            <td  style="text-align: center;">{{ game.number }}</td>
+                                            <td  style="text-align: center;">{{ game.count }}</td>
+                                            <td  style="text-align: center;">{{ game.d_amount }}</td>
+                                            <td  style="text-align: center;">{{ game.c_amount }}</td>
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
@@ -301,35 +301,35 @@
                             <div class="table-responsive">
                                 <table class="table m-b-0">
                                     <thead class="l-blue">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Dealer</th>
-                                            <th>Bill</th>
-                                            <th>Count</th>
-                                            <th>S.Amt</th>
-                                            <th>C.Amt</th>
+                                        <tr  style="text-align: center;">
+                                            <th  style="text-align: center;">Date</th>
+                                            <th style="text-align: center;">Dealer</th>
+                                            <th style="text-align: center;">Bill</th>
+                                            <th style="text-align: center;">Count</th>
+                                            <th style="text-align: center;">S.Amt</th>
+                                            <th style="text-align: center;">C.Amt</th>
                                         </tr>
                                     </thead>
                                     <tbody class="l-turquoise">
                                         {% for bill in dealer_bills %}
-                                        <tr>
-                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                                        <tr style="text-align: center;">
+                                            <td style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
-                                            <td>{{ bill.user }}</td>
-                                            <td>{{ bill.id }}</td>
-                                            <td>{{ bill.total_count }}</td>
-                                            <td>{{ bill.total_d_amount }}</td>
-                                            <td>{{ bill.total_c_amount }}</td>
+                                            <td style="text-align: center;">{{ bill.user }}</td>
+                                            <td style="text-align: center;">{{ bill.id }}</td>
+                                            <td style="text-align: center;">{{ bill.total_count }}</td>
+                                            <td style="text-align: center;">{{ bill.total_d_amount }}</td>
+                                            <td style="text-align: center;">{{ bill.total_c_amount }}</td>
                                         </tr>
                                         {% for game in bill.dealer_games.all %}
                                         {% if game in dealer_games %}
-                                        <tr class="expand-row" style="display: none;">
-                                            <td>#</td>
-                                            <td>{{ game.LSK }}</td>
-                                            <td>{{ game.number }}</td>
-                                            <td>{{ game.count }}</td>
-                                            <td>{{ game.d_amount }}</td>
-                                            <td>{{ game.c_amount }}</td>
+                                        <tr class="expand-row" style="text-align: center;display: none; ">
+                                            <td style="text-align: center;">#</td>
+                                            <td style="text-align: center;">{{ game.LSK }}</td>
+                                            <td style="text-align: center;">{{ game.number }}</td>
+                                            <td style="text-align: center;">{{ game.count }}</td>
+                                            <td style="text-align: center;">{{ game.d_amount }}</td>
+                                            <td style="text-align: center;">{{ game.c_amount }}</td>
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
@@ -483,17 +483,12 @@
 </div>
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+     function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 

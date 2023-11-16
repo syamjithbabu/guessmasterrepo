@@ -1361,14 +1361,16 @@ def balance_report(request):
             from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             total_collection_amount = from_agent - to_agent
-            balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
+            win_amount = float(winning)
+            balance = float(total_d_amount) - float(total_collection_amount) - float(winning)
             if total_d_amount > 0:
                 report_data.append({
                     'date' : current_date,
                     'dealer': dealer_instance,
                     'total_d_amount': total_d_amount,
                     'from_or_to' : total_collection_amount,
-                    'balance' : balance
+                    'balance' : balance,
+                    'win_amount' : win_amount
                 })
             total_balance = sum(entry['balance'] for entry in report_data)
             context = {
@@ -1389,8 +1391,9 @@ def balance_report(request):
             from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
             total_collection_amount = from_agent - to_agent
-            total_d_amount = float(winning) - agent_total_d_amount
-            balance =  float(total_d_amount) + float(total_collection_amount)
+            total_d_amount = agent_total_d_amount
+            win_amount = float(winning)
+            balance = float(total_d_amount) - float(total_collection_amount) - float(winning)
             if total_d_amount:
                 report_data.append({
                     'date' : current_date,
@@ -1399,7 +1402,8 @@ def balance_report(request):
                     'from_or_to' : total_collection_amount,
                     'balance' : balance,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'win_amount' : win_amount
                 })
             total_balance = sum(entry['balance'] for entry in report_data)
             context = {
@@ -1419,7 +1423,8 @@ def balance_report(request):
                 from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
                 to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
                 total_collection_amount = from_agent - to_agent
-                balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
+                win_amount = float(winning)
+                balance = float(total_d_amount) - float(total_collection_amount) - float(winning)
                 if total_d_amount:
                     report_data.append({
                         'date' : current_date,
@@ -1427,6 +1432,7 @@ def balance_report(request):
                         'total_d_amount': total_d_amount,
                         'from_or_to' : total_collection_amount,
                         'balance' : balance,
+                        'win_amount' : win_amount
                     })
             total_balance = sum(entry['balance'] for entry in report_data)
             context = {
@@ -1445,16 +1451,18 @@ def balance_report(request):
     winning = Winning.objects.filter(agent=agent_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
     from_agent = collection.filter(from_or_to='from-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
     to_agent = collection.filter(from_or_to='to-agent').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
-    total_collection_amount = from_agent - to_agent
-    total_d_amount = float(winning) - agent_total_d_amount
-    balance =  float(total_d_amount) + float(total_collection_amount)
+    total_collection_amount = to_agent - from_agent
+    win_amount = float(winning)
+    total_d_amount = agent_total_d_amount
+    balance = float(winning) - float(total_d_amount) - float(total_collection_amount)
     if total_d_amount:
         report_data.append({
             'date' : current_date,
             'dealer': agent_obj,
             'total_d_amount': total_d_amount,
             'from_or_to' : total_collection_amount,
-            'balance' : balance
+            'balance' : balance,
+            'win_amount' : win_amount,
         })
     total_balance = sum(entry['balance'] for entry in report_data)
     context = {
@@ -1474,14 +1482,16 @@ def balance_report(request):
         from_agent = collection.filter(from_or_to='from-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='to-dealer').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
-        balance = float(total_collection_amount) - float(total_d_amount) + float(winning)
+        win_amount = float(winning)
+        balance = float(total_d_amount) - float(total_collection_amount) - float(winning) 
         if total_d_amount:
             report_data.append({
                 'date' : current_date,
                 'dealer': dealer,
                 'total_d_amount': total_d_amount,
                 'from_or_to' : total_collection_amount,
-                'balance' : balance
+                'balance' : balance,
+                'win_amount' : win_amount
             })
     total_balance = sum(entry['balance'] for entry in report_data)
     context = {
@@ -1794,11 +1804,6 @@ def submit_data(request):
     ist = pytz_timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     agent_obj = Agent.objects.get(user=request.user)
-    try:
-        limit = Limit.objects.get(agent=agent_obj)
-        print(limit.daily_limit)
-    except:
-        pass
     if request.method == 'POST':
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
         print(data)
@@ -1813,6 +1818,12 @@ def submit_data(request):
         print(select_dealer,"############")
 
         time = get_object_or_404(PlayTime,id=timeId)
+
+        try:
+            limit = Limit.objects.get(agent=agent_obj)
+            print(limit.daily_limit,"daily limit")
+        except:
+            pass
 
         try:
             blocked_numbers = BlockedNumber.objects.filter(Q(from_date__lte=current_date) & Q(to_date__gte=current_date),time=time, LSK=link_text, number=value1)
@@ -1976,7 +1987,8 @@ def submit_data(request):
                 if total_c_amount + agent_total_c_amount > limit.daily_limit:
                     print("Your daily limit is exceeded")
                     agent_game_test.delete()
-                    messages.info(request, "Your daily limit is exceeded")
+                    messages.info(request,'Your daily limit is exceeded!',extra_tags='limit_message')
+                    return render(request,'agent/index.html')
                 else:
                     print("You have limit balance")
             except:
@@ -2006,7 +2018,8 @@ def submit_data(request):
                 if total_c_amount + dealer_total_c_amount > limit.daily_limit:
                     print("Your daily limit is exceeded")
                     dealer_game_test.delete()
-                    messages.info(request, "Your daily limit is exceeded")
+                    messages.info(request,'Your daily limit is exceeded!',extra_tags='limit_message')
+                    return render(request,'agent/index.html')
                 else:
                     print("You have limit balance")
             except:

@@ -240,18 +240,18 @@ td {
                
                 <thead>
                     <tr>
-                         <th class="th">Positon</th>
-                         <th class="th">Count</th>
-                         <th class="th">Amount</th>
+                         <th class="th"  style="text-align: center;">Positon</th>
+                         <th class="th"  style="text-align: center;">Count</th>
+                         <th class="th"  style="text-align: center;">Amount</th>
                         
                     </tr>
                 </thead>
                 <tbody class="not-summary">
                     {% for winning in winnings %}
                     <tr style="text-align: center;">
-                        <td class="td2">{{winning.position}}</td>
-                        <td class="td3">{{winning.count}}</td>
-                        <td class="td2">{{winning.prize|floatformat:2}}</td>                                                  
+                        <td class="td2"  style="text-align: center;">{{winning.position}}</td>
+                        <td class="td3"  style="text-align: center;">{{winning.count}}</td>
+                        <td class="td2"  style="text-align: center;">{{winning.prize|floatformat:2}}</td>                                                  
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -348,17 +348,12 @@ td {
 
 
 <script>
-    function printDiv(elem) {
-        var mywindow = window.open();
-        var content = document.getElementById(elem).innerHTML;
-        var realContent = document.body.innerHTML;
-        mywindow.document.write(content);
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10*/
-        mywindow.print();
-        document.body.innerHTML = realContent;
-        mywindow.close();
-        return true;
+      function printDiv(printThisDiv) {
+        var printContents = document.getElementById(printThisDiv).innerHTML;
+        // var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
     }
 </script>
 
