@@ -112,20 +112,25 @@ def edit_limit(request, id):
 
 @login_required
 @admin_required
-def edit_agent(request,id):
+def edit_agent(request, id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
+
     if request.method == "POST":
         agent_form = AgentRegistration(request.POST, instance=agent)
         login_form = UserUpdateForm(request.POST, instance=user)
+
         if agent_form.is_valid() and login_form.is_valid():
-            login_form.save()
-            messages.info(request, "Agent Updated Successfully")
-            return redirect("adminapp:view_agent")
+            user_form = UserUpdateForm(request.POST)
+            if user_form.is_valid():
+                user_form.save()
+                messages.info(request, "Agent Updated Successfully")
+                return redirect("adminapp:view_agent")
     else:
         agent_form = AgentRegistration(instance=agent)
         login_form = UserUpdateForm(instance=user)
-    return render(request, 'adminapp/edit_agent.html', {'agent': agent,'agent_form': agent_form,'login_form':login_form})
+
+    return render(request, 'adminapp/edit_agent.html', {'agent': agent, 'agent_form': agent_form, 'login_form': login_form})
 
 @login_required
 @admin_required

@@ -129,7 +129,9 @@
             text-align: center;
         }
 
-
+        body{
+            background-color: #ffffff;
+        }
     }
 
     /* print css end */
@@ -218,15 +220,13 @@
 
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Search</button>
+                                        <button type="submit" onclick="getOption()" class="btn btn-primary">Search</button>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
                                         <button class="btn btn-primary" id="printbutton"
-                                            onclick="printDiv('printThisDiv')" type="submit">Print </button>
-
-
+                                        onclick="document.title = 'Sales Report';printDiv('printThisDiv')" type="submit">Print </button>
 
 
                                     </div>
@@ -378,6 +378,7 @@
     <h3 style="display: inline-block">Sales Report</h3>
     <h3 id="demo" style="display: inline-block"></h3>
     <h3 id="demo1" style="display: inline-block"></h3>
+    <h3 id="demo4" style="display: inline-block;"></h3>
 
     <h3 id="demo"></h3>
     <h3 id="demo1"></h3>
@@ -481,15 +482,23 @@
     </div>
 
 </div>
-
 <script>
-     function printDiv(printThisDiv) {
+
+function getOption() {
+            selectElement = document.querySelector('#time');
+            output = selectElement.options[selectElement.selectedIndex].value;
+            document.querySelector('.output').textContent = output;
+        }
+function printDiv(printThisDiv) {
         var printContents = document.getElementById(printThisDiv).innerHTML;
         // var originalContents = document.body.innerHTML;
         document.body.innerHTML = printContents;
         window.print();
         document.body.innerHTML = originalContents;
     }
+
+
+
 </script>
 
 
@@ -502,6 +511,7 @@
                 $(".expand-row").show(); // Show the row when the checkbox is checked
             } else {
                 $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+     
             }
         });
     });
@@ -563,6 +573,7 @@
 
     let currentVal = x.value;
     let currentValue = y.value;
+    
 
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -574,10 +585,7 @@
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-
-
-
-
+    document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time.game_time }}";
 
 </script>
 

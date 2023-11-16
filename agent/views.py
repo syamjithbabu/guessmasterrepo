@@ -182,6 +182,10 @@ def sales_report(request):
         lsk = request.POST.get('select-lsk')
         print(from_date,"fromdate")
         print(to_date,"todate")
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         lsk_value = []
         agent_bills = []
         dealer_bills = []
@@ -408,6 +412,7 @@ def sales_report(request):
             'totals' : totals,
             'selected_dealer' : select_dealer,
             'selected_time' : select_time,
+            'selected_game_time' : selected_game_time,
             'selected_from' : from_date,
             'selected_to' : to_date,
             'selected_lsk' : lsk,
