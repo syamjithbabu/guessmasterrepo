@@ -668,6 +668,7 @@ def sales_report(request):
     print(current_date)
     if request.method == 'POST':
         select_dealer = request.POST.get('select-dealer')
+        
         if select_dealer != 'all':
             agent_instance = Agent.objects.get(id=select_dealer)
         select_time = request.POST.get('select-time')
@@ -676,6 +677,10 @@ def sales_report(request):
         lsk = request.POST.get('select-lsk')
         print(from_date,"fromdate")
         print(to_date,"todate")
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         lsk_value = []
         agent_bills = []
         dealer_bills = []
@@ -740,7 +745,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -769,7 +775,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
             else:
@@ -817,7 +824,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -847,7 +855,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
         else:
@@ -894,7 +903,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -923,7 +933,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
             else:
@@ -970,7 +981,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -1000,7 +1012,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
     else:
@@ -1742,6 +1755,10 @@ def daily_report(request):
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
         print(select_dealer, select_time, from_date, to_date,"@@@")
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_dealer != 'all':
             if select_time != 'all':
                 print("its agent")
@@ -1770,7 +1787,8 @@ def daily_report(request):
                         'selected_dealer' : select_dealer,
                         'selected_time' : select_time,
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
@@ -1801,7 +1819,8 @@ def daily_report(request):
                         'selected_dealer' : select_dealer,
                         'selected_time' : 'all',
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
         else:
@@ -1831,7 +1850,8 @@ def daily_report(request):
                         'selected_dealer' : 'all',
                         'selected_time' : select_time,
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
@@ -1862,7 +1882,8 @@ def daily_report(request):
                     'selected_dealer' : select_dealer,
                     'selected_time' : select_time,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/daily_report.html',context)
     else:
@@ -1913,6 +1934,10 @@ def countwise_report(request):
         to_date = request.POST.get('to-date')
         lsk = request.POST.get('select-lsk')
         select_time = request.POST.get('time')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if lsk == 'a_b_c':
             lsk_value = ['A','B','C']
         elif lsk == 'ab_bc_ac':
@@ -1944,7 +1969,8 @@ def countwise_report(request):
                 'selected_to' : to_date,
                 'total_count' : total_count,
                 'selected_time' : select_time,
-                'times' : times
+                'times' : times,
+                'selected_game_time' : selected_game_time,
             }
             return render(request,'adminapp/countwise_report.html',context)
         else:
@@ -1968,7 +1994,8 @@ def countwise_report(request):
                 'selected_to' : to_date,
                 'total_count' : total_count,
                 'selected_time' : select_time,
-                'times' : times
+                'times' : times,
+                'selected_game_time' : selected_game_time,
             }
             return render(request,'adminapp/countwise_report.html',context)
     context = {
@@ -2024,6 +2051,10 @@ def countsales_report(request):
         select_time = request.POST.get('time')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_agent != 'all':
             if select_time != 'all':
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
@@ -2066,7 +2097,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
             else:
@@ -2110,7 +2142,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
         else:
@@ -2155,7 +2188,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
             else:
@@ -2199,7 +2233,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
     context = {
@@ -2231,6 +2266,10 @@ def winning_report(request):
         to_date = request.POST.get('to-date')
         select_time = request.POST.get('time')
         select_agent = request.POST.get('select-agent')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         print(from_date,to_date,select_time,select_agent)
         agents = Agent.objects.filter().all()
         if select_time != 'all':
@@ -2255,6 +2294,7 @@ def winning_report(request):
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
@@ -2277,6 +2317,7 @@ def winning_report(request):
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             return render(request,'adminapp/winning_report.html',context)
         else:
@@ -2302,6 +2343,7 @@ def winning_report(request):
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date])
@@ -2324,6 +2366,7 @@ def winning_report(request):
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             return render(request,'adminapp/winning_report.html',context)
     else:
@@ -2368,6 +2411,10 @@ def winningcount_report(request):
         select_agent = request.POST.get('select-agent')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_time != 'all':
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
@@ -2381,7 +2428,8 @@ def winningcount_report(request):
                     'selected_time' : select_time,
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
             else:
@@ -2396,7 +2444,8 @@ def winningcount_report(request):
                     'selected_time' : select_time,
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
         else:
@@ -2412,7 +2461,8 @@ def winningcount_report(request):
                     'selected_time' : 'all',
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
             else:
@@ -2427,7 +2477,8 @@ def winningcount_report(request):
                     'selected_time' : 'all',
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
     context = {
