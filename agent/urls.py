@@ -28,7 +28,6 @@ urlpatterns = [
 
     path('play-game/<int:id>',views.play_game,name="play_game"),
 
-
     path('package',views.package,name="package"),
     path('new-package',views.new_package,name="new_package"),
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),

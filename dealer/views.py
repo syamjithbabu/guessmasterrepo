@@ -154,20 +154,17 @@ def delete_row(request,id,bill_id):
     bill.update_totals_dealer()
     return redirect('dealer:delete_bill',id=bill_id)
 
-@dealer_required
-@login_required
 def dealer_game_test_delete(request,id):
     row = get_object_or_404(DealerGameTest,id=id)
     row.delete()
     return JsonResponse({'status':'success'})
 
-@dealer_required
-@login_required
 def dealer_game_test_update(request,id):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         edited_count = data.get('editedCount')
         print(edited_count)
+        print("working")
         DealerGameTest.objects.filter(id=id).update(count=edited_count)
     return JsonResponse({'status':'success'})
 

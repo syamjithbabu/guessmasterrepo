@@ -122,7 +122,7 @@ th, td{
                             <div class="row clearfix">
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
-                                        <input type="text">
+                                        <input type="text" name="customer" id="customer">
                                     </div>
                                 </div>
                             </div>
@@ -207,7 +207,6 @@ th, td{
                                     </ul>
                                 </div>
                             </div>
-                            <!-- jdj -->
 
                         </div>
 
@@ -216,7 +215,6 @@ th, td{
                 </div>
             </div>
         </div>
-        <!-- #END# Select2 -->
 
     </div>
 
@@ -2078,9 +2076,11 @@ th, td{
     
     async function sendDataToDjango(linkText, value1, value2, value3, value4) {
         const timeId = {{time.id}};
+        const selectedDealer = document.getElementById("customer").value;
     
+        console.log(selectedDealer)
         // Define the order of properties
-        const propertyOrder = ['linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
+        const propertyOrder = ['selectedDealer', 'linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
     
         // Create an object with properties in the specified order
         const data = {};
