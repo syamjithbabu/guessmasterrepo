@@ -23,32 +23,11 @@
                         <h2>Editing Dealer</h2>
                     </div>
                     <div class="body">
-                        <form action="#" method="POST">
+                        <form method="POST" class="form-auth-medium" class="form-group">
                             {% csrf_token %}
-                            <fieldset>
-                                <div class="form-group form-float">
-                                    {{dealer_form.dealer_name}}
-                                    {{dealer_form.dealer_name.errors}}
-                                </div>
-                                <div class="form-group form-float">
-                                    {{dealer_form.phone_number}}
-                                    {{dealer_form.phone_number.errors}}
-                                </div>
-                                <div class="form-group form-float">
-                                    {{login_form.username}}
-                                    {{login_form.username.errors}}
-                                </div>
-                                <div class="form-group form-float">
-                                    {{login_form.password1}}
-                                    {{login_form.password1.errors}}
-                                </div>
-                                <div class="form-group form-float">
-                                    {{login_form.password2}}
-                                    {{login_form.password2.errors}}
-                                </div>
-                            </fieldset>
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </form>
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">Change Password</button>
+                          </form>
                     </div>
                 </div>
             </div>
