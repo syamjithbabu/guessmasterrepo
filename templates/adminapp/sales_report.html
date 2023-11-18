@@ -224,7 +224,7 @@
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
                                         <button class="btn btn-primary" id="printbutton"
-                                            onclick="document.title = 'Sales Report';printDiv('printThisDiv')" type="submit">Print </button>
+                                            onclick="document.title = 'Sales Report - {{selected_from}} to {{selected_to}} - {{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Print </button>
 
 
                                     </div>
@@ -365,6 +365,7 @@
         <h3 style="display: inline-block">Sales Report</h3>
         <h3 id="demo" style="display: inline-block"></h3>
         <h3 id="demo1" style="display: inline-block"></h3>
+        <h3 id="demo4" style="display: inline-block;"></h3>
 
         <h3 id="demo"></h3>
         <h3 id="demo1"></h3>
@@ -547,9 +548,7 @@
         document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
         document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
 
-
-
-
+        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time.game_time }}";
 
     </script>
 

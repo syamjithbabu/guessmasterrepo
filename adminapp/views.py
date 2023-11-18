@@ -668,6 +668,7 @@ def sales_report(request):
     print(current_date)
     if request.method == 'POST':
         select_dealer = request.POST.get('select-dealer')
+        
         if select_dealer != 'all':
             agent_instance = Agent.objects.get(id=select_dealer)
         select_time = request.POST.get('select-time')
@@ -676,6 +677,10 @@ def sales_report(request):
         lsk = request.POST.get('select-lsk')
         print(from_date,"fromdate")
         print(to_date,"todate")
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         lsk_value = []
         agent_bills = []
         dealer_bills = []
@@ -740,7 +745,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -769,7 +775,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
             else:
@@ -817,7 +824,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -847,7 +855,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
         else:
@@ -894,7 +903,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -923,7 +933,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
             else:
@@ -970,7 +981,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : lsk,
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
@@ -1000,7 +1012,8 @@ def sales_report(request):
                         'selected_to' : to_date,
                         'selected_lsk' : 'all',
                         'agent_games' : agent_games,
-                        'dealer_games' : dealer_games
+                        'dealer_games' : dealer_games,
+                        'selected_game_time' : selected_game_time,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
     else:
@@ -1116,65 +1129,78 @@ def monitor(request,id):
 
     existing_combined_games_dict = {(game.LSK, game.number): game for game in existing_combined_games}
 
-    for agent_game in agent_games:
-        if agent_game.combined == False:
-            key = (agent_game.LSK, agent_game.number)
-            if key in existing_combined_games_dict:
-                existing_combined_game = existing_combined_games_dict[key]
-                if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
-                    existing_combined_game.count += agent_game.count
-                    if agent_game.LSK in limits:
-                        limit = limits[agent_game.LSK]
-                        existing_combined_game.remaining_limit += agent_game.count - limit
-                    existing_combined_game.combined = True
-                    print(existing_combined_game.count)
-                    print(agent_game.count)
-                    existing_combined_game.save()
-                    agent_game.combined = True
-                    agent_game.save()
-            elif key in combined_games:
-                combined_games[key]['count'] += agent_game.count
-                combined_games[key]['combined'] = True
-            else:
-                print("working this")
-                combined_games[key] = {
-                    'LSK': agent_game.LSK,
-                    'number': agent_game.number,
-                    'count': agent_game.count,
-                    'combined': False,
-                    'user': agent_game.agent.user,
-                }
-            agent_game.combined = True
-            agent_game.save()
+    try:
+        for agent_game in agent_games:
+            if agent_game.combined == False:
+                key = (agent_game.LSK, agent_game.number)
+                if key in existing_combined_games_dict:
+                    existing_combined_game = existing_combined_games_dict[key]
+                    if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
+                        existing_combined_game.count += agent_game.count
+                        if agent_game.LSK in limits:
+                            limit = limits[agent_game.LSK]
+                            existing_combined_game.remaining_limit += agent_game.count - limit
+                        existing_combined_game.combined = True
+                        print(existing_combined_game.count)
+                        print(agent_game.count)
+                        existing_combined_game.save()
+                        agent_game.combined = True
+                        agent_game.save()
+                elif key in combined_games:
+                    combined_games[key]['count'] += agent_game.count
+                    combined_games[key]['combined'] = True
+                else:
+                    print("working this")
+                    combined_games[key] = {
+                        'LSK': agent_game.LSK,
+                        'number': agent_game.number,
+                        'count': agent_game.count,
+                        'combined': False,
+                        'user': agent_game.agent.user,
+                    }
+                agent_game.combined = True
+                agent_game.save()
+    except:
+        pass
 
-    for dealer_game in dealer_games:
-        if dealer_game.combined == False:
-            key = (dealer_game.LSK, dealer_game.number)
-            if key in existing_combined_games_dict:
-                existing_combined_game = existing_combined_games_dict[key]
-                if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
-                    existing_combined_game.count += dealer_game.count
-                    if dealer_game.LSK in limits:
-                        limit = limits[dealer_game.LSK]
-                        existing_combined_game.remaining_limit += dealer_game.count - limit 
-                    existing_combined_game.combined = True
-                    existing_combined_game.save()
-                    dealer_game.combined = True
-                    dealer_game.save()
-            elif key in combined_games:
-                combined_games[key]['count'] += dealer_game.count
-                combined_games[key]['combined'] = True
-            else:
-                combined_games[key] = {
-                    'LSK': dealer_game.LSK,
-                    'number': dealer_game.number,
-                    'count': dealer_game.count,
-                    'combined': False,
-                    'user': dealer_game.agent.user,
-                }
-            dealer_game.combined = True
-            dealer_game.save()
-    
+    try:
+        for dealer_game in dealer_games:
+            print(dealer_game.combined)
+            if dealer_game.combined == False:
+                print("its working")
+                key = (dealer_game.LSK, dealer_game.number)
+                print(dealer_game.LSK, dealer_game.number)
+                if key in existing_combined_games_dict:
+                    print("yes")
+                    existing_combined_game = existing_combined_games_dict[key]
+                    if hasattr(dealer_game, 'count') and isinstance(dealer_game.count, int):
+                        existing_combined_game.count += dealer_game.count
+                        if dealer_game.LSK in limits:
+                            limit = limits[dealer_game.LSK]
+                            existing_combined_game.remaining_limit += dealer_game.count - limit 
+                        existing_combined_game.combined = True
+                        existing_combined_game.save()
+                        dealer_game.combined = True
+                        dealer_game.save()
+                elif key in combined_games:
+                    print("new game")
+                    combined_games[key]['count'] += dealer_game.count
+                    combined_games[key]['combined'] = True
+                else:
+                    print("new combined game")
+                    print(dealer_game.agent)
+                    combined_games[key] = {
+                        'LSK': dealer_game.LSK,
+                        'number': dealer_game.number,
+                        'count': dealer_game.count,
+                        'combined': False,
+                        'user': dealer_game.agent.user,
+                    }
+                dealer_game.combined = True
+                dealer_game.save()
+    except:
+        pass
+
     total_count = 0
 
     for key, game_info in combined_games.items():
@@ -1742,6 +1768,10 @@ def daily_report(request):
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
         print(select_dealer, select_time, from_date, to_date,"@@@")
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_dealer != 'all':
             if select_time != 'all':
                 print("its agent")
@@ -1770,7 +1800,8 @@ def daily_report(request):
                         'selected_dealer' : select_dealer,
                         'selected_time' : select_time,
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
@@ -1801,7 +1832,8 @@ def daily_report(request):
                         'selected_dealer' : select_dealer,
                         'selected_time' : 'all',
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
         else:
@@ -1831,7 +1863,8 @@ def daily_report(request):
                         'selected_dealer' : 'all',
                         'selected_time' : select_time,
                         'selected_from' : from_date,
-                        'selected_to' : to_date
+                        'selected_to' : to_date,
+                        'selected_game_time' : selected_game_time,
                     }
                 return render(request,'adminapp/daily_report.html',context)
             else:
@@ -1862,7 +1895,8 @@ def daily_report(request):
                     'selected_dealer' : select_dealer,
                     'selected_time' : select_time,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/daily_report.html',context)
     else:
@@ -1913,6 +1947,10 @@ def countwise_report(request):
         to_date = request.POST.get('to-date')
         lsk = request.POST.get('select-lsk')
         select_time = request.POST.get('time')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if lsk == 'a_b_c':
             lsk_value = ['A','B','C']
         elif lsk == 'ab_bc_ac':
@@ -1944,7 +1982,8 @@ def countwise_report(request):
                 'selected_to' : to_date,
                 'total_count' : total_count,
                 'selected_time' : select_time,
-                'times' : times
+                'times' : times,
+                'selected_game_time' : selected_game_time,
             }
             return render(request,'adminapp/countwise_report.html',context)
         else:
@@ -1968,7 +2007,8 @@ def countwise_report(request):
                 'selected_to' : to_date,
                 'total_count' : total_count,
                 'selected_time' : select_time,
-                'times' : times
+                'times' : times,
+                'selected_game_time' : selected_game_time,
             }
             return render(request,'adminapp/countwise_report.html',context)
     context = {
@@ -2024,6 +2064,10 @@ def countsales_report(request):
         select_time = request.POST.get('time')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_agent != 'all':
             if select_time != 'all':
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
@@ -2066,7 +2110,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
             else:
@@ -2110,7 +2155,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
         else:
@@ -2155,7 +2201,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
             else:
@@ -2199,7 +2246,8 @@ def countsales_report(request):
                     'double_totals' : double_totals,
                     'totals' : totals,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/countsales_report.html',context)
     context = {
@@ -2231,6 +2279,10 @@ def winning_report(request):
         to_date = request.POST.get('to-date')
         select_time = request.POST.get('time')
         select_agent = request.POST.get('select-agent')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         print(from_date,to_date,select_time,select_agent)
         agents = Agent.objects.filter().all()
         if select_time != 'all':
@@ -2255,6 +2307,7 @@ def winning_report(request):
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
@@ -2277,6 +2330,7 @@ def winning_report(request):
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             return render(request,'adminapp/winning_report.html',context)
         else:
@@ -2302,6 +2356,7 @@ def winning_report(request):
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date])
@@ -2324,6 +2379,7 @@ def winning_report(request):
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
                     'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
             return render(request,'adminapp/winning_report.html',context)
     else:
@@ -2368,6 +2424,10 @@ def winningcount_report(request):
         select_agent = request.POST.get('select-agent')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        try:
+            selected_game_time = PlayTime.objects.get(id=select_time)
+        except:
+            selected_game_time = 'all times'
         if select_time != 'all':
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
@@ -2381,7 +2441,8 @@ def winningcount_report(request):
                     'selected_time' : select_time,
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
             else:
@@ -2396,7 +2457,8 @@ def winningcount_report(request):
                     'selected_time' : select_time,
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
         else:
@@ -2412,7 +2474,8 @@ def winningcount_report(request):
                     'selected_time' : 'all',
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
             else:
@@ -2427,7 +2490,8 @@ def winningcount_report(request):
                     'selected_time' : 'all',
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
-                    'selected_to' : to_date
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
                 }
                 return render(request,'adminapp/winningcount_report.html',context)
     context = {
