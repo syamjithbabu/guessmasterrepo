@@ -21,6 +21,9 @@ from django.db.models import F, Value, CharField, Case, When, Count
 from collections import defaultdict
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.http import JsonResponse
+from django.contrib.auth.forms import AdminPasswordChangeForm,SetPasswordForm
+from django.contrib.auth import update_session_auth_hash
+
 
 # Create your views here.
 
@@ -115,22 +118,32 @@ def edit_limit(request, id):
 def edit_agent(request, id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
+    if request.method =="POST":
+        form = SetPasswordForm(User=request.user, data=request.POST)
+        if form.is_valide():
+            form.save()
+            update_session_auth_hash(request,form.user)
+            messages.success(request,"password change successfully")
+            return redirect("adminapp:view_agent")
+        else:
+            form = SetPasswordForm(User=request.user)
+    return render(request, 'adminapp/edit_agent.html', {'form':form})
 
-    if request.method == "POST":
-        agent_form = AgentRegistration(request.POST, instance=agent)
-        login_form = UserUpdateForm(request.POST, instance=user)
+    # if request.method == "POST":
+    #     agent_form = AgentRegistration(request.POST, instance=agent)
+    #     login_form = UserUpdateForm(request.POST, instance=user)
 
-        if agent_form.is_valid() and login_form.is_valid():
-            user_form = UserUpdateForm(request.POST)
-            if user_form.is_valid():
-                user_form.save()
-                messages.info(request, "Agent Updated Successfully")
-                return redirect("adminapp:view_agent")
-    else:
-        agent_form = AgentRegistration(instance=agent)
-        login_form = UserUpdateForm(instance=user)
+    #     if agent_form.is_valid() and login_form.is_valid():
+    #         user_form = UserUpdateForm(request.POST)
+    #         if user_form.is_valid():
+    #             user_form.save()
+    #             messages.info(request, "Agent Updated Successfully")
+    #             return redirect("adminapp:view_agent")
+    # else:
+    #     agent_form = AgentRegistration(instance=agent)
+    #     login_form = UserUpdateForm(instance=user)
 
-    return render(request, 'adminapp/edit_agent.html', {'agent': agent, 'agent_form': agent_form, 'login_form': login_form})
+    # return render(request, 'adminapp/edit_agent.html', {'agent': agent, 'agent_form': agent_form, 'login_form': login_form})
 
 @login_required
 @admin_required
@@ -1286,78 +1299,65 @@ def monitor(request,id):
 
     existing_combined_games_dict = {(game.LSK, game.number): game for game in existing_combined_games}
 
-    try:
-        for agent_game in agent_games:
-            if agent_game.combined == False:
-                key = (agent_game.LSK, agent_game.number)
-                if key in existing_combined_games_dict:
-                    existing_combined_game = existing_combined_games_dict[key]
-                    if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
-                        existing_combined_game.count += agent_game.count
-                        if agent_game.LSK in limits:
-                            limit = limits[agent_game.LSK]
-                            existing_combined_game.remaining_limit += agent_game.count - limit
-                        existing_combined_game.combined = True
-                        print(existing_combined_game.count)
-                        print(agent_game.count)
-                        existing_combined_game.save()
-                        agent_game.combined = True
-                        agent_game.save()
-                elif key in combined_games:
-                    combined_games[key]['count'] += agent_game.count
-                    combined_games[key]['combined'] = True
-                else:
-                    print("working this")
-                    combined_games[key] = {
-                        'LSK': agent_game.LSK,
-                        'number': agent_game.number,
-                        'count': agent_game.count,
-                        'combined': False,
-                        'user': agent_game.agent.user,
-                    }
-                agent_game.combined = True
-                agent_game.save()
-    except:
-        pass
+    for agent_game in agent_games:
+        if agent_game.combined == False:
+            key = (agent_game.LSK, agent_game.number)
+            if key in existing_combined_games_dict:
+                existing_combined_game = existing_combined_games_dict[key]
+                if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
+                    existing_combined_game.count += agent_game.count
+                    if agent_game.LSK in limits:
+                        limit = limits[agent_game.LSK]
+                        existing_combined_game.remaining_limit += agent_game.count - limit
+                    existing_combined_game.combined = True
+                    print(existing_combined_game.count)
+                    print(agent_game.count)
+                    existing_combined_game.save()
+                    agent_game.combined = True
+                    agent_game.save()
+            elif key in combined_games:
+                combined_games[key]['count'] += agent_game.count
+                combined_games[key]['combined'] = True
+            else:
+                print("working this")
+                combined_games[key] = {
+                    'LSK': agent_game.LSK,
+                    'number': agent_game.number,
+                    'count': agent_game.count,
+                    'combined': False,
+                    'user': agent_game.agent.user,
+                }
+            agent_game.combined = True
+            agent_game.save()
 
-    try:
-        for dealer_game in dealer_games:
-            print(dealer_game.combined)
-            if dealer_game.combined == False:
-                print("its working")
-                key = (dealer_game.LSK, dealer_game.number)
-                print(dealer_game.LSK, dealer_game.number)
-                if key in existing_combined_games_dict:
-                    print("yes")
-                    existing_combined_game = existing_combined_games_dict[key]
-                    if hasattr(dealer_game, 'count') and isinstance(dealer_game.count, int):
-                        existing_combined_game.count += dealer_game.count
-                        if dealer_game.LSK in limits:
-                            limit = limits[dealer_game.LSK]
-                            existing_combined_game.remaining_limit += dealer_game.count - limit 
-                        existing_combined_game.combined = True
-                        existing_combined_game.save()
-                        dealer_game.combined = True
-                        dealer_game.save()
-                elif key in combined_games:
-                    print("new game")
-                    combined_games[key]['count'] += dealer_game.count
-                    combined_games[key]['combined'] = True
-                else:
-                    print("new combined game")
-                    print(dealer_game.agent)
-                    combined_games[key] = {
-                        'LSK': dealer_game.LSK,
-                        'number': dealer_game.number,
-                        'count': dealer_game.count,
-                        'combined': False,
-                        'user': dealer_game.agent.user,
-                    }
-                dealer_game.combined = True
-                dealer_game.save()
-    except:
-        pass
-
+    for dealer_game in dealer_games:
+        if dealer_game.combined == False:
+            key = (dealer_game.LSK, dealer_game.number)
+            if key in existing_combined_games_dict:
+                existing_combined_game = existing_combined_games_dict[key]
+                if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
+                    existing_combined_game.count += dealer_game.count
+                    if dealer_game.LSK in limits:
+                        limit = limits[dealer_game.LSK]
+                        existing_combined_game.remaining_limit += dealer_game.count - limit 
+                    existing_combined_game.combined = True
+                    existing_combined_game.save()
+                    dealer_game.combined = True
+                    dealer_game.save()
+            elif key in combined_games:
+                combined_games[key]['count'] += dealer_game.count
+                combined_games[key]['combined'] = True
+            else:
+                combined_games[key] = {
+                    'LSK': dealer_game.LSK,
+                    'number': dealer_game.number,
+                    'count': dealer_game.count,
+                    'combined': False,
+                    'user': dealer_game.agent.user,
+                }
+            dealer_game.combined = True
+            dealer_game.save()
+    
     total_count = 0
 
     for key, game_info in combined_games.items():
