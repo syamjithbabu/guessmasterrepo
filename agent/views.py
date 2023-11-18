@@ -1631,31 +1631,59 @@ def play_game(request,id):
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     print(current_date)
+    dealers = Dealer.objects.filter(agent=agent_obj).all()
     if current_time > time.end_time:
         return redirect('agent:index')
-    if AgentPackage.objects.filter(agent=agent_obj).exists():
-        agent_package = AgentPackage.objects.get(agent=agent_obj)
-        print(agent_package.single_rate)
+    if request.method == 'POST':
+        select_dealer = request.POST.get('select-dealer')
+        print(select_dealer)
+        if DealerPackage.objects.filter(dealer=select_dealer).exists():
+            agent_package = DealerPackage.objects.get(dealer=select_dealer)
+            print(agent_package.single_rate)
+        else:
+            messages.info(request,"There is no package for this user!",extra_tags='package_message')
+        try:
+            dealer_rows = DealerGameTest.objects.filter(agent=agent_obj,created_by=agent_obj,dealer=select_dealer,time=id,date=current_date).order_by('-id')
+            total_c_amount = sum(row.c_amount for row in dealer_rows)
+            total_d_amount = sum(row.d_amount for row in dealer_rows)
+            total_count = sum(row.count for row in dealer_rows)
+        except:
+            pass
+        context = {
+            'time' : time,
+            'dealers' : dealers,
+            'selected_dealer' : select_dealer,
+            'agent_package' : agent_package,
+            'dealer_rows' : dealer_rows,
+            'total_c_amount': total_c_amount,
+            'total_d_amount': total_d_amount,
+            'total_count': total_count,
+        }
+        return render(request,'agent/play_game.html',context)
     else:
-        messages.info(request,"There is no package for this user!")
-    dealers = Dealer.objects.filter(agent=agent_obj).all()
-    try:
-        rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date).order_by('-id')
-        total_c_amount = sum(row.c_amount for row in rows)
-        total_d_amount = sum(row.d_amount for row in rows)
-        total_count = sum(row.count for row in rows)
-    except:
-        pass
-    context = {
-        'time' : time,
-        'dealers' : dealers,
-        'agent_package' : agent_package,
-        'rows' : rows,
-        'total_c_amount': total_c_amount,
-        'total_d_amount': total_d_amount,
-        'total_count': total_count,
-    }
-    return render(request,'agent/play_game.html',context)
+        if AgentPackage.objects.filter(agent=agent_obj).exists():
+            agent_package = AgentPackage.objects.get(agent=agent_obj)
+            print(agent_package.single_rate)
+        else:
+            messages.info(request,"There is no package for this user!",extra_tags='package_message')
+        try:
+            rows = AgentGameTest.objects.filter(agent=agent_obj, time=id, date=current_date).order_by('-id')
+            total_c_amount = sum(row.c_amount for row in rows)
+            total_d_amount = sum(row.d_amount for row in rows)
+            total_count = sum(row.count for row in rows)
+        except:
+            pass
+        context = {
+            'time' : time,
+            'dealers' : dealers,
+            'agent_package' : agent_package,
+            'rows' : rows,
+            'total_c_amount': total_c_amount,
+            'total_d_amount': total_d_amount,
+            'total_count': total_count,
+            'selected_dealer' : 'False'
+        }
+        return render(request,'agent/play_game.html',context)
 
 @login_required
 @agent_required
@@ -2064,13 +2092,35 @@ def save_data(request, id):
                 combined=False
             )
             agent_game_records.append(agent_game_record)
+
+        dealer_game_test = DealerGameTest.objects.filter(agent=agent_obj, time=play_time_instance, date=current_date)
+
+        dealer_game_records = []
+
+        for test_record in dealer_game_test:
+            dealer_game_record = DealerGame(
+                dealer=test_record.dealer,
+                time=test_record.time,
+                date=test_record.date,
+                LSK=test_record.LSK,
+                number=test_record.number,
+                count=test_record.count,
+                d_amount=test_record.d_amount,
+                c_amount=test_record.c_amount,
+                combined=False
+            )
+            dealer_game_records.append(dealer_game_record)
     
 
         # Save the AgentGame records
         AgentGame.objects.bulk_create(agent_game_records)
 
+        DealerGame.objects.bulk_create(dealer_game_records)
+
         # Delete the AgentGameTest records
         agent_game_test.delete()
+
+        dealer_game_test.delete()
 
         # Check if there are AgentGame records
         if agent_game_records:
@@ -2090,6 +2140,27 @@ def save_data(request, id):
             )
             # Add related AgentGame records to the Bill
             bill.agent_games.add(*agent_game_records)
+
+        if dealer_game_records:
+            print(dealer_game_records,"dealer games")
+            # Calculate total values
+            total_c_amount = sum([record.c_amount for record in dealer_game_records])
+            total_d_amount = sum([record.d_amount for record in dealer_game_records])
+            total_count = sum([record.count for record in dealer_game_records])
+
+            dealer_obj = dealer_game_records[0].dealer.user
+
+            # Create the Bill record
+            bill = Bill.objects.create(
+                user=dealer_obj,
+                time_id=play_time_instance,
+                date=current_date,
+                total_c_amount=total_c_amount,
+                total_d_amount=total_d_amount,
+                total_count=total_count,
+            )
+            # Add related AgentGame records to the Bill
+            bill.dealer_games.add(*dealer_game_records)
 
     except Exception as e:
         print(e)
