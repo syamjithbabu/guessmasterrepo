@@ -172,10 +172,20 @@ th,
                                 </div>
                                 <div class="col-md-6 col-6">
                                     <div class="form-group">
-                                        <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="aioConceptName">
+                                        <select class="form-control show-tick" data-placeholder="Select" name="select-agent" id="aioConceptName">
                                             <option value="all">All</option>
                                             {% for agent in agents %}
                                             <option value="{{ agent.id }}">{{agent.user}}</option>
+                                            {% endfor %}
+                                         </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-6">
+                                    <div class="form-group">
+                                        <select class="form-control show-tick" data-placeholder="Select" name="select-dealer" id="dealer">
+                                            <option value="all">All</option>
+                                            {% for dealer in dealers %}
+                                            <option value="{{ dealer.id }}">{{dealer.user}}</option>
                                             {% endfor %}
                                          </select>
                                     </div>
@@ -239,6 +249,15 @@ th,
                                                 {% else %}
                                                     <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
                                                 {% endif %}
+                                                <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        {% for bill in dealer_only_bills %}
+                                            <tr class="l-blue" style="text-align: center;">
+                                                <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                                                <td>{{ bill.user.dealer.user }}</td>  {# Display the agent's name for a dealer's bill #}
                                                 <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                                 <td>{{ bill.win_amount|floatformat:2 }}</td>
                                                 <td>{{ bill.total_d_amount|floatformat:2 }}</td>
@@ -319,6 +338,15 @@ th,
                             <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                         </tr>
                     {% endfor %}
+                    {% for bill in dealer_only_bills %}
+                        <tr class="l-blue" style="text-align: center;">
+                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                            <td>{{ bill.user.dealer.user }}</td>  {# Display the agent's name for a dealer's bill #}
+                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                            <td>{{ bill.win_amount|floatformat:2 }}</td>
+                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <hr>
@@ -334,6 +362,35 @@ th,
     
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Add an event listener for the "change" event on the agent dropdown
+        $('#aioConceptName').on('change', function () {
+            var selectedAgentId = $(this).val();
+            console.log(selectedAgentId)
+            // Make an AJAX request to fetch dealers based on the selected agent
+            $.ajax({
+                url: 'get-dealers/',  // Replace with the actual URL to fetch dealers
+                method: 'GET',
+                data: { agent_id: selectedAgentId },
+                success: function (data) {
+                    // Clear existing options
+                    $('#dealer').empty();
+                    // Add new options based on the response
+                    if (selectedAgentId !== 'all') {
+                        $('#dealer').append('<option value="all">' + "All" + '</option>');
+                        for (var i = 0; i < data.dealers.length; i++) {
+                            $('#dealer').append('<option value="' + data.dealers[i].id + '">' + data.dealers[i].user__username + '</option>');
+                        }
+                    }
+                },
+                error: function () {
+                    console.log('Error fetching dealers');
+                }
+            });
+        });
+    });
+</script>
 <script>
     $(document).ready(function() {
         $("#expand-button").change(function() {
@@ -375,7 +432,8 @@ th,
         // Get the select element by its ID
         var selectFrom = document.getElementById("from-date");
         var selectTo = document.getElementById("to-date");
-        var selectDealer = document.getElementById("aioConceptName");
+        var selectAgent = document.getElementById("aioConceptName");
+        var selectDealer = document.getElementById("dealer")
         var selectTime = document.getElementById("time");
 
         var selectedFrom = "{{selected_from}}";
@@ -390,8 +448,9 @@ th,
         }
 
         // Set the selected value based on the selected_dealer variable
-        console.log("{{selected_dealer}}")
-        selectDealer.value = "{{ selected_dealer }}";
+        console.log("{{selected_agent}}")
+        selectAgent.value = "{{ selected_agent }}";
+        selectDealer.value = "{{ selected_dealer }}"
         selectTime.value = "{{ selected_time }}";
         selected_lsk = "{{ selected_lsk }}";
         for (var i = 0; i < radioInputs.length; i++) {

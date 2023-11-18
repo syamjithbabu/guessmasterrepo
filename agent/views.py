@@ -2249,6 +2249,42 @@ def set_limit(request):
 
 @login_required
 @agent_required
+def view_limits(request):
+    agent_obj = Agent.objects.get(user=request.user)
+    limits = DealerLimit.objects.filter(agent=agent_obj).all()
+    context = {
+        'limits' : limits
+    }
+    return render(request,'agent/view_limits.html',context)
+
+@login_required
+@agent_required
+def edit_limit(request, id):
+    times = PlayTime.objects.all().order_by('id')
+    limit_instance = DealerLimit.objects.get(id=id)
+
+    if request.method == 'POST':
+        limit = request.POST.get('limit')
+        selected_times = request.POST.getlist('checkbox')
+        selected_agent = request.POST.get('select-agent')
+
+        # Update the daily_limit for the selected Limit
+        limit_instance.daily_limit = limit
+        limit_instance.save()
+
+        # Update the checked_times for the selected Limit
+        limit_instance.checked_times.set(selected_times)
+
+        return redirect('agent:index')
+
+    context = {
+        'times': times,
+        'limit_instance': limit_instance,
+    }
+    return render(request, 'agent/edit_limit.html', context)
+
+@login_required
+@agent_required
 def change_password(request):
     if request.method == "POST":
         form = PasswordChangeForm(user=request.user,data=request.POST)

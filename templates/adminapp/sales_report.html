@@ -163,7 +163,7 @@
                                         <div class="mb-3">
                                             <label for="tax-id" class="control-label">Select Agent</label>
                                             <select class="form-control show-tick" data-placeholder="Select"
-                                                name="select-dealer" id="agent">
+                                                name="select-agent" id="agent">
                                                 <option value="all">All</option>
                                                 {% for agent in agents %}
                                                 <option value="{{ agent.id }}">{{agent.user}}</option>
@@ -175,13 +175,13 @@
 
                                 <div class="col-6">
                                     <div class="form-group">
-                                        <label for="tax-id" class="control-label">Select Time</label>
                                         <div class="mb-3">
-                                            <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                name="select-time" id="time">
-                                                <option value="all">All Times</option>
-                                                {% for time in times %}
-                                                <option value="{{time.id}}">{{time.game_time}}</option>
+                                            <label for="tax-id" class="control-label">Select Dealer</label>
+                                            <select class="form-control show-tick" data-placeholder="Select"
+                                                name="select-dealer" id="dealer">
+                                                <option value="all">All</option>
+                                                {% for dealer in dealers %}
+                                                <option value="{{ dealer.id }}">{{dealer.user}}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -200,6 +200,20 @@
                                     <div class="form-group">
                                         <label for="tax-id" class="control-label">To</label>
                                         <input type="date" class="form-control" id="to-date" name="to-date">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="tax-id" class="control-label">Select Time</label>
+                                        <div class="mb-3">
+                                            <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                name="select-time" id="time">
+                                                <option value="all">All Times</option>
+                                                {% for time in times %}
+                                                <option value="{{time.id}}">{{time.game_time}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -302,6 +316,30 @@
                                             {% else %}
                                             <td>{{ bill.user.dealer.agent.user }}</td>
                                             {% endif %}
+                                            <td>{{ bill.id }}</td>
+                                            <td>{{ bill.total_count }}</td>
+                                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                        </tr>
+
+                                        {% for game in bill.dealer_games.all %}
+                                        {% if game in dealer_games %}
+                                        <tr class="expand-row grouped-row" style="display: none;">
+                                            <td>#</td>
+                                            <td>{{ game.LSK }}</td>
+                                            <td>{{ game.number }}</td>
+                                            <td>{{ game.count }}</td>
+                                            <td>{{ game.d_amount|floatformat:2 }}</td>
+                                            <td>{{ game.c_amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endfor %}
+
+                                        {% for bill in dealer_only_bills %}
+                                        <tr class="main-row l-pink">
+                                            <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                                            <td>{{ bill.user.dealer.user }}</td>
                                             <td>{{ bill.id }}</td>
                                             <td>{{ bill.total_count }}</td>
                                             <td>{{ bill.total_d_amount|floatformat:2 }}</td>
@@ -443,6 +481,30 @@
                     {% endfor %}
                     {% endfor %}
 
+                    {% for bill in dealer_only_bills %}
+                    <tr class="main-row l-pink" style="text-align: center;">
+                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                        <td>{{ bill.user.dealer.user }}</td>
+                        <td>{{ bill.id }}</td>
+                        <td>{{ bill.total_count }}</td>
+                        <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                        <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                    </tr>
+
+                    {% for game in bill.dealer_games.all %}
+                    {% if game in dealer_games %}
+                    <tr class="expand-row grouped-row" style="text-align: center;">
+                        <td>#</td>
+                        <td>{{ game.LSK }}</td>
+                        <td>{{ game.number }}</td>
+                        <td>{{ game.count }}</td>
+                        <td>{{ game.d_amount|floatformat:2 }}</td>
+                        <td>{{ game.c_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+
 
                 </tbody>
             </table>
@@ -460,6 +522,35 @@
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Add an event listener for the "change" event on the agent dropdown
+            $('#agent').on('change', function () {
+                var selectedAgentId = $(this).val();
+                console.log(selectedAgentId)
+                // Make an AJAX request to fetch dealers based on the selected agent
+                $.ajax({
+                    url: 'get-dealers/',  // Replace with the actual URL to fetch dealers
+                    method: 'GET',
+                    data: { agent_id: selectedAgentId },
+                    success: function (data) {
+                        // Clear existing options
+                        $('#dealer').empty();
+                        // Add new options based on the response
+                        if (selectedAgentId !== 'all') {
+                            $('#dealer').append('<option value="all">' + "All" + '</option>');
+                            for (var i = 0; i < data.dealers.length; i++) {
+                                $('#dealer').append('<option value="' + data.dealers[i].id + '">' + data.dealers[i].user__username + '</option>');
+                            }
+                        }
+                    },
+                    error: function () {
+                        console.log('Error fetching dealers');
+                    }
+                });
+            });
+        });
+    </script>
     <script>
         $(document).ready(function () {
             $("#expand-button").change(function () {
@@ -499,13 +590,16 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Get the select element by its ID
-            var selectDealer = document.getElementById("agent");
+            var selectAgent = document.getElementById("agent");
+            var selectDealer = document.getElementById("dealer");
             var selectTime = document.getElementById("time");
             var selectFrom = document.getElementById("from-date");
             var selectTo = document.getElementById("to-date");
             var radioInputs = document.getElementsByName("select-lsk");
 
+
             // Set the selected value based on the selected_dealer variable
+            selectAgent.value = "{{ selected_agent }}";
             selectDealer.value = "{{ selected_dealer }}";
             selectTime.value = "{{ selected_time }}";
             selected_lsk = "{{ selected_lsk }}";
@@ -548,7 +642,7 @@
         document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
         document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
 
-        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time.game_time }}";
+        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
 
     </script>
 

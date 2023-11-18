@@ -21,6 +21,7 @@ urlpatterns = [
     path('add-result',views.add_result,name="add_result"),
     path('republish-results',views.republish_results,name="republish_results"),
     path('sales-report',views.sales_report,name="sales_report"),
+    path('get-dealers/',views.get_dealers,name="get_dealers"),
     path('add-time',views.add_time,name="add_time"),
     path('change-time',views.change_time,name="change_time"),
     path('change-game-time/<int:id>',views.change_game_time,name="change_game_time"),
