@@ -22,6 +22,7 @@ from collections import defaultdict
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.http import JsonResponse
 from django.contrib.auth.forms import AdminPasswordChangeForm,SetPasswordForm
+from django.contrib.auth.forms import AdminPasswordChangeForm,PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
 
@@ -118,32 +119,17 @@ def edit_limit(request, id):
 def edit_agent(request, id):
     agent = get_object_or_404(Agent, id=id)
     user = agent.user
-    if request.method =="POST":
-        form = SetPasswordForm(User=request.user, data=request.POST)
-        if form.is_valide():
+   
+
+    if request.method == 'POST':
+        form = AdminPasswordChangeForm(user=user, data=request.POST)
+        if form.is_valid():
             form.save()
-            update_session_auth_hash(request,form.user)
-            messages.success(request,"password change successfully")
-            return redirect("adminapp:view_agent")
-        else:
-            form = SetPasswordForm(User=request.user)
-    return render(request, 'adminapp/edit_agent.html', {'form':form})
+            return redirect('adminapp:index')
+    else:
+        form = AdminPasswordChangeForm(user=user)
 
-    # if request.method == "POST":
-    #     agent_form = AgentRegistration(request.POST, instance=agent)
-    #     login_form = UserUpdateForm(request.POST, instance=user)
-
-    #     if agent_form.is_valid() and login_form.is_valid():
-    #         user_form = UserUpdateForm(request.POST)
-    #         if user_form.is_valid():
-    #             user_form.save()
-    #             messages.info(request, "Agent Updated Successfully")
-    #             return redirect("adminapp:view_agent")
-    # else:
-    #     agent_form = AgentRegistration(instance=agent)
-    #     login_form = UserUpdateForm(instance=user)
-
-    # return render(request, 'adminapp/edit_agent.html', {'agent': agent, 'agent_form': agent_form, 'login_form': login_form})
+    return render(request, 'adminapp/edit_agent.html', {'form': form})
 
 @login_required
 @admin_required
@@ -3177,15 +3163,14 @@ def balance_report(request):
 @admin_required
 def change_password(request):
     if request.method == "POST":
-        form = AdminPasswordChangeForm(user=request.user,data=request.POST)
+        form = PasswordChangeForm(user=request.user,data=request.POST)
         if form.is_valid():
             form.save()
             print("password changed")
             messages.success(request,"your password changed")
             return redirect("website:login")
     else:
-
-        form= AdminPasswordChangeForm(user=request.user)
+        form= PasswordChangeForm(user=request.user)
     return render(request,'adminapp/change_password.html',{'form':form})
 
 @login_required

@@ -20,7 +20,7 @@ from collections import OrderedDict
 from django.db.models import Sum
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm,AdminPasswordChangeForm
 from django.db.models import F
 
 # Create your views here.
@@ -89,17 +89,15 @@ def view_dealer(request):
 def edit_dealer(request,id):
     dealer = get_object_or_404(Dealer, id=id)
     user = dealer.user
-    if request.method == "POST":
-        dealer_form = DealerRegistration(request.POST, instance=dealer)
-        login_form = UserUpdateForm(request.POST, instance=user)
-        if dealer_form.is_valid() and login_form.is_valid():
-            login_form.save()
-            messages.info(request, "Dealer Updated Successfully")
+    if request.method == 'POST':
+        form = AdminPasswordChangeForm(user=user, data=request.POST)
+        if form.is_valid():
+            form.save()
             return redirect("agent:view_dealer")
     else:
-        dealer_form = DealerRegistration(instance=dealer)
-        login_form = UserUpdateForm(instance=user)
-    return render(request, 'agent/edit_dealer.html', {'dealer': dealer,'dealer_form': dealer_form,'login_form':login_form})
+        form = AdminPasswordChangeForm(user=user)
+
+    return render(request, 'agent/edit_dealer.html', {'form': form})
 
 
 @login_required

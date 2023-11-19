@@ -25,20 +25,11 @@
                         <h2>Editing Agent</h2>
                     </div>
                     <div class="body">
-                        <form method="POST">
+                        <form method="POST" class="form-auth-medium" class="form-group">
                             {% csrf_token %}
-
-                            <!-- Display agent form fields -->
-                            {{ agent_form.as_p }}
-
-                            <!-- Display login form fields -->
-                            {{ login_form.as_p }}
-
-                            <!-- Display user form fields -->
-                            <!-- {{ user_form.as_p }} -->
-
-                            <button type="submit">Update Agent</button>
-                        </form>
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">Change Password</button>
+                          </form>
                     </div>
                 </div>
             </div>
