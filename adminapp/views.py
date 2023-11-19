@@ -3042,7 +3042,9 @@ def get_combinations(input_number):
     return result
 
 
-
+def total_balance(request):
+    
+    return render(request,'adminapp/total_balance.html')
 
 
 

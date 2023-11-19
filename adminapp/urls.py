@@ -55,5 +55,7 @@ urlpatterns = [
     path('clear-limit/<int:id>/<int:time_id>',views.clear_limit,name="clear_limit"),
     path('clear-all/<int:id>',views.clear_all,name="clear_all"),
     path('settings',views.settings,name="settings"),
-    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")   
+    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit"), 
+    path('total-balance',views.total_balance,name="total_balance"),
+
 ]
