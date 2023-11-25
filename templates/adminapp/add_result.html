@@ -343,7 +343,16 @@
     inputs.forEach(function(input, index) {
         input.addEventListener('input', function() {
             var value = input.value;
-    
+
+            if (value.length > 3) {
+                input.value = value.slice(0, 3);
+            }
+
+            if (value.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                return;
+            }
+
             if (value.length === 3) {
                 // Move focus to the next input field
                 if (index < inputs.length - 1) {

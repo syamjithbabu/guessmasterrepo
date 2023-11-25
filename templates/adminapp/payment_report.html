@@ -176,8 +176,8 @@ td {
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
                                                     name="from-to" id="collection">
                                                     <option value="all">All</option>
-                                                    <option value="from-agent">From Agent</option>
-                                                    <option value="to-agent">To Agent</option>
+                                                    <option value="received">Received</option>
+                                                    <option value="paid">Paid</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -189,7 +189,7 @@ td {
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">                                               
                                                 <button class="btn btn-primary" id="printbutton"
-                                            onclick="document.title = 'Payment Report - {{selected_from}} to {{selected_to}} - {{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Print </button>
+                                            onclick="document.title = 'Payment Report - {{selected_from}} to {{selected_to}} - {{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Download</button>
 
                                             </div>
                                             </div>

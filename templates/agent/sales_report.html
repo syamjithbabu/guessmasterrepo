@@ -226,7 +226,7 @@
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
                                         <button class="btn btn-primary" id="printbutton"
-                                        onclick="document.title = 'Sales Report- {{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Print </button>
+                                        onclick="generatePDF()">Download</button>
 
 
                                     </div>
@@ -387,7 +387,7 @@
     <div class="body">
         {% if agent_bills %}
         <div class="table-responsive">
-            <table class="table m-b-0" style=" width: 100%; height: 30%;">
+            <table class="table m-b-0" id="pdftab" style=" width: 100%; height: 30%;">
 
                 <thead>
                     <tr>
@@ -499,6 +499,14 @@ function printDiv(printThisDiv) {
 
 
 
+</script>
+
+<script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+<script>
+  function generatePDF() {
+    var element = document.getElementById('pdftab'); // Replace with the ID of your table
+    html2pdf(element);
+  }
 </script>
 
 

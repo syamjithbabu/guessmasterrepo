@@ -33,7 +33,7 @@
                             <a href="#Results" class="has-arrow"><i class="icon-trophy"></i> <span>Result</span></a>
                             <ul>
                                 <li><a href="{% url 'adminapp:add_result' %}">Add Result</a></li>                                    
-                                <li><a href="{% url 'adminapp:republish_results' %}">Republish Result</a></li>
+                                <li><a href="{% url 'adminapp:republish_times' %}">Republish Result</a></li>
                                 <li><a href="{% url 'adminapp:view_results' %}">View Results</a></li>  
                             </ul>
                         </li>
@@ -84,6 +84,7 @@
                             <a href="{% url 'adminapp:dailyreport' %} "><i class="icon-book-open "></i> <span>Daily Report</span></a>
                          
                         </li>
+                        
                         <li>
                             <a href="#uiElements" class="has-arrow"><i class="icon-grid"></i> <span>Others</span></a>
                             <ul>
@@ -91,8 +92,7 @@
                                 <li><a href="{% url 'adminapp:countsales_report' %}">Count Sale Report</a></li>
                                 <li><a href="{% url 'adminapp:winning_report' %}">Winning Report</a></li>
 
-                                <li><a href="{% url 'adminapp:winningcount_report' %}">Count Winning Report</a></li> 
-                                <li><a href="{% url 'adminapp:blocked_numbers' %}">Blocked Numbers</a></li>                                   
+                                <li><a href="{% url 'adminapp:winningcount_report' %}">Count Winning Report</a></li>                                   
                                 <li><a href="{% url 'adminapp:payment_report' %}">Payment Report</a></li>
                                 <li><a href="{% url 'adminapp:balance_report' %}">Balance Report</a></li>
                                 
@@ -101,6 +101,10 @@
                         </li>
                         <li>
                             <a href="{% url 'adminapp:edit_bill_times' %}"><i class="icon-note"></i>Edit Bill</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'adminapp:total_balance' %} "><i class="icon-book-open "></i> <span>Total Balance</span></a>
+                         
                         </li>
                         <li>
                             <a href="{% url 'adminapp:settings' %}" ><i class="icon-settings"></i> <span>Settings</span></a>

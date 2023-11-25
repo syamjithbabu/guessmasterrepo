@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numeric Keypad</title>
+    <style>
+        body {
+            background-color: #ef5350;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            background-color: white;
+            width: 320px;
+            padding: 20px;
+            margin: 30px auto;
+            text-align: center;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        }
+
+        #output {
+            font-size: 2rem;
+            height: 60px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+
+        .digit {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background-color: #ffa726;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .digit:active {
+            background-color: #e57373;
+        }
+
+        .fa-long-arrow-left {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background-color: #42a5f5;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .fa-long-arrow-left:active {
+            background-color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="output"></div>
+        <div class="row">
+            <div class="digit">1</div>
+            <div class="digit">2</div>
+            <div class="digit">3</div>
+        </div>
+        <div class="row">
+            <div class="digit">4</div>
+            <div class="digit">5</div>
+            <div class="digit">6</div>
+        </div>
+        <div class="row">
+            <div class="digit">7</div>
+            <div class="digit">8</div>
+            <div class="digit">9</div>
+        </div>
+        <div class="row">
+            <div class="digit">*</div>
+            <div class="digit">0</div>
+            <div class="digit">#</div>
+        </div>
+        <div class="botrow">
+            <a href="{% url 'website:login' %}" style="text-decoration: none;">
+                <i class="fa fa-star-o digit" aria-hidden="true"></i>
+            </a>
+            <div id="call" class="digit"><i class="fa fa-phone" aria-hidden="true"></i></div>
+            <i class="fa fa-long-arrow-left" aria-hidden="true"></i>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+</body>
+</html>
+
+<script>
+    var count = 0;
+
+    $(".digit").on('click', function() {
+        var num = $(this).text();
+        if (count < 11) {
+            $("#output").append('<span>' + num.trim() + '</span>');
+            count++;
+        }
+    });
+
+    $('.fa-long-arrow-left').on('click', function() {
+        $('#output span:last-child').remove();
+        count--;
+    });
+</script>

@@ -178,8 +178,8 @@ th,
                                                 <select class="form-control show-tick ms select2" data-placeholder="Select"
                                                     name="from-to" id="collection">
                                                     <option value="all">All</option>
-                                                    <option value="from-dealer">From Dealer</option>
-                                                    <option value="to-dealer">To Dealer</option>
+                                                    <option value="received">Received</option>
+                                                    <option value="paid">Paid</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -191,7 +191,7 @@ th,
                                         <div class="col-lg-2 col-md-6 col-6">
                                             <div class="form-group">
                                                 <button class="btn btn-primary" id="printbutton"
-                                                    onclick="document.title = 'Payment Report- {{selected_from}} to {{selected_to}}';printDiv('printThisDiv')" type="submit">Print </button>
+                                                    onclick="document.title = 'Payment Report- {{selected_from}} to {{selected_to}}';printDiv('printThisDiv')" type="submit">Download</button>
         
         
         
@@ -247,7 +247,11 @@ th,
                         <tr>
                             <td class="td2">{{collection.date}}</td>
                             <td class="td3">{{collection.agent}}</td>
-                            <td class="td2">{{collection.from_or_to}}</td>
+                            {% if collection.from_or_to == 'paid' %}
+                            <td class="td2">received</td>
+                            {% else %}
+                            <td class="td2">paid</td>
+                            {% endif %}
                             <td class="td3">{{collection.amount|floatformat:2}}</td>                                                 
                         </tr>
                         {% endfor %}

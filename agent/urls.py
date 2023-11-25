@@ -33,6 +33,7 @@ urlpatterns = [
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
     path('submit-data/',views.submit_data,name="submit_data"),
+    path('check-limit/',views.check_limit, name='check_limit'),
     path('save-data/<int:id>',views.save_data,name="save_data"),
 
     path('delete-test-row/<int:id>',views.agent_game_test_delete,name="agent_game_test_delete"),

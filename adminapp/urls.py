@@ -19,7 +19,8 @@ urlpatterns = [
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
     path('add-result',views.add_result,name="add_result"),
-    path('republish-results',views.republish_results,name="republish_results"),
+    path('republish-results/<int:id>',views.republish_results,name="republish_results"),
+    path('result-times',views.republish_times,name="republish_times"),
     path('sales-report',views.sales_report,name="sales_report"),
     path('get-dealers/',views.get_dealers,name="get_dealers"),
     path('add-time',views.add_time,name="add_time"),
@@ -56,5 +57,7 @@ urlpatterns = [
     path('clear-limit/<int:id>/<int:time_id>',views.clear_limit,name="clear_limit"),
     path('clear-all/<int:id>',views.clear_all,name="clear_all"),
     path('settings',views.settings,name="settings"),
-    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit")   
+    path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit"), 
+    path('total-balance',views.total_balance,name="total_balance"),
+
 ]

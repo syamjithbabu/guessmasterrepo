@@ -84,6 +84,11 @@
         text-align: center;
     }
 
+    .nav-tabs-new>li>a.active {
+        border: 1px solid #eee !important;
+        background: rgb(0, 204, 255) !important;
+        color: #fff
+    }
     
 /* Add more CSS styling as needed */
 
@@ -103,7 +108,7 @@
                 <div class="card" style="margin-bottom: 10px !important;background-color:#ff75c8;padding: 10px !important;" >
                     <div class="header" style="padding: 10px !important;">
                         <h2>{{time.game_time}} [ {{request.user}} ]</h2>
-                        <a onclick="bill()" href="{% url 'agent:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
+                        <a onclick="saveDataToViews()" href="#" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
                             <span class="sr-only">Save</span>
                             <i class="fa fa-save"></i>
                         </a>
@@ -318,9 +323,9 @@
         </thead>
         <tbody>
             <tr>
-                <td class="td">{{total_count}}</td>
-                <td class="td">{{total_d_amount|floatformat:2}}</td>
-                <td class="td">{{total_c_amount|floatformat:2}}</td>
+                <td class="td" id="totalCount">{{total_count}}</td>
+                <td class="td" id="totalDAmount">{{total_d_amount|floatformat:2}}</td>
+                <td class="td" id="totalCAmount">{{total_c_amount|floatformat:2}}</td>
             </tr>
         </tbody>
     </table>
@@ -412,11 +417,8 @@
         var selectDealer = document.getElementById("selected-dealer")
 
         selectDealer.value = "{{ selected_dealer }}";
-        
-        if (inputElement) {
-            // Trigger a click on the element
-            inputElement.click();
-        }
+        inputElement.focus();
+        inputElement.click(); 
     });
 </script>
 
@@ -1575,6 +1577,8 @@
 
             if (number.length!=2){
                 alert("Number must have 2 digits.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
                 return;
             }
 
@@ -1633,8 +1637,8 @@
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                alert("Invalid input. Please enter valid numbers for conditional fields.");
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)){
+                alert("Invalid input!");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
                 document.getElementById("step").value = "";
@@ -1691,6 +1695,13 @@
             })
         }
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -1753,8 +1764,8 @@
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                alert("Invalid input. Please enter valid numbers for conditional fields.");
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
+                alert("Invalid input.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
                 document.getElementById("step").value = "";
@@ -1804,7 +1815,7 @@
             console.log(differences);
 
             differences.forEach(function (difference) {
-                console.log(difference);
+                console.log(difference,"loopssss");
                 var inputNumber = difference.toString();
                 var combinations = getCombinations(inputNumber);
 
@@ -1821,6 +1832,13 @@
             })
         }
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -1852,6 +1870,7 @@
             var tableBody = document.querySelector("#mainTable tbody");
 
             combinations.forEach(function (combination) {
+                console.log("loopsssssssss")
                 var allRow = document.createElement("tr");
                 var allResult1 = (count * amounts[linkText]).toFixed(2);
                 var allResult2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
@@ -1891,7 +1910,7 @@
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
                 alert("Invalid input. Please enter valid numbers for conditional fields.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
@@ -1954,6 +1973,13 @@
 
         else{
 
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
+
             if (number.length!=3){
                 alert("Number must have 3 digits.");
                 document.getElementById("numberInput").value = "";
@@ -2013,8 +2039,8 @@
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
-                alert("Invalid input. Please enter valid numbers for conditional fields.");
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
+                alert("Invalid input.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
                 document.getElementById("step").value = "";
@@ -2082,6 +2108,13 @@
         }
 
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -2189,76 +2222,276 @@
 </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var selectedDealer = document.getElementById("selected-dealer");
 
-        // Add an event listener for the "change" event
-        selectedDealer.addEventListener("change", function() {
-            // Log the selected value when it changes
-            console.log("Selected Dealer: " + selectedDealer.value);
-        });
-    });
-    // Create a queue to hold the data objects
-    const dataQueue = [];
-    
+    var limitExceededFlag = false;
+    var limitCheckInProgress = false;
+
     async function sendDataToDjango(linkText, value1, value2, value3, value4) {
-        const timeId = {{time.id}};
-        const selectedDealer = document.getElementById("selected-dealer").value;
-    
-        // Define the order of properties
-        const propertyOrder = ['selectedDealer', 'linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
-    
-        // Create an object with properties in the specified order
-        const data = {};
-        propertyOrder.forEach(property => {
-            data[property] = eval(property);  // Assuming the variables are in the local scope
-        });
-    
-        console.log('Adding to queue:', data);
-        dataQueue.push(data);
-    
-        // Check if there's data in the queue
-        if (dataQueue.length === 1) {
-            // If the queue was empty, start processing the queue
-            processQueue();
+
+        console.log('Checking limit before loop');
+
+        if (limitCheckInProgress) {
+            console.log('Limit check already in progress. Skipping sendDataToDjango function.');
+            limitCheckInProgress = false;
+            return;
         }
-    }
-    
-    async function processQueue() {
-        // Get the first data object in the queue
-        const data = dataQueue[0];
-    
-        try {
-            // Make the AJAX request and wait for it to complete
-            const response = await $.ajax({
-                url: '/agent/submit-data/',
-                type: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-                data: JSON.stringify(data),
+
+        const limitExceeded = await checkLimit(value4);
+
+        console.log(limitExceeded,"flag")
+
+        if (limitExceeded) {
+            limitExceededFlag = true;
+            Swal.fire({
+                icon: 'warning',
+                title: 'Limit exceeded!',
+                text: 'Your daily limit exceeded!',
+                showConfirmButton: false,
+                timer: 3000  // Automatically close after 3 seconds
             });
-    
-            console.log('Data sent successfully:', data);
-            console.log('Stringified Data:', JSON.stringify(data));
-    
-            // Remove the processed data from the queue
-            dataQueue.shift();
-    
-            // If there are more items in the queue, process the next one
-            if (dataQueue.length > 0) {
-                processQueue();
-            } else {
-                location.reload();
-            }
-        } catch (error) {
-            // Handle error if needed
-            console.error('Error sending data:', error.statusText);
+            
+            // Reset the flag after the alert is shown
+
+            return;
         }
+
+        console.log(value4, "on loop");
+
+        var newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+            <td>${linkText}</td>
+            <td>${value1}</td>
+            <td>${value2}</td>
+            <td>${value3}</td>
+            <td>${value4}</td>
+            <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+        `;
+
+        console.log("looping");
+
+        // Add the new row to the table
+        var tableBody = document.querySelector("#mainTable tbody");
+        tableBody.insertBefore(newRow, tableBody.firstChild);
+
+        updateTotal();
+
+        // Reset the flag after processing the loop
+        limitCheckInProgress = false;
+    }
+
+</script>
+
+
+
+    <script>
+
+        async function checkLimit(value4) {
+
+            console.log('Entering checkLimit function');
+
+            try {
+                const response = await fetch('/agent/check-limit/');
+                const data = await response.json();
+
+                var table = document.getElementById("mainTable");
+            var rows = table.querySelectorAll("tbody tr");
+            var countValues = [];
+            var dAmountValues = [];
+            var cAmountValues = [];
+    
+            rows.forEach(function (row) {
+                var countCell = row.cells[2]; // Assuming "count" is in the third cell (index 2)
+                var count = parseFloat(countCell.textContent);
+
+                console.log(count,"count")
+    
+                var damountCell = row.cells[3];
+                var dAmount = parseFloat(damountCell.textContent);
+    
+                var camountCell = row.cells[4];
+                var cAmount = parseFloat(camountCell.textContent);
+    
+                // Check if the count is a valid number before adding it to the array
+                if (!isNaN(count)) {
+                    countValues.push(count);
+                }
+                if (!isNaN(dAmount)) {
+                    dAmountValues.push(dAmount);
+                }
+                if (!isNaN(cAmount)) {
+                    cAmountValues.push(cAmount);
+                }
+                });
+                console.log(countValues)
+                console.log(dAmountValues)
+                var total = countValues.reduce(function (accumulator, currentValue) {
+                    return accumulator + currentValue;
+                }, 0);
+        
+                var damount = dAmountValues.reduce(function (accumulator, currentValue) {
+                    return accumulator + currentValue;
+                }, 0);
+        
+                var camount = cAmountValues.reduce(function (accumulator, currentValue) {
+                    return accumulator + currentValue;
+                }, 0);
+        
+                var totalCountSpan = document.getElementById("totalCount");
+                totalCountSpan.textContent = total;
+        
+                console.log("Total Count:", total);
+        
+                var totalDamountSpan = document.getElementById("totalDAmount");
+                totalDamountSpan.textContent = damount.toFixed(2);
+        
+                console.log("Total D Amount:", damount);
+        
+                var totalCamountSpan = document.getElementById("totalCAmount");
+                totalCamountSpan.textContent = camount.toFixed(2);
+        
+                console.log("Total C Amount:", camount);
+
+                console.log("Limit Exceeded:", data.limitExceeded);
+                console.log("C Amount:", data.total_c_amount);
+                console.log("Limit:", data.limit);
+                console.log("Total Check:", parseFloat(value4) + parseFloat(camount) + parseFloat(data.total_c_amount));
+
+                if (data.limitExceeded || parseFloat(value4) + parseFloat(camount) + parseFloat(data.total_c_amount) > data.limit) {
+                    return true;
+                }
+                console.log("limit not over")
+                return;
+            } catch (error) {
+                console.error('Error checking limit:', error);
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+     document.addEventListener("DOMContentLoaded", function() {
+            var selectedDealer = document.getElementById("selected-dealer");
+            console.log("dealer");
+            // Add an event listener for the "change" event
+            selectedDealer.addEventListener("change", function() {
+                // Log the selected value when it changes
+                console.log("Selected Dealer: " + selectedDealer.value);
+            });
+        });
+
+    function saveDataToViews() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Your bill created successfully.',
+        });
+        const selectDealer = document.getElementById("selected-dealer").value;
+        console.log(selectDealer);
+        const timeId = {{time.id}};
+        const tableRows = document.querySelectorAll("#mainTable tbody tr");
+        const data = [];
+
+        tableRows.forEach(row => {
+            const cells = row.getElementsByTagName("td");
+            const rowData = {
+                selectedDealer : selectDealer,
+                linkText: cells[0].textContent,
+                value1: cells[1].textContent,
+                value2: cells[2].textContent,
+                value3: cells[3].textContent,
+                value4: cells[4].textContent,
+                timeId: timeId,
+            };
+            data.push(rowData);
+            console.log(rowData);
+        });
+
+        // Make an AJAX request to save the data to Django views
+        $.ajax({
+            url: '/agent/submit-data/',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify(data),
+            success: function (response) {
+                console.log('Data saved successfully:', response);
+                location.reload();
+                // Optionally, you can update the UI or perform other actions after saving
+            },
+            error: function (error) {
+                console.error('Error saving data:', error.statusText);
+            }
+        });
+        
     }
     </script>
     
+    <script>
+        function updateTotal() {
+            console.log("yes");
+            var table = document.getElementById("mainTable");
+            var rows = table.querySelectorAll("tbody tr");
+            var countValues = [];
+            var dAmountValues = [];
+            var cAmountValues = [];
+    
+            rows.forEach(function (row) {
+                var countCell = row.cells[2]; // Assuming "count" is in the third cell (index 2)
+                var count = parseFloat(countCell.textContent);
+
+                console.log(count,"count")
+    
+                var damountCell = row.cells[3];
+                var dAmount = parseFloat(damountCell.textContent);
+    
+                var camountCell = row.cells[4];
+                var cAmount = parseFloat(camountCell.textContent);
+    
+                // Check if the count is a valid number before adding it to the array
+                if (!isNaN(count)) {
+                    countValues.push(count);
+                }
+                if (!isNaN(dAmount)) {
+                    dAmountValues.push(dAmount);
+                }
+                if (!isNaN(cAmount)) {
+                    cAmountValues.push(cAmount);
+                }
+            });
+            console.log(countValues)
+            console.log(dAmountValues)
+            var total = countValues.reduce(function (accumulator, currentValue) {
+                return accumulator + currentValue;
+            }, 0);
+    
+            var damount = dAmountValues.reduce(function (accumulator, currentValue) {
+                return accumulator + currentValue;
+            }, 0);
+    
+            var camount = cAmountValues.reduce(function (accumulator, currentValue) {
+                return accumulator + currentValue;
+            }, 0);
+    
+            var totalCountSpan = document.getElementById("totalCount");
+            totalCountSpan.textContent = total;
+    
+            console.log("Total Count:", total);
+    
+            var totalDamountSpan = document.getElementById("totalDAmount");
+            totalDamountSpan.textContent = damount.toFixed(2);
+    
+            console.log("Total D Amount:", damount);
+    
+            var totalCamountSpan = document.getElementById("totalCAmount");
+            totalCamountSpan.textContent = camount.toFixed(2);
+    
+            console.log("Total C Amount:", camount);
+
+        }
+    </script>
 
 <script>
     let rowToEdit;
@@ -2293,36 +2526,36 @@
         
     }
     
-    function updateRow(button) {
-        const rowId = rowToEdit.getAttribute("data-row-id");
+    function updateRow() {
         const editedCount = document.getElementById("editedCount").value;
-        const url = `/agent/update-test-row/${rowId}`;
-        console.log(editedCount);
-        var data = {
-            editedCount: editedCount
-        };
+
+        // Update the count in the row in the HTML
+        const cells = rowToEdit.getElementsByTagName("td");
+        cells[2].textContent = editedCount;
+        
+        const lsk = cells[0].textContent;
+
+        updateCell3(cells, lsk, editedCount);
+
+        updateTotal();
+        // Close the modal
         closeModal();
-        fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Include the CSRF token
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    location.reload();
-                } else {
-                    // Handle errors here
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle errors here
-            });
-        }
+    }
+
+    function updateCell3(cells, lsk, editedCount) {
+        // Fetch the rate and dc based on LSK
+        const rate = amounts[lsk] || 0;
+        const dc = dcs[lsk] || 0;
+
+        // Calculate the new value for cells[3] (count * rate)
+        const newRate = editedCount * rate;
+
+        const newDC = editedCount * (rate + dc);
+
+        // Update cells[3] with the calculated value
+        cells[3].textContent = newRate.toFixed(2);
+        cells[4].textContent = newDC.toFixed(2);
+    }
 
     function updateRowDealer(button) {
         const rowId = rowToEdit.getAttribute("data-row-id");
@@ -2356,36 +2589,17 @@
         }
 
 
-    function deleteRow(button) {
-        console.log("delete is working")
-        if (rowToEdit) {
-            const rowId = rowToEdit.getAttribute("data-row-id"); // You may need to set a data attribute on the row for identification
-            console.log(rowId)
-            const url = `/agent/delete-test-row/${rowId}`;
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Include the CSRF token
-                },
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    location.reload();
-                } else {
-                    // Handle errors here
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle errors here
-            });
-        } else {
-            console.error("Row not found for deletion.");
+        function deleteRow() {
+            // Get the reference to the row being deleted
+            const rowToDelete = rowToEdit;
+
+            // Remove the row from the table
+            rowToDelete.parentNode.removeChild(rowToDelete);
+
+            // Close the modal
+            updateTotal();
+            closeModal();
         }
-        
-}
 
     function deleteRowDealer(button) {
         console.log("delete is working")
@@ -2420,6 +2634,8 @@
 
 
 </script>
+
+
 
 
 
