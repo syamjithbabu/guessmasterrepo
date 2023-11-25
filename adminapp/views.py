@@ -23,6 +23,7 @@ from django.contrib.auth.forms import AdminPasswordChangeForm,PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
 
+
 # Create your views here.
 
 @admin_required

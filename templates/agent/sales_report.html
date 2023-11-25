@@ -482,6 +482,7 @@
     </div>
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <script>
 
 function getOption() {
@@ -489,6 +490,7 @@ function getOption() {
             output = selectElement.options[selectElement.selectedIndex].value;
             document.querySelector('.output').textContent = output;
         }
+        
 function printDiv(printThisDiv) {
         var printContents = document.getElementById(printThisDiv).innerHTML;
         // var originalContents = document.body.innerHTML;

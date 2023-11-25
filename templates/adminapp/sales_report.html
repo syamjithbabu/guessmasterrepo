@@ -2,6 +2,11 @@
 {% load static %}
 {% block content %}
 
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/html2pdf.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
 <style>
     .expand-row {
         background-color: rgb(46, 206, 255);
@@ -141,7 +146,8 @@
             <div class="row header">
                 <div class="col-lg-5 col-md-8 col-sm-12">
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a>
+                        </li>
                         <li class="breadcrumb-item active">Sales Report</li>
                     </ul>
                 </div>
@@ -223,9 +229,11 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="printbutton"onclick="document.title = 'Sales Report - {{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Print </button>
+                                      
+                                        <!-- <button class="btn btn-primary" id="shareButton" onclick="shareOnWhatsApp()" type="submit">Print </button> -->
 
-
+<button  class="btn btn-primary" id="generatePDFButton">Generate PDF</button>
+    <!-- <button onclick="shareWhatsApp()">Share via WhatsApp</button> -->
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
@@ -371,7 +379,7 @@
         <h3 id="demo3"></h3>
         <hr>
         <div class="body">
-            <table class="table m-b-0" style=" width: 100%; height: 30%;">
+            <table class="table m-b-0">
 
                 <thead>
                     <tr class="l-blue">
@@ -458,7 +466,6 @@
 
 
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
             $("#expand-button").change(function () {
@@ -469,6 +476,7 @@
                 }
             });
         });
+    
     </script>
 
     <script>
@@ -518,16 +526,6 @@
         });
     </script>
 
-    <script>
-        function printDiv(printThisDiv) {
-            var printContents = document.getElementById(printThisDiv).innerHTML;
-            // var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-        }
-    </script>
-
 
     <script>
         const x = document.getElementById("from-date");
@@ -550,5 +548,87 @@
         document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time.game_time }}";
 
     </script>
+
+
+
+
+
+
+<!-- pdf div share whatsapp -->
+
+
+
+<script>
+// // Function to generate PDF
+//         function generatePDF() {
+//             const element = document.getElementById('printThisDiv');
+
+//             html2pdf(element);
+//         }
+
+//         // Function to share PDF link through Web Share API
+//         async function shareWhatsApp() {
+//             try {
+//                 // Assuming the PDF is hosted on a server
+//                 const pdfUrl = 'https://example.com/path/to/your/generated.pdf';
+
+//                 // Use the Web Share API to share the PDF link
+//                 if (navigator.share) {
+//                     await navigator.share({
+//                         title: 'Check out this PDF',
+//                         text: 'PDF Link',
+//                         url: pdfUrl
+//                     });
+//                 } else {
+//                     // Fallback for browsers that do not support Web Share API
+//                     const whatsappLink = `https://wa.me/?text=${encodeURIComponent(`Check out this PDF: ${pdfUrl}`)}`;
+//                     window.open(whatsappLink, '_blank');
+//                 }
+//             } catch (error) {
+//                 console.error('Error sharing:', error);
+//             }
+//         }
+
+
+
+document.getElementById('generatePDFButton').addEventListener('click', function() {
+    // Get the content from the specified div
+    var contentDiv = document.getElementById('printThisDiv');
+
+    // Use html2pdf.js to generate a PDF
+    html2pdf(contentDiv)
+        .then(function(pdf) {
+            // Convert the PDF to a Blob
+            var pdfBlob = pdf.output('blob');
+
+            // Create a FormData object to prepare the PDF for server upload
+            var formData = new FormData();
+            formData.append('pdf', pdfBlob, 'Sales_Report.pdf');
+
+            // Simulate a server request (replace this with actual server logic)
+            fetch('https://example.com/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Provide a link to open the PDF on Google Drive
+                var driveLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(data.pdfUrl);
+                
+                // Open the link in a new tab
+                window.open(driveLink, '_blank');
+            })
+            .catch(error => {
+                console.error('Error uploading PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            });
+        })
+        .catch(function(error) {
+            console.error('Error generating PDF:', error);
+            alert('Error generating PDF. Please try again.');
+        });
+});
+</script>
+
 
     {% endblock %}
