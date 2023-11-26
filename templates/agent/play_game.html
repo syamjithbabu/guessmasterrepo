@@ -1729,7 +1729,8 @@
             var newRow = document.createElement("tr");
             var result1 = (count * amounts[linkText]).toFixed(2);
             var result2 = (count * (amounts[linkText] + dcs[linkText])).toFixed(2);
-            sendDataToDjango(linkText,number,count,result1,result2)
+            sendDataToDjango(linkText,number,count,result1,result2);
+            
         }
         document.getElementById("numberInput").value = "";
         document.getElementById("countInput").value = "";
@@ -2223,39 +2224,7 @@
 
 <script>
 
-    var limitExceededFlag = false;
-    var limitCheckInProgress = false;
-
     async function sendDataToDjango(linkText, value1, value2, value3, value4) {
-
-        console.log('Checking limit before loop');
-
-        if (limitCheckInProgress) {
-            console.log('Limit check already in progress. Skipping sendDataToDjango function.');
-            limitCheckInProgress = false;
-            return;
-        }
-
-        const limitExceeded = await checkLimit(value4);
-
-        console.log(limitExceeded,"flag")
-
-        if (limitExceeded) {
-            limitExceededFlag = true;
-            Swal.fire({
-                icon: 'warning',
-                title: 'Limit exceeded!',
-                text: 'Your daily limit exceeded!',
-                showConfirmButton: false,
-                timer: 3000  // Automatically close after 3 seconds
-            });
-            
-            // Reset the flag after the alert is shown
-
-            return;
-        }
-
-        console.log(value4, "on loop");
 
         var newRow = document.createElement("tr");
 
@@ -2268,106 +2237,15 @@
             <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
         `;
 
-        console.log("looping");
-
         // Add the new row to the table
         var tableBody = document.querySelector("#mainTable tbody");
         tableBody.insertBefore(newRow, tableBody.firstChild);
 
         updateTotal();
 
-        // Reset the flag after processing the loop
-        limitCheckInProgress = false;
     }
 
 </script>
-
-
-
-    <script>
-
-        async function checkLimit(value4) {
-
-            console.log('Entering checkLimit function');
-
-            try {
-                const response = await fetch('/agent/check-limit/');
-                const data = await response.json();
-
-                var table = document.getElementById("mainTable");
-            var rows = table.querySelectorAll("tbody tr");
-            var countValues = [];
-            var dAmountValues = [];
-            var cAmountValues = [];
-    
-            rows.forEach(function (row) {
-                var countCell = row.cells[2]; // Assuming "count" is in the third cell (index 2)
-                var count = parseFloat(countCell.textContent);
-
-                console.log(count,"count")
-    
-                var damountCell = row.cells[3];
-                var dAmount = parseFloat(damountCell.textContent);
-    
-                var camountCell = row.cells[4];
-                var cAmount = parseFloat(camountCell.textContent);
-    
-                // Check if the count is a valid number before adding it to the array
-                if (!isNaN(count)) {
-                    countValues.push(count);
-                }
-                if (!isNaN(dAmount)) {
-                    dAmountValues.push(dAmount);
-                }
-                if (!isNaN(cAmount)) {
-                    cAmountValues.push(cAmount);
-                }
-                });
-                console.log(countValues)
-                console.log(dAmountValues)
-                var total = countValues.reduce(function (accumulator, currentValue) {
-                    return accumulator + currentValue;
-                }, 0);
-        
-                var damount = dAmountValues.reduce(function (accumulator, currentValue) {
-                    return accumulator + currentValue;
-                }, 0);
-        
-                var camount = cAmountValues.reduce(function (accumulator, currentValue) {
-                    return accumulator + currentValue;
-                }, 0);
-        
-                var totalCountSpan = document.getElementById("totalCount");
-                totalCountSpan.textContent = total;
-        
-                console.log("Total Count:", total);
-        
-                var totalDamountSpan = document.getElementById("totalDAmount");
-                totalDamountSpan.textContent = damount.toFixed(2);
-        
-                console.log("Total D Amount:", damount);
-        
-                var totalCamountSpan = document.getElementById("totalCAmount");
-                totalCamountSpan.textContent = camount.toFixed(2);
-        
-                console.log("Total C Amount:", camount);
-
-                console.log("Limit Exceeded:", data.limitExceeded);
-                console.log("C Amount:", data.total_c_amount);
-                console.log("Limit:", data.limit);
-                console.log("Total Check:", parseFloat(value4) + parseFloat(camount) + parseFloat(data.total_c_amount));
-
-                if (data.limitExceeded || parseFloat(value4) + parseFloat(camount) + parseFloat(data.total_c_amount) > data.limit) {
-                    return true;
-                }
-                console.log("limit not over")
-                return;
-            } catch (error) {
-                console.error('Error checking limit:', error);
-                return false;
-            }
-        }
-    </script>
 
     <script>
      document.addEventListener("DOMContentLoaded", function() {

@@ -489,13 +489,13 @@ function getOption() {
             output = selectElement.options[selectElement.selectedIndex].value;
             document.querySelector('.output').textContent = output;
         }
-function printDiv(printThisDiv) {
-        var printContents = document.getElementById(printThisDiv).innerHTML;
-        // var originalContents = document.body.innerHTML;
-        document.body.innerHTML = printContents;
-        window.print();
-        document.body.innerHTML = originalContents;
-    }
+// function printDiv(printThisDiv) {
+//         var printContents = document.getElementById(printThisDiv).innerHTML;
+//         // var originalContents = document.body.innerHTML;
+//         document.body.innerHTML = printContents;
+//         window.print();
+//         document.body.innerHTML = originalContents;
+//     }
 
 
 
@@ -504,6 +504,7 @@ function printDiv(printThisDiv) {
 <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
 <script>
   function generatePDF() {
+    console.log("hel")
     var element = document.getElementById('pdftab'); // Replace with the ID of your table
     html2pdf(element);
   }
