@@ -406,24 +406,12 @@ function getOption() {
             output = selectElement.options[selectElement.selectedIndex].value;
             document.querySelector('.output').textContent = output;
         }
-<<<<<<< HEAD
-=======
-// function printDiv(printThisDiv) {
-//         var printContents = document.getElementById(printThisDiv).innerHTML;
-//         // var originalContents = document.body.innerHTML;
-//         document.body.innerHTML = printContents;
-//         window.print();
-//         document.body.innerHTML = originalContents;
-//     }
-
->>>>>>> 1b62110426c9a2f60e91e4f60ecfdd00db092d54
 
 
 </script>
 
 <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
 <script>
-<<<<<<< HEAD
     function generateAndOpenPDF() {
     // Disable the button to prevent multiple clicks
     var pdfButton = document.getElementById("pdfButton");
@@ -441,14 +429,6 @@ function getOption() {
     var element = document.getElementById('pdftab');
     if (!element) {
         console.error("Element with ID 'pdftab' not found.");
-=======
-  function generatePDF() {
-    console.log("hel")
-    var element = document.getElementById('pdftab'); // Replace with the ID of your table
-    html2pdf(element);
-  }
-</script>
->>>>>>> 1b62110426c9a2f60e91e4f60ecfdd00db092d54
 
         // Re-enable the button in case of an error
         if (pdfButton) {
