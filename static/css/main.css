@@ -2299,9 +2299,6 @@ html.fullscreen-bg #wrapper {
 }
 
 .card {
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
     background: #fff;
     transition: .5s;
     border: 0;
@@ -2391,10 +2388,8 @@ html.fullscreen-bg #wrapper {
 .card .body {
     color: #444;
     padding: 2px;
-    font-weight: 400;
-    /* background-color: #49c5b6; */
+    font-weight: 400
 }
-
 
 .navbar-fixed-top {
     position: fixed;
@@ -2776,8 +2771,8 @@ html.fullscreen-bg #wrapper {
 
 .nav-tabs-new>li>a.active {
     border: 1px solid #eee !important;
-    background: #ffffff;
-    color: #777
+    background: rgb(0, 204, 255);
+    color: #fff
 }
 
 .nav-tabs-new2 {

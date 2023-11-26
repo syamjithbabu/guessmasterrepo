@@ -26,6 +26,23 @@
 <link rel="stylesheet" href="{% static 'css/color_skins.css' %}">
 </head>
 <body class="theme-cyan" style="background-color:#e7daff;">
+
+        <!-- Your webpage content goes here -->
+      
+        <script>
+          // Function to handle the touchstart and touchmove events
+          function handleTouch(event) {
+            // Check if the touch event started from the top of the page
+            if (event.targetTouches[0].clientY <= 10) {
+              // Prevent the default behavior (in this case, page refresh)
+              event.preventDefault();
+            }
+          }
+      
+          // Add event listeners for touchstart and touchmove
+          document.addEventListener('touchstart', handleTouch, { passive: false });
+          document.addEventListener('touchmove', handleTouch, { passive: false });
+        </script>
     <!-- Overlay For Sidebars -->
 
 <div id="wrapper">
@@ -40,6 +57,8 @@
 </div>
 
 <!-- Javascript -->
+<script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+
 <script src="{% static 'bundles/libscripts.bundle.js' %}"></script>    
 <script src="{% static 'bundles/vendorscripts.bundle.js' %}"></script>
 

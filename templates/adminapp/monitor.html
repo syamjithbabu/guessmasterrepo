@@ -314,8 +314,8 @@
         var selectTo = document.getElementById("to-date");
         var radioInputs = document.getElementsByName("select-lsk");
 
-        // Set the selected value based on the selected_dealer variable
-        selectDealer.value = "{{ selected_dealer }}";
+        console.log("the time id");
+
         selectTime.value = "{{ selected_time }}";
         selected_lsk = "{{ selected_lsk }}";
         for (var i = 0; i < radioInputs.length; i++) {

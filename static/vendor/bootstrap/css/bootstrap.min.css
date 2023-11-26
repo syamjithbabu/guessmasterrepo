@@ -623,10 +623,7 @@ pre code {
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
     margin-right: -15px;
-    margin-left: -15px;
-    padding-right: 10px;
-    padding-left: 10px;
-    padding-bottom: 10px;
+    margin-left: -15px
 }
 
 .no-gutters {
@@ -714,8 +711,7 @@ pre code {
     width: 100%;
     min-height: 1px;
     padding-right: 10px;
-    padding-left: 10px;
-    padding-top: 30px;
+    padding-left: 10px
 }
 
 .col {

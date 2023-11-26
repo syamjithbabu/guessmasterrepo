@@ -93,6 +93,11 @@ th, td{
         text-align: center;
     }
 
+.nav-tabs-new>li>a.active{
+    border: 1px solid #eee !important;
+    background: rgb(255, 0, 119) !important;
+    color: #fff;
+}
 
 </style>
 
@@ -114,7 +119,7 @@ th, td{
                         <h2>{{time.game_time}} [ {{request.user}} ]</h2>
                     </div>
                     <form method="POST">
-                        <a onclick="bill()" href="{% url 'dealer:save_data' time.id %}" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
+                        <a onclick="saveDataToViews()" href="#" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
                             <span class="sr-only">Save</span>
                             <i class="fa fa-save"></i>
                         </a>
@@ -298,9 +303,9 @@ th, td{
         </thead>
         <tbody>
             <tr>
-                <td class="td">{{total_count}}</td>
-                <td class="td">{{total_d_amount|floatformat:2}}</td>
-                <td class="td">{{total_c_amount|floatformat:2}}</td>
+                <td class="td" id="totalCount">{{total_count}}</td>
+                <td class="td" id="totalDAmount">{{total_d_amount|floatformat:2}}</td>
+                <td class="td" id="totalCAmount">{{total_c_amount|floatformat:2}}</td>
             </tr>
         </tbody>
     </table>
@@ -1514,7 +1519,7 @@ th, td{
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
                 alert("Invalid input. Please enter valid numbers for conditional fields.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
@@ -1572,6 +1577,13 @@ th, td{
             })
         }
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -1634,7 +1646,7 @@ th, td{
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
                 alert("Invalid input. Please enter valid numbers for conditional fields.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
@@ -1702,6 +1714,13 @@ th, td{
             })
         }
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -1772,7 +1791,7 @@ th, td{
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
                 alert("Invalid input. Please enter valid numbers for conditional fields.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
@@ -1835,6 +1854,13 @@ th, td{
 
         else{
 
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
+
             if (number.length!=3){
                 alert("Number must have 3 digits.");
                 document.getElementById("numberInput").value = "";
@@ -1894,7 +1920,7 @@ th, td{
             startvalid = startInput.value;
             endvalid = endInput.value;
 
-            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional)) {
+            if (isNaN(start) || isNaN(end) || isNaN(step) || isNaN(countConditional) || start !== parseInt(start) || end !== parseInt(end) || step !== parseInt(step) || countConditional !== parseInt(countConditional)) {
                 alert("Invalid input. Please enter valid numbers for conditional fields.");
                 document.getElementById("start").value = "";
                 document.getElementById("end").value = "";
@@ -1963,6 +1989,13 @@ th, td{
         }
 
         else{
+
+            if (number.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                document.getElementById("numberInput").value = "";
+                document.getElementById("countInput").value = "";
+                return;
+            }
 
             if (number.length!=3){
                 alert("Number must have 3 digits.");
@@ -2040,6 +2073,7 @@ th, td{
     });
 </script>
 
+
 <script>
     $(document).ready(function () {
         $("#conditionalFields").hide();
@@ -2071,67 +2105,144 @@ th, td{
 </script>
 
 <script>
+    
     // Create a queue to hold the data objects
     const dataQueue = [];
     
     async function sendDataToDjango(linkText, value1, value2, value3, value4) {
-        const timeId = {{time.id}};
-        const selectedDealer = document.getElementById("customer").value;
-    
-        console.log(selectedDealer)
-        // Define the order of properties
-        const propertyOrder = ['selectedDealer', 'linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
-    
-        // Create an object with properties in the specified order
-        const data = {};
-        propertyOrder.forEach(property => {
-            data[property] = eval(property);  // Assuming the variables are in the local scope
-        });
-    
-        console.log('Adding to queue:', data);
-        dataQueue.push(data);
-    
-        // Check if there's data in the queue
-        if (dataQueue.length === 1) {
-            // If the queue was empty, start processing the queue
-            processQueue();
-        }
+
+        var newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+            <td>${linkText}</td>
+            <td>${value1}</td>
+            <td>${value2}</td>
+            <td>${value3}</td>
+            <td>${value4}</td>
+            <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+        `;
+        
+        // Add the new row to the table
+        var tableBody = document.querySelector("#mainTable tbody");
+        tableBody.insertBefore(newRow, tableBody.firstChild);
+        updateTotal();
+
+        
     }
     
-    async function processQueue() {
-        // Get the first data object in the queue
-        const data = dataQueue[0];
-    
-        try {
-            // Make the AJAX request and wait for it to complete
-            const response = await $.ajax({
-                url: '/dealer/submit-data/',
-                type: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-                data: JSON.stringify(data),
-            });
-    
-            console.log('Data sent successfully:', data);
-            console.log('Stringified Data:', JSON.stringify(data));
-    
-            // Remove the processed data from the queue
-            dataQueue.shift();
-    
-            // If there are more items in the queue, process the next one
-            if (dataQueue.length > 0) {
-                processQueue();
-            } else {
-                location.reload();
-            }
-        } catch (error) {
-            // Handle error if needed
-            console.error('Error sending data:', error.statusText);
-        }
-    }
     </script>
+
+<script>
+
+
+   function saveDataToViews() {
+        Swal.fire({
+           icon: 'success',
+           title: 'Success!',
+           text: 'Your bill created successfully.',
+       });
+       const timeId = {{time.id}};
+       const tableRows = document.querySelectorAll("#mainTable tbody tr");
+       const data = [];
+
+       tableRows.forEach(row => {
+           const cells = row.getElementsByTagName("td");
+           const rowData = {
+               linkText: cells[0].textContent,
+               value1: cells[1].textContent,
+               value2: cells[2].textContent,
+               value3: cells[3].textContent,
+               value4: cells[4].textContent,
+               timeId: timeId,
+           };
+           data.push(rowData);
+           console.log(rowData);
+       });
+
+       // Make an AJAX request to save the data to Django views
+       $.ajax({
+           url: '/dealer/submit-data/',
+           type: 'POST',
+           contentType: 'application/json',
+           headers: {
+               'X-CSRFToken': csrftoken,
+           },
+           data: JSON.stringify(data),
+           success: function (response) {
+               console.log('Data saved successfully:', response);
+               location.reload();
+               // Optionally, you can update the UI or perform other actions after saving
+           },
+           error: function (error) {
+               console.error('Error saving data:', error.statusText);
+           }
+       });
+       
+   }
+   </script>
+
+<script>
+    function updateTotal() {
+        console.log("yes");
+        var table = document.getElementById("mainTable");
+        var rows = table.querySelectorAll("tbody tr");
+        var countValues = [];
+        var dAmountValues = [];
+        var cAmountValues = [];
+
+        rows.forEach(function (row) {
+            var countCell = row.cells[2]; // Assuming "count" is in the third cell (index 2)
+            var count = parseFloat(countCell.textContent);
+
+            console.log(count,"count")
+
+            var damountCell = row.cells[3];
+            var dAmount = parseFloat(damountCell.textContent);
+
+            var camountCell = row.cells[4];
+            var cAmount = parseFloat(camountCell.textContent);
+
+            // Check if the count is a valid number before adding it to the array
+            if (!isNaN(count)) {
+                countValues.push(count);
+            }
+            if (!isNaN(dAmount)) {
+                dAmountValues.push(dAmount);
+            }
+            if (!isNaN(cAmount)) {
+                cAmountValues.push(cAmount);
+            }
+        });
+        console.log(countValues)
+        console.log(dAmountValues)
+        var total = countValues.reduce(function (accumulator, currentValue) {
+            return accumulator + currentValue;
+        }, 0);
+
+        var damount = dAmountValues.reduce(function (accumulator, currentValue) {
+            return accumulator + currentValue;
+        }, 0);
+
+        var camount = cAmountValues.reduce(function (accumulator, currentValue) {
+            return accumulator + currentValue;
+        }, 0);
+
+        var totalCountSpan = document.getElementById("totalCount");
+        totalCountSpan.textContent = total;
+
+        console.log("Total Count:", total);
+
+        var totalDamountSpan = document.getElementById("totalDAmount");
+        totalDamountSpan.textContent = damount.toFixed(2);
+
+        console.log("Total D Amount:", damount);
+
+        var totalCamountSpan = document.getElementById("totalCAmount");
+        totalCamountSpan.textContent = camount.toFixed(2);
+
+        console.log("Total C Amount:", camount);
+    }
+</script>
 
 <script>
     let rowToEdit;
@@ -2150,68 +2261,48 @@ th, td{
         
     }
     
-    function updateRow(button) {
-        const rowId = rowToEdit.getAttribute("data-row-id");
+    function updateRow() {
         const editedCount = document.getElementById("editedCount").value;
-        const url = `/dealer/update-test-row/${rowId}`;
-        console.log(editedCount);
-        var data = {
-            editedCount: editedCount
-        };
-        closeModal();
-        fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Include the CSRF token
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    location.reload();
-                } else {
-                    // Handle errors here
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle errors here
-            });
-        }
 
-
-    function deleteRow(button) {
-        console.log("delete is working")
-        if (rowToEdit) {
-            const rowId = rowToEdit.getAttribute("data-row-id"); // You may need to set a data attribute on the row for identification
-            console.log(rowId)
-            const url = `/dealer/delete-test-row/${rowId}`;
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Include the CSRF token
-                },
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    location.reload();
-                } else {
-                    // Handle errors here
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle errors here
-            });
-        } else {
-            console.error("Row not found for deletion.");
-        }
+        // Update the count in the row in the HTML
+        const cells = rowToEdit.getElementsByTagName("td");
+        cells[2].textContent = editedCount;
         
-}
+        const lsk = cells[0].textContent;
+
+        updateCell3(cells, lsk, editedCount);
+
+        updateTotal();
+        // Close the modal
+        closeModal();
+    }
+
+    function updateCell3(cells, lsk, editedCount) {
+        // Fetch the rate and dc based on LSK
+        const rate = amounts[lsk] || 0;
+        const dc = dcs[lsk] || 0;
+
+        // Calculate the new value for cells[3] (count * rate)
+        const newRate = editedCount * rate;
+
+        const newDC = editedCount * (rate + dc);
+
+        // Update cells[3] with the calculated value
+        cells[3].textContent = newRate.toFixed(2);
+        cells[4].textContent = newDC.toFixed(2);
+    }
+
+    function deleteRow() {
+            // Get the reference to the row being deleted
+            const rowToDelete = rowToEdit;
+
+            // Remove the row from the table
+            rowToDelete.parentNode.removeChild(rowToDelete);
+
+            // Close the modal
+            updateTotal();
+            closeModal();
+        }
 
 
 
@@ -2219,17 +2310,6 @@ th, td{
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-    function bill() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Your bill created successfully.',
-            buttons: "OK",
-        });
-    }
-</script>
 
 {% if messages %}
     {% for message in messages %}

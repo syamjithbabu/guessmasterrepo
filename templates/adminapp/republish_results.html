@@ -9,7 +9,7 @@
                 <div class="col-lg-5 col-md-8 col-sm-12">                        
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'adminapp:index' %}"><i class="icon-home"></i></a></li>                            
-                        <li class="breadcrumb-item">View & Republish Result</li>
+                        <li class="breadcrumb-item">Republish Result</li>
                     </ul>
                 </div>            
             </div>
@@ -328,6 +328,15 @@
     inputs.forEach(function(input, index) {
         input.addEventListener('input', function() {
             var value = input.value;
+
+            if (value.length > 3) {
+                input.value = value.slice(0, 3);
+            }
+
+            if (value.indexOf('.') !== -1){
+                alert("This number is not valid.");
+                return;
+            }
     
             if (value.length === 3) {
                 // Move focus to the next input field

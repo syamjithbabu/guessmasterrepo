@@ -2,6 +2,96 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .navbar-bottom {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 55px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        background-color: #ffffff;
+        overflow-x: auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .th{
+        text-align: center;
+    }
+
+    .td2{
+        text-align: center;
+    }
+    .td3{
+        text-align: center;
+    }
+    .th1, .td1{
+        text-align: center;
+    }
+    /* print start here */
+
+    @media screen {
+
+
+#dateprint {
+    display: none;
+}
+
+#totalcount {
+    display: none;
+}
+
+#printThisDiv {
+    display: none;
+}
+
+}
+
+
+
+@media print {
+
+
+#table,
+th,
+td {
+    table-layout: fixed;
+    text-align: center;
+    width: 100%;
+    height: 30%;
+    table-layout: auto;
+    border: 1px solid black;
+    border-collapse: separate;
+
+}
+
+td {
+    text-align: center;
+}
+
+#dateprint {
+    display: block;
+}
+
+#total {
+    display: block;
+}
+
+.page-main-content {
+    padding-top: 0px;
+}
+
+.navbar-bottom {
+    display: none;
+}
+
+
+}
+/* print css end */
+
+</style>
+
 
 <div id="main-content">
     <div class="container-fluid">
@@ -42,31 +132,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="l-pink">
-                                
-                                <td>Otto</td>
-                                <td>.l-pink</td>
+                            {% for data in report_data %}
+                            <tr>
+                                <td>{{data.agent}}</td>
+                                {% if data.sale_amount|default:0|add:0 >= 0 %}
+                                <td style="color: rgb(0, 192, 0);">{{data.sale_amount|floatformat:2}}</td>
+                                {% else %}
+                                <td style="color: red;">{{data.sale_amount|floatformat:2}}</td>
+                                {% endif %}
                             </tr>
-                            <tr class="l-turquoise">
-                                
-                                <td>Thornton</td>
-                                <td>.l-turquoise</td>
-                            </tr>
-                            <tr class="l-parpl">
-                               
-                                <td>the Bird</td>
-                                <td>.l-parpl</td>
-                            </tr>
-                            <tr class="l-blue">
-                                
-                                <td>Jellybean</td>
-                                <td>.l-blue</td>
-                            </tr>
-                            <tr class="l-blush">
-                                
-                                <td>Kikat</td>
-                                <td>.l-blush</td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -75,6 +150,29 @@
 
 </div>
 </div>
+
+<nav class="navbar-bottom"  id="btotal">
+    <table>
+        <thead>
+            <tr>
+                {% if total_balance|default:0|add:0 >= 0 %}
+                <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
+                {% else %}
+                <th class="th1" style="color: red;">Balance</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% if total_balance|default:0|add:0 >= 0 %}
+                <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
+                {% else %}
+                <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+</nav>
 
 
 
