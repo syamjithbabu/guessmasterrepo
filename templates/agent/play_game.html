@@ -105,19 +105,19 @@
     <div class="container-fluid mt-3">
         <div class="row clearfix">
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card" style="margin-bottom: 10px !important;background-color:#ff75c8;padding: 10px !important;" >
+                <div class="card" style="margin-bottom: 10px !important;padding: 10px !important;"  id="background">
                     <div class="header" style="padding: 10px !important;">
                         <h2>{{time.game_time}} [ {{request.user}} ]</h2>
                         <a onclick="saveDataToViews()" href="#" style="position: absolute; top: 0; right: 0;" class="btn btn-success" title="Save">
                             <span class="sr-only">Save</span>
                             <i class="fa fa-save"></i>
                         </a>
-
+                       
                     </div>
                     
                     <form method="POST" id="submit-form">
                         {% csrf_token %}
-                        <div class="body" style="padding: 10px !important; background-color: #ff75c8;">
+                        <div class="body" style="padding: 10px !important; ">
                             <div class="row clearfix">
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
@@ -314,7 +314,7 @@
     </div>
 
 </div>
-<nav class="navbar-bottom" >
+<nav class="navbar-bottom l-blue" >
     <table>
         <thead>
             <tr>
@@ -2544,6 +2544,24 @@
     </script>
 
 
+<script>
+ var i = 0;
 
+function change() {
+  var doc = document.getElementById("background");
+  var color = [ "Violet","PaleGreen","Orange", "Tomato"];
+  doc.style.backgroundColor = color[i];
+  i = (i + 1) % color.length;
+}
+
+// Set the initial color to yellow
+document.getElementById("background").style.backgroundColor = "Violet";
+
+// Call the change function immediately after the script loads
+change();
+
+// Set interval for subsequent color changes every 30 minutes
+setInterval(change, 3600000);
+</script>
 
 {% endblock %}

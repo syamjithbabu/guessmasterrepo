@@ -9,7 +9,7 @@ class PlayTime(models.Model):
     game_time = models.TimeField()
 
     def __str__(self):
-        return str(self.start_time)
+        return str(self.game_time)
 
 class AgentPackage(models.Model):
     agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
