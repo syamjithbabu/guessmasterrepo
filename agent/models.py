@@ -83,6 +83,9 @@ class Bill(models.Model):
     total_d_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_count = models.DecimalField(max_digits=10, decimal_places=0)
     win_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    total_c_amount_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    total_d_amount_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    win_amount_admin = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

@@ -430,8 +430,7 @@ def sales_report(request):
         totals = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
         select_dealer = 'all'
         select_time = 'all'
-        context = {
-            
+        context = {   
             'dealers' : dealers,
             'times' : times,
             'agent_bills' : agent_bills,
@@ -440,8 +439,7 @@ def sales_report(request):
             'selected_dealer' : select_dealer,
             'selected_time' : select_time,
             'agent_games' : agent_games,
-            'dealer_games' : dealer_games,
-            
+            'dealer_games' : dealer_games,    
         }
     return render(request,'agent/sales_report.html',context)
 

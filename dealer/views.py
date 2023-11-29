@@ -4,7 +4,7 @@ from django.shortcuts import render,get_object_or_404,redirect
 import pytz
 from website.decorators import dealer_required, agent_required
 from django.contrib.auth.decorators import login_required
-from adminapp.models import PlayTime, Result, Winning, BlockedNumber, GameLimit
+from adminapp.models import PlayTime, Result, Winning, BlockedNumber, GameLimit, AgentPackage
 from agent.models import DealerPackage,Bill,DealerCollectionReport,AgentGame,AgentGameTest,DealerLimit
 from website.models import Dealer
 from dealer.models import DealerGame,DealerGameTest
@@ -784,6 +784,28 @@ def submit_data(request):
     current_date = timezone.now().astimezone(ist).date()
     dealer_obj = Dealer.objects.get(user=request.user)
     agent_obj = dealer_obj.agent
+    agent_package = AgentPackage.objects.get(agent=agent_obj)
+    print(agent_package)
+    amounts = {
+        "A" : agent_package.single_rate,
+        "B" : agent_package.single_rate,
+        "C" : agent_package.single_rate,
+        "AB" : agent_package.double_rate,
+        "BC" : agent_package.double_rate,
+        "AC" : agent_package.double_rate,
+        "Super" : agent_package.super_rate,
+        "Box" : agent_package.box_rate,
+    }
+    dcs = {
+        "A" : agent_package.single_dc,
+        "B" : agent_package.single_dc,
+        "C" : agent_package.single_dc,
+        "AB" : agent_package.double_dc,
+        "BC" : agent_package.double_dc,
+        "AC" : agent_package.double_dc,
+        "Super" : agent_package.super_dc,
+        "Box" : agent_package.box_dc,
+    }
     if request.method == 'POST':
         data_list = json.loads(request.body, object_pairs_hook=OrderedDict)
         for data in data_list:
@@ -793,22 +815,24 @@ def submit_data(request):
             value3 = data.get('value3')
             value4 = data.get('value4')
             timeId = data.get('timeId')
-            print(timeId)
 
-            print(data)
+            print(value2)
+
+            value3_admin = float(value2) * float(amounts[link_text])
+            print(value3_admin, "dealer game for admin")
+
+            value4_admin = float(value2) * float(amounts[link_text] + dcs[link_text])
+            print(value4_admin, "dealer game for admin")
 
             time = get_object_or_404(PlayTime,id=timeId)
-            print(time,"time")
 
             try:
                 limit = DealerLimit.objects.get(dealer=dealer_obj)
-                print(limit.daily_limit,"daily limit")
             except:
                 pass
 
             try:
                 blocked_numbers = BlockedNumber.objects.filter(Q(from_date__lte=current_date) & Q(to_date__gte=current_date),time=time, LSK=link_text, number=value1)
-                print(blocked_numbers,"blocked numbers@@@")
                 if blocked_numbers:
                     print("it is blocked")
                     agent_game_count = AgentGame.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count')) or {'total_count': 0}
@@ -957,13 +981,15 @@ def submit_data(request):
                     number=value1,
                     count=value2,
                     d_amount=value3,
-                    c_amount=value4
+                    c_amount=value4,
+                    d_amount_admin=value3_admin,
+                    c_amount_admin=value4_admin
                 )
             dealer_game_test.save()
-            total_c_amount = DealerGameTest.objects.filter(dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            total_c_amount = DealerGameTest.objects.filter(dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
             print(total_c_amount,"@@@@@")
             try:
-                dealer_total_c_amount = DealerGame.objects.filter(dealer=dealer_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                dealer_total_c_amount = DealerGame.objects.filter(dealer=dealer_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
                 print(dealer_total_c_amount,"$$$$$$")
                 print(dealer_game_test.id,"id")
                 if total_c_amount + dealer_total_c_amount > limit.daily_limit:
@@ -982,7 +1008,7 @@ def submit_data(request):
         
     try:
 
-        dealer_game_test = DealerGameTest.objects.filter(dealer=dealer_obj,time=time, date=current_date)
+        dealer_game_test = DealerGameTest.objects.filter(dealer=dealer_obj, time=time, date=current_date)
 
         dealer_game_records = []
 
@@ -997,6 +1023,8 @@ def submit_data(request):
                 count=test_record.count,
                 d_amount=test_record.d_amount,
                 c_amount=test_record.c_amount,
+                d_amount_admin=test_record.d_amount_admin,
+                c_amount_admin=test_record.c_amount_admin,
                 combined=False
             )
             dealer_game_records.append(dealer_game_record)
@@ -1005,6 +1033,7 @@ def submit_data(request):
 
         dealer_game_test.delete()
 
+        
         # Check if there are AgentGame records
 
         if dealer_game_records:
@@ -1013,6 +1042,9 @@ def submit_data(request):
             total_c_amount = sum([record.c_amount for record in dealer_game_records])
             total_d_amount = sum([record.d_amount for record in dealer_game_records])
             total_count = sum([record.count for record in dealer_game_records])
+
+            total_c_amount_admin = sum([record.c_amount_admin for record in dealer_game_records])
+            total_d_amount_admin = sum([record.d_amount_admin for record in dealer_game_records])
 
             dealer_obj = dealer_game_records[0].dealer.user
 
@@ -1024,6 +1056,8 @@ def submit_data(request):
                 total_c_amount=total_c_amount,
                 total_d_amount=total_d_amount,
                 total_count=total_count,
+                total_c_amount_admin=total_c_amount_admin,
+                total_d_amount_admin=total_d_amount_admin,
             )
             # Add related AgentGame records to the Bill
             bill.dealer_games.add(*dealer_game_records)

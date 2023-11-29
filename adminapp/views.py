@@ -14,16 +14,17 @@ from pytz import timezone as pytz_timezone
 import pytz
 from django.utils import timezone
 from agent.models import Bill
-from django.db.models import Sum
 from django.db.models import Q
 import itertools
-from django.db.models import F, Value, CharField, Case, When, Count
+from django.db.models import Sum, F, DecimalField
+from django.db.models.functions import Coalesce
 from collections import defaultdict
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.http import JsonResponse
 from django.contrib.auth.forms import AdminPasswordChangeForm,SetPasswordForm
 from django.contrib.auth.forms import AdminPasswordChangeForm,PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+
 
 
 # Create your views here.
@@ -543,23 +544,32 @@ def add_result(request):
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
                                     matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                                    agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
+                                    print(agent_package,"this is got")
                                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                     prize = ((dealer_package.box_series_prize)*(game.count))
                                     commission = ((dealer_package.box_series_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.box_series_prize)*(game.count))
+                                    commission_admin = ((agent_package.box_series_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    box_series_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                    box_series_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                         elif len(combinations) == 3:
                             for combination in combinations:
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
                                     matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                                    agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                     prize = ((dealer_package.box_series_prize)*(game.count))*2
                                     commission = ((dealer_package.box_series_dc)*(game.count))*2
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.box_series_prize)*(game.count))*2
+                                    commission_admin = ((agent_package.box_series_dc)*(game.count))*2
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    box_series_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                    box_series_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.number in result.__dict__.values():
                         matched_field = [field for field, value in result.__dict__.items() if value == game.number]
                         if matched_field:
@@ -567,93 +577,134 @@ def add_result(request):
                             matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                             print(matching_bills.id)
                             print(f"Dealer game number {game.number} matched with Result field: {matched_field[0]} for Dealer: {game.dealer}")
+                            agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
+                            print(agent_package,"this is got")
                             dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                             if game.LSK == "Super":
                                 if matched_field[0] == 'first':
                                     prize = ((dealer_package.first_prize)*(game.count))
                                     commission = ((dealer_package.first_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.first_prize)*(game.count))
+                                    commission_admin = ((agent_package.first_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                                 elif matched_field[0] == 'second':
                                     prize = ((dealer_package.second_prize)*(game.count))
                                     commission = ((dealer_package.second_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.second_prize)*(game.count))
+                                    commission_admin = ((agent_package.second_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    second_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                    second_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                                 elif matched_field[0] == 'third':
                                     prize = ((dealer_package.third_prize)*(game.count))
                                     commission = ((dealer_package.third_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.third_prize)*(game.count))
+                                    commission_admin = ((agent_package.third_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    third_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
+                                    third_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                                 elif matched_field[0] == 'fourth':
                                     prize = ((dealer_package.fourth_prize)*(game.count))
                                     commission = ((dealer_package.fourth_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.fourth_prize)*(game.count))
+                                    commission_admin = ((agent_package.fourth_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    fourth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
+                                    fourth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                                 elif matched_field[0] == 'fifth':
                                     prize = ((dealer_package.fifth_prize)*(game.count))
                                     commission = ((dealer_package.fifth_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.fifth_prize)*(game.count))
+                                    commission_admin = ((agent_package.fifth_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    fifth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
+                                    fifth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                                 else :
                                     prize = ((dealer_package.guarantee_prize)*(game.count))
                                     commission = ((dealer_package.guarantee_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             elif game.LSK == "Box":
                                 if matched_field[0] == 'first':
                                     prize = ((dealer_package.box_first_prize)*(game.count))
                                     commission = ((dealer_package.box_first_prize_dc)*(game.count))
                                     total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.box_first_prize)*(game.count))
+                                    commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
                                     print(prize,commission,total)
-                                    box_first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                    box_first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.single1_prize)*(game.count))
+                        commission_admin = ((agent_package.single1_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'B' and result.first[1] == game.number[0]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.single1_prize)*(game.count))
+                        commission_admin = ((agent_package.single1_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'C' and result.first[2] == game.number[0]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.single1_prize)*(game.count))
+                        commission_admin = ((agent_package.single1_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'AB' and result.first[:2] == game.number[:2]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.double2_prize)*(game.count))
+                        commission_admin = ((agent_package.double2_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.double2_prize)*(game.count))
+                        commission_admin = ((agent_package.double2_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
-                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                        prize_admin = ((agent_package.double2_prize)*(game.count))
+                        commission_admin = ((agent_package.double2_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
     context = {
         'timings' : timings
     }
@@ -717,7 +768,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -729,8 +780,8 @@ def sales_report(request):
                             print("Dealer D Amount of",bill.id," is" , game.d_amount)
                             print("Dealer C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     for bill in agent_bills:
                         for game in bill.agent_games.filter(LSK__in=lsk_value):
                             print("Agent Count of",bill.id," is" , game.count)
@@ -765,7 +816,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -800,7 +851,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(dealer__agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(dealer__agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -812,8 +863,8 @@ def sales_report(request):
                             print("Game D Amount of",bill.id," is" , game.d_amount)
                             print("Game C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     for bill in agent_bills:
                         for game in bill.agent_games.filter(LSK__in=lsk_value):
                             print("Game Count of",bill.id," is" , game.count)
@@ -849,7 +900,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -883,7 +934,7 @@ def sales_report(request):
                     dealer_games = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
@@ -895,8 +946,8 @@ def sales_report(request):
                             print("Dealer D Amount of",bill.id," is" , game.d_amount)
                             print("Dealer C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     context = {
                         'agents' : agents,
                         'times': times,
@@ -919,7 +970,7 @@ def sales_report(request):
                     dealer_games = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time).order_by('id')
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
@@ -950,7 +1001,7 @@ def sales_report(request):
                     dealer_games = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
-                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
@@ -962,8 +1013,8 @@ def sales_report(request):
                             print("Game D Amount of",bill.id," is" , game.d_amount)
                             print("Game C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     context = {
                         'agents' : agents,
                         'times': times,
@@ -989,7 +1040,7 @@ def sales_report(request):
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     print(dealer_bills)
-                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
@@ -1023,7 +1074,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -1035,8 +1086,8 @@ def sales_report(request):
                             print("Game D Amount of",bill.id," is" , game.d_amount)
                             print("Game C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     for bill in agent_bills:
                         for game in bill.agent_games.filter(LSK__in=lsk_value):
                             print("Game Count of",bill.id," is" , game.count)
@@ -1070,7 +1121,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -1103,7 +1154,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -1115,8 +1166,8 @@ def sales_report(request):
                             print("Game D Amount of",bill.id," is" , game.d_amount)
                             print("Game C Amount of",bill.id," is" , game.c_amount)
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     for bill in agent_bills:
                         for game in bill.agent_games.filter(LSK__in=lsk_value):
                             print("Game Count of",bill.id," is" , game.count)
@@ -1151,7 +1202,7 @@ def sales_report(request):
                     agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
@@ -1180,7 +1231,17 @@ def sales_report(request):
         dealer_games = DealerGame.objects.filter(date=current_date).all().order_by('id')
         agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date=current_date).distinct()
         dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date=current_date).distinct()
-        totals = Bill.objects.filter(date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+
+        agent_bills_totals = agent_bills.aggregate(total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'),total_count=Sum('total_count'))
+
+        dealer_bills_totals = dealer_bills.aggregate(total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'),total_count=Sum('total_count'))
+
+        totals = {
+            'total_c_amount': agent_bills_totals['total_c_amount'] + dealer_bills_totals['total_c_amount'],
+            'total_d_amount': agent_bills_totals['total_d_amount'] + dealer_bills_totals['total_d_amount'],
+            'total_count': agent_bills_totals['total_count'] + dealer_bills_totals['total_count'],
+        }
+
         select_agent = 'all'
         select_time = 'all'
         context = {
@@ -1772,23 +1833,31 @@ def republish_results(request,id):
                             if combination == result.first:
                                 print(f"Combination {combination} matches the first field for Game {game.id}")
                                 matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                                agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                                 dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                 prize = ((dealer_package.box_series_prize)*(game.count))
                                 commission = ((dealer_package.box_series_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.box_series_prize)*(game.count))
+                                commission_admin = ((agent_package.box_series_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                box_series_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                box_series_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif len(combinations) == 3:
                         for combination in combinations:
                             if combination == result.first:
                                 print(f"Combination {combination} matches the first field for Game {game.id}")
                                 matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                                agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                                 dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                 prize = ((dealer_package.box_series_prize)*(game.count))*2
                                 commission = ((dealer_package.box_series_dc)*(game.count))*2
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.box_series_prize)*(game.count))*2
+                                commission_admin = ((agent_package.box_series_dc)*(game.count))*2
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                box_series_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                box_series_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.number in result.__dict__.values():
                     matched_field = [field for field, value in result.__dict__.items() if value == game.number]
                     if matched_field:
@@ -1796,93 +1865,133 @@ def republish_results(request,id):
                         matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         print(matching_bills.id)
                         print(f"Dealer game number {game.number} matched with Result field: {matched_field[0]} for Dealer: {game.dealer}")
+                        agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         if game.LSK == "Super":
                             if matched_field[0] == 'first':
                                 prize = ((dealer_package.first_prize)*(game.count))
                                 commission = ((dealer_package.first_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.first_prize)*(game.count))
+                                commission_admin = ((agent_package.first_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             elif matched_field[0] == 'second':
                                 prize = ((dealer_package.second_prize)*(game.count))
                                 commission = ((dealer_package.second_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.second_prize)*(game.count))
+                                commission_admin = ((agent_package.second_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                second_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                second_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             elif matched_field[0] == 'third':
                                 prize = ((dealer_package.third_prize)*(game.count))
                                 commission = ((dealer_package.third_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.third_prize)*(game.count))
+                                commission_admin = ((agent_package.third_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                third_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
+                                third_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             elif matched_field[0] == 'fourth':
                                 prize = ((dealer_package.fourth_prize)*(game.count))
                                 commission = ((dealer_package.fourth_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.fourth_prize)*(game.count))
+                                commission_admin = ((agent_package.fourth_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                fourth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
+                                fourth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             elif matched_field[0] == 'fifth':
                                 prize = ((dealer_package.fifth_prize)*(game.count))
                                 commission = ((dealer_package.fifth_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.fifth_prize)*(game.count))
+                                commission_admin = ((agent_package.fifth_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                fifth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
+                                fifth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                             else :
                                 prize = ((dealer_package.guarantee_prize)*(game.count))
                                 commission = ((dealer_package.guarantee_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                         elif game.LSK == "Box":
                             if matched_field[0] == 'first':
                                 prize = ((dealer_package.box_first_prize)*(game.count))
                                 commission = ((dealer_package.box_first_prize_dc)*(game.count))
                                 total = ((prize)+(commission))
+                                prize_admin = ((agent_package.box_first_prize)*(game.count))
+                                commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
+                                total_admin = ((prize_admin)+(commission_admin))
                                 print(prize,commission,total)
-                                box_first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                box_first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.single1_prize)*(game.count))
                     commission = ((dealer_package.single1_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.single1_prize)*(game.count))
+                    commission_admin = ((agent_package.single1_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'B' and result.first[1] == game.number[0]:
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.single1_prize)*(game.count))
                     commission = ((dealer_package.single1_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.single1_prize)*(game.count))
+                    commission_admin = ((agent_package.single1_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'C' and result.first[2] == game.number[0]:
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.single1_prize)*(game.count))
                     commission = ((dealer_package.single1_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.single1_prize)*(game.count))
+                    commission_admin = ((agent_package.single1_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'AB' and result.first[:2] == game.number[:2]:
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.double2_prize)*(game.count))
                     commission = ((dealer_package.double2_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.double2_prize)*(game.count))
+                    commission_admin = ((agent_package.double2_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.double2_prize)*(game.count))
                     commission = ((dealer_package.double2_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.double2_prize)*(game.count))
+                    commission_admin = ((agent_package.double2_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                     prize = ((dealer_package.double2_prize)*(game.count))
                     commission = ((dealer_package.double2_dc)*(game.count))
                     total = ((prize)+(commission))
-                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                    prize_admin = ((agent_package.double2_prize)*(game.count))
+                    commission_admin = ((agent_package.double2_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
         return redirect('adminapp:index')
     print(field_values)
     context = {
@@ -1951,18 +2060,27 @@ def daily_report(request):
                 bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date],time_id=select_time).all()
                 print(bills)
                 for bill in bills:
+                    user = bill.user
                     print(bill.id,"this is the id")
                     winnings = Winning.objects.filter(Q(agent=agent_instance) | Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,bill=bill.id)
                     print(winnings)
-                    total_winning = sum(winning.total for winning in winnings)
-                    bill.win_amount += total_winning
-                    if winnings != 0:
+                    if user.is_agent:
+                        total_winning = sum(winning.total for winning in winnings)
+                        bill.win_amount += total_winning
+                    else:
+                        total_winning = sum(winning.total_admin for winning in winnings)
+                        bill.win_amount += total_winning
+                    if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
+                    elif winnings != 0 and user.is_dealer:
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
                         bill.total_d_amount = total_winning - bill.total_c_amount
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                    total_c_amount = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount'))
+                    agent_total_c_amount = Bill.objects.filter(Q(user__agent=agent_instance),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount'))['total_c_amount'] or 0
+                    dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
+                    total_c_amount = agent_total_c_amount + dealer_total_c_amount
                 context = {
                         'agents' : agents,
                         'dealers' : dealers,
@@ -1984,19 +2102,27 @@ def daily_report(request):
                 bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date]).all()
                 print(bills)
                 for bill in bills:
+                    user = bill.user
                     winnings = Winning.objects.filter(Q(agent=agent_instance) | Q(dealer__agent=agent_instance),bill=bill.id,date__range=[from_date, to_date])
                     print(winnings)
                     print("hello")
-                    total_winning = sum(winning.total for winning in winnings)
-                    print(total_winning)
-                    bill.win_amount += total_winning
-                    if winnings != 0:
+                    if user.is_agent:
+                        total_winning = sum(winning.total for winning in winnings)
+                        bill.win_amount += total_winning
+                    else:
+                        total_winning = sum(winning.total_admin for winning in winnings)
+                        bill.win_amount += total_winning
+                    if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
+                    elif winnings != 0 and user.is_dealer:
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
                         bill.total_d_amount = total_winning - bill.total_c_amount
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                    total_c_amount = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))
+                    agent_total_c_amount = Bill.objects.filter(Q(user__agent=agent_instance),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))['total_c_amount'] or 0
+                    dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_instance),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
+                    total_c_amount = agent_total_c_amount + dealer_total_c_amount
                 context = {
                         'agents' : agents,
                         'dealers' : dealers,
@@ -2023,15 +2149,15 @@ def daily_report(request):
                     print(bill.id,"this is the id")
                     winnings = Winning.objects.filter(Q(dealer=dealer_instance),date__range=[from_date, to_date],time=select_time,bill=bill.id)
                     print(winnings)
-                    total_winning = sum(winning.total for winning in winnings)
+                    total_winning = sum(winning.total_admin for winning in winnings)
                     bill.win_amount += total_winning
                     if winnings != 0:
-                        bill.total_d_amount = bill.total_c_amount - total_winning
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
-                        bill.total_d_amount = total_winning - bill.total_c_amount
+                        bill.total_d_amount = total_winning - bill.total_c_amount_admin
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                    total_c_amount = Bill.objects.filter(Q(user__dealer=dealer_instance),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount'))
+                    total_c_amount = Bill.objects.filter(Q(user__dealer=dealer_instance),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
                 context = {
                         'agents' : agents,
                         'dealers' : dealers,
@@ -2056,16 +2182,16 @@ def daily_report(request):
                     winnings = Winning.objects.filter(Q(dealer=dealer_instance),bill=bill.id,date__range=[from_date, to_date])
                     print(winnings)
                     print("hello")
-                    total_winning = sum(winning.total for winning in winnings)
+                    total_winning = sum(winning.total_admin for winning in winnings)
                     print(total_winning)
                     bill.win_amount += total_winning
                     if winnings != 0:
-                        bill.total_d_amount = bill.total_c_amount - total_winning
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
-                        bill.total_d_amount = total_winning - bill.total_c_amount
+                        bill.total_d_amount = total_winning - bill.total_c_amount_admin
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                    total_c_amount = Bill.objects.filter(Q(user__dealer=dealer_instance),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))
+                    total_c_amount = Bill.objects.filter(Q(user__dealer=dealer_instance),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
                 context = {
                         'agents' : agents,
                         'dealers' : dealers,
@@ -2088,17 +2214,28 @@ def daily_report(request):
                 bills = Bill.objects.filter(date__range=[from_date, to_date],time_id=select_time).all()
                 print(bills)
                 for bill in bills:
+                    user = bill.user
                     winnings = Winning.objects.filter(date__range=[from_date, to_date],bill=bill.id,time=select_time)
                     print(winnings)
-                    total_winning = sum(winning.total for winning in winnings)
-                    bill.win_amount += total_winning
-                    if winnings != 0:
+                    if user.is_agent:
+                        total_winning = sum(winning.total for winning in winnings)
+                        bill.win_amount += total_winning
+                    else:
+                        total_winning = sum(winning.total_admin for winning in winnings)
+                        bill.win_amount += total_winning
+                    if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
+                        print(bill.total_d_amount)
+                    elif winnings != 0 and user.is_dealer:
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
+                        print(bill.total_d_amount)
                     else:
                         bill.total_d_amount = total_winning - bill.total_c_amount
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                    total_c_amount = Bill.objects.filter(date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount'))
+                    agent_total_c_amount = Bill.objects.filter(user__is_agent=True,date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount'))['total_c_amount'] or 0
+                    dealer_total_c_amount = Bill.objects.filter(user__is_dealer=True,date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
+                    total_c_amount = agent_total_c_amount + dealer_total_c_amount
                 context = {
                         'agents' : agents,
                         'times' : times,
@@ -2119,17 +2256,28 @@ def daily_report(request):
                 print(bills)
                 print("***")
                 for bill in bills:
+                    user = bill.user
                     winnings = Winning.objects.filter(bill=bill.id,date__range=[from_date, to_date])
                     print(winnings)
-                    total_winning = sum(winning.total for winning in winnings)
-                    bill.win_amount += total_winning
-                    if winnings != 0:
+                    if user.is_agent:
+                        total_winning = sum(winning.total for winning in winnings)
+                        bill.win_amount += total_winning
+                    else:
+                        total_winning = sum(winning.total_admin for winning in winnings)
+                        bill.win_amount += total_winning
+                    if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
+                        print(bill.total_d_amount)
+                    elif winnings != 0 and user.is_dealer:
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
+                        print(bill.total_d_amount)
                     else:
                         bill.total_d_amount = total_winning - bill.total_c_amount
                     total_winning = sum(bill.win_amount for bill in bills)
                     total_balance = sum(bill.total_d_amount for bill in bills)
-                total_c_amount = Bill.objects.filter(date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))
+                agent_total_c_amount = Bill.objects.filter(user__is_agent=True,date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount'))['total_c_amount'] or 0
+                dealer_total_c_amount = Bill.objects.filter(user__is_dealer=True,date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
+                total_c_amount = agent_total_c_amount + dealer_total_c_amount
                 select_agent = 'all'
                 select_time = 'all'
                 context = {
@@ -2152,17 +2300,34 @@ def daily_report(request):
         print(bills)
         print("###")
         for bill in bills:
+            user = bill.user
+            if user.is_agent:
+                print("agent")
+            else:
+                print("dealer")
             winnings = Winning.objects.filter(bill=bill.id,date=current_date)
             print(winnings)
-            total_winning = sum(winning.total for winning in winnings)
-            bill.win_amount += total_winning
-            if winnings != 0:
+            if user.is_agent:
+                total_winning = sum(winning.total for winning in winnings)
+                bill.win_amount += total_winning
+            else:
+                total_winning = sum(winning.total_admin for winning in winnings)
+                bill.win_amount += total_winning
+            if winnings != 0 and user.is_agent:
                 bill.total_d_amount = bill.total_c_amount - total_winning
+                print(bill.total_d_amount)
+            elif winnings != 0 and user.is_dealer:
+                bill.total_d_amount = bill.total_c_amount_admin - total_winning
+                print(bill.total_d_amount)
             else:
                 bill.total_d_amount = total_winning - bill.total_c_amount
             total_winning = sum(bill.win_amount for bill in bills)
             total_balance = sum(bill.total_d_amount for bill in bills)
-        total_c_amount = Bill.objects.filter(date=current_date).aggregate(total_c_amount=Sum('total_c_amount'))
+        agent_total_c_amount = Bill.objects.filter(user__is_agent=True,date=current_date).aggregate(total_c_amount=Sum('total_c_amount'))['total_c_amount'] or 0
+        dealer_total_c_amount = Bill.objects.filter(user__is_dealer=True,date=current_date).aggregate(total_c_amount=Sum('total_c_amount_admin'))['total_c_amount'] or 0
+        total_c_amount = agent_total_c_amount + dealer_total_c_amount
+        print(total_c_amount,"total sale amount")
+        print(total_balance,"total balance")
         select_agent = 'all'
         select_time = 'all'
         context = {
@@ -2280,13 +2445,13 @@ def countsales_report(request):
     lsk_value1 = ['A','B','C']
     lsk_value2 = ['AB','BC','AC']
     agent_super = AgentGame.objects.filter(date=current_date, LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-    dealer_super = DealerGame.objects.filter(date=current_date, LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_super = DealerGame.objects.filter(date=current_date, LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
     agent_box = AgentGame.objects.filter(date=current_date, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-    dealer_box = DealerGame.objects.filter(date=current_date, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_box = DealerGame.objects.filter(date=current_date, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
     agent_single = AgentGame.objects.filter(date=current_date, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-    dealer_single = DealerGame.objects.filter(date=current_date, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_single = DealerGame.objects.filter(date=current_date, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
     agent_double = AgentGame.objects.filter(date=current_date, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-    dealer_double = DealerGame.objects.filter(date=current_date, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+    dealer_double = DealerGame.objects.filter(date=current_date, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
     super_totals = {
         'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
         'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
@@ -2320,13 +2485,13 @@ def countsales_report(request):
         if select_agent != 'all':
             if select_time != 'all':
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_super = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_box = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_single = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_double = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 super_totals = {
                     'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
                     'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
@@ -2365,13 +2530,13 @@ def countsales_report(request):
                 return render(request,'adminapp/countsales_report.html',context)
             else:
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_super = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_box = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_single = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],agent__user=select_agent, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_double = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 super_totals = {
                     'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
                     'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
@@ -2411,13 +2576,13 @@ def countsales_report(request):
         else:
             if select_time != 'all':
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_super = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_box = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_box = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_single = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_single = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_double = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_double = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(time=select_time,date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 super_totals = {
                     'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
                     'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
@@ -2456,13 +2621,13 @@ def countsales_report(request):
                 return render(request,'adminapp/countsales_report.html',context)
             else:
                 agent_super = AgentGame.objects.filter(date__range=[from_date, to_date],LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_super = DealerGame.objects.filter(date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_super = DealerGame.objects.filter(date__range=[from_date, to_date], LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_box = AgentGame.objects.filter(date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_box = DealerGame.objects.filter(date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_box = DealerGame.objects.filter(date__range=[from_date, to_date], LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_single = AgentGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_single = DealerGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_single = DealerGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 agent_double = AgentGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
-                dealer_double = DealerGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                dealer_double = DealerGame.objects.filter(date__range=[from_date, to_date], LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount_admin'))
                 super_totals = {
                     'total_count': (agent_super['total_count'] or 0) + (dealer_super['total_count'] or 0),
                     'total_amount': (agent_super['total_amount'] or 0) + (dealer_super['total_amount'] or 0)
@@ -2538,14 +2703,31 @@ def winning_report(request):
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
                 print(winnings)
-                aggregated_winnings = winnings.values('LSK', 'number').annotate(
+                agent_winnings = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
+                dealer_winnings = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
+                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
                     position=F('position'),
                 )
-                totals = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
+                    total_count=Sum('count'),
+                    total_commission=Sum('commission_admin'),
+                    total_prize=Sum('prize_admin'),
+                    total_net=Sum('total_admin'),
+                    position=F('position'),
+                )
+                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_totals = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_totals = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
+                totals = {
+                    'total_count': agent_totals['total_count'] + dealer_totals['total_count'],
+                    'total_commission': agent_totals['total_commission'] + dealer_totals['total_commission'],
+                    'total_rs': agent_totals['total_rs'] + dealer_totals['total_rs'],
+                    'total_net': agent_totals['total_net'] + dealer_totals['total_net'],
+                }
                 context = {
                     'times' : times,
                     'agents' : agents,
@@ -2560,15 +2742,33 @@ def winning_report(request):
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
-                print(winnings)
-                aggregated_winnings = winnings.values('LSK', 'number').annotate(
+                print("time only selected")
+                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,agent__isnull=False)
+                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__isnull=False)
+                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
                     position=F('position'),
                 )
-                totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
+                    total_count=Sum('count'),
+                    total_commission=Sum('commission_admin'),
+                    total_prize=Sum('prize_admin'),
+                    total_net=Sum('total_admin'),
+                    position=F('position'),
+                )
+                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
+                print(agent_totals)
+                totals = {
+                    'total_count': agent_totals['total_count'] + dealer_totals['total_count'],
+                    'total_commission': agent_totals['total_commission'] + dealer_totals['total_commission'],
+                    'total_rs': agent_totals['total_rs'] + dealer_totals['total_rs'],
+                    'total_net': agent_totals['total_net'] + dealer_totals['total_net'],
+                }
                 context = {
                     'times' : times,
                     'agents' : agents,
@@ -2587,14 +2787,31 @@ def winning_report(request):
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date])
                 print(winnings)
-                aggregated_winnings = winnings.values('LSK', 'number').annotate(
+                agent_winnings = Winning.objects.filter(date=current_date,agent__isnull=False)
+                dealer_winnings = Winning.objects.filter(date=current_date,dealer__isnull=False)
+                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
                     position=F('position'),
                 )
-                totals = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
+                    total_count=Sum('count'),
+                    total_commission=Sum('commission_admin'),
+                    total_prize=Sum('prize_admin'),
+                    total_net=Sum('total_admin'),
+                    position=F('position'),
+                )
+                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_totals = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_totals = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
+                totals = {
+                    'total_count': agent_totals['total_count'] + dealer_totals['total_count'],
+                    'total_commission': agent_totals['total_commission'] + dealer_totals['total_commission'],
+                    'total_rs': agent_totals['total_rs'] + dealer_totals['total_rs'],
+                    'total_net': agent_totals['total_net'] + dealer_totals['total_net'],
+                }
                 context = {
                     'times' : times,
                     'agents' : agents,
@@ -2610,14 +2827,31 @@ def winning_report(request):
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date])
                 print(winnings)
-                aggregated_winnings = winnings.values('LSK', 'number').annotate(
+                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False)
+                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False)
+                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
                     position=F('position'),
                 )
-                totals = Winning.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
+                    total_count=Sum('count'),
+                    total_commission=Sum('commission_admin'),
+                    total_prize=Sum('prize_admin'),
+                    total_net=Sum('total_admin'),
+                    position=F('position'),
+                )
+                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_totals = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+                dealer_totals = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
+                totals = {
+                    'total_count': agent_totals['total_count'] + dealer_totals['total_count'],
+                    'total_commission': agent_totals['total_commission'] + dealer_totals['total_commission'],
+                    'total_rs': agent_totals['total_rs'] + dealer_totals['total_rs'],
+                    'total_net': agent_totals['total_net'] + dealer_totals['total_net'],
+                }
                 context = {
                     'times' : times,
                     'agents' : agents,
@@ -2635,15 +2869,31 @@ def winning_report(request):
         try:
             agents = Agent.objects.filter().all()
             winnings = Winning.objects.filter(date=current_date)
-            aggregated_winnings = winnings.values('LSK', 'number').annotate(
+            agent_winnings = Winning.objects.filter(date=current_date,agent__isnull=False)
+            dealer_winnings = Winning.objects.filter(date=current_date,dealer__isnull=False)
+            agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
                 total_commission=Sum('commission'),
                 total_prize=Sum('prize'),
                 total_net=Sum('total'),
                 position=F('position'),
             )
-            print(aggregated_winnings)
-            totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
+                total_count=Sum('count'),
+                total_commission=Sum('commission_admin'),
+                total_prize=Sum('prize_admin'),
+                total_net=Sum('total_admin'),
+                position=F('position'),
+            )
+            aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+            agent_totals = Winning.objects.filter(date=current_date,agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            dealer_totals = Winning.objects.filter(date=current_date,dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
+            totals = {
+                'total_count': agent_totals['total_count'] + dealer_totals['total_count'],
+                'total_commission': agent_totals['total_commission'] + dealer_totals['total_commission'],
+                'total_rs': agent_totals['total_rs'] + dealer_totals['total_rs'],
+                'total_net': agent_totals['total_net'] + dealer_totals['total_net'],
+            }
         except:
             pass
         context = {
@@ -2801,7 +3051,24 @@ def edit_bill(request,id):
         print(search_dealer,"the user id")
         if search_dealer == 'all':
             bills = Bill.objects.filter(time_id=time,date=current_date).all()
-            totals = Bill.objects.filter(time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            agent_totals = Bill.objects.filter(user__is_agent=True, date=current_date, time_id=time).aggregate(
+                total_count_agent=Sum('total_count'),
+                total_c_amount_agent=Sum('total_c_amount'),
+                total_d_amount_agent=Sum('total_d_amount')
+            )
+
+            # Calculate total for dealers
+            dealer_totals = Bill.objects.filter(user__is_dealer=True, date=current_date, time_id=time).aggregate(
+                total_count_dealer=Sum('total_count'),
+                total_c_amount_dealer=Sum('total_c_amount_admin'),
+                total_d_amount_dealer=Sum('total_d_amount_admin')
+            )
+
+            totals = {
+                'total_count': agent_totals['total_count_agent'] + dealer_totals['total_count_dealer'],
+                'total_c_amount': agent_totals['total_c_amount_agent'] + dealer_totals['total_c_amount_dealer'],
+                'total_d_amount': agent_totals['total_d_amount_agent'] + dealer_totals['total_d_amount_dealer']
+            }
             agents = Agent.objects.filter().all()
             context = {
                 'bills' : bills,
@@ -2814,7 +3081,24 @@ def edit_bill(request,id):
             agent_instance = Agent.objects.get(id=search_dealer)
         try:
             bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).all()
-            totals = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            agent_totals = Bill.objects.filter(Q(user__agent=agent_instance), date=current_date, time_id=time).aggregate(
+                total_count_agent=Sum('total_count'),
+                total_c_amount_agent=Sum('total_c_amount'),
+                total_d_amount_agent=Sum('total_d_amount')
+            )
+
+            # Calculate total for dealers
+            dealer_totals = Bill.objects.filter(Q(user__dealer__agent=agent_instance), date=current_date, time_id=time).aggregate(
+                total_count_dealer=Sum('total_count'),
+                total_c_amount_dealer=Sum('total_c_amount_admin'),
+                total_d_amount_dealer=Sum('total_d_amount_admin')
+            )
+
+            totals = {
+                'total_count': agent_totals['total_count_agent'] + dealer_totals['total_count_dealer'],
+                'total_c_amount': agent_totals['total_c_amount_agent'] + dealer_totals['total_c_amount_dealer'],
+                'total_d_amount': agent_totals['total_d_amount_agent'] + dealer_totals['total_d_amount_dealer']
+            }
             agents = Agent.objects.filter().all()
             context = {
                 'bills' : bills,
@@ -2839,7 +3123,24 @@ def edit_bill(request,id):
             print("this")
             bills = Bill.objects.filter(date=current_date,time_id=time).all()
             print(bills)
-            totals = Bill.objects.filter(date=current_date,time_id=time).aggregate(total_count=Sum('total_count'),total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'))
+            agent_totals = Bill.objects.filter(user__is_agent=True, date=current_date, time_id=time).aggregate(
+                total_count_agent=Sum('total_count'),
+                total_c_amount_agent=Sum('total_c_amount'),
+                total_d_amount_agent=Sum('total_d_amount')
+            )
+
+            # Calculate total for dealers
+            dealer_totals = Bill.objects.filter(user__is_dealer=True, date=current_date, time_id=time).aggregate(
+                total_count_dealer=Sum('total_count'),
+                total_c_amount_dealer=Sum('total_c_amount_admin'),
+                total_d_amount_dealer=Sum('total_d_amount_admin')
+            )
+
+            totals = {
+                'total_count': agent_totals['total_count_agent'] + dealer_totals['total_count_dealer'],
+                'total_c_amount': agent_totals['total_c_amount_agent'] + dealer_totals['total_c_amount_dealer'],
+                'total_d_amount': agent_totals['total_d_amount_agent'] + dealer_totals['total_d_amount_dealer']
+            }
             agents = Agent.objects.filter().all()
             context = {
                 'bills' : bills,
@@ -3081,7 +3382,9 @@ def balance_report(request):
             agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=select_agent)
             dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=select_agent)
             collection = CollectionReport.objects.filter(date__range=[from_date, to_date], agent=select_agent)
-            winning = Winning.objects.filter(Q(agent=select_agent) | Q(dealer__agent=select_agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+            agent_winning = Winning.objects.filter(Q(agent=select_agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+            dealer_winning = Winning.objects.filter(Q(dealer__agent=select_agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+            winning = agent_winning + dealer_winning
             agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
             dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
             from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
@@ -3116,8 +3419,9 @@ def balance_report(request):
                 agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=agent)
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=agent)
                 collection = CollectionReport.objects.filter(date__range=[from_date, to_date], agent=agent)
-                winning = Winning.objects.filter(Q(agent=agent) | Q(dealer__agent=agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
-                print(winning)
+                agent_winning = Winning.objects.filter(Q(agent=agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+                dealer_winning = Winning.objects.filter(Q(dealer__agent=agent),date__range=[from_date, to_date]).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+                winning = agent_winning + dealer_winning
                 agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
                 dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
                 from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
@@ -3155,10 +3459,12 @@ def balance_report(request):
         agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
         dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
         collection = CollectionReport.objects.filter(date=current_date, agent=agent)
-        winning = Winning.objects.filter(Q(agent=agent) | Q(dealer__agent=agent),date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        agent_winning = Winning.objects.filter(Q(agent=agent),date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        dealer_winning = Winning.objects.filter(Q(dealer__agent=agent),date=current_date).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+        winning = agent_winning + dealer_winning
         print(winning)
         agent_total_d_amount = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
-        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount_admin'))['dealer_total_d_amount'] or 0
         from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         total_collection_amount = from_agent - to_agent
@@ -3313,9 +3619,11 @@ def total_balance(request):
     report_data = []
     for agent in agents:
         agent_sale_amount = AgentGame.objects.filter(agent=agent).aggregate(total_sale_amount=Sum('c_amount'))['total_sale_amount'] or 0
-        dealer_sale_amount = DealerGame.objects.filter(agent=agent).aggregate(total_sale_amount=Sum('c_amount'))['total_sale_amount'] or 0
+        dealer_sale_amount = DealerGame.objects.filter(agent=agent).aggregate(total_sale_amount=Sum('c_amount_admin'))['total_sale_amount'] or 0
         collection = CollectionReport.objects.filter(agent=agent)
-        winning = Winning.objects.filter(Q(agent=agent) | Q(dealer__agent=agent)).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        agent_winning = Winning.objects.filter(Q(agent=agent)).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        dealer_winning = Winning.objects.filter(Q(dealer__agent=agent)).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+        winning = agent_winning + dealer_winning
         sale_amount = agent_sale_amount + dealer_sale_amount
         from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
         to_agent = collection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0

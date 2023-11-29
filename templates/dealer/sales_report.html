@@ -33,103 +33,6 @@
     }
 
 
-
-/* print start here */
-
-
-@media screen {
-
-
-#dateprint {
-    display: none;
-}
-
-#totalcount {
-    display: none;
-}
-
-}
-
-#printThisDiv {
-display: none;
-}
-
-
-
-
-
-@media print {
-
-#header,
-#left-sidebar,
-.navbar-toggler,
-.a,
-.serch,
-.header,
-.button,
-#printbutton {
-    display: none !important;
-    content: none !important;
-}
-
-.page-titles,
-h1,
-h2,
-h3 {
-    display: none;
-
-}
-
-.page-wrapper>.content {
-    padding: 0 !important;
-    padding-left: 0%;
-    padding-right: 0%;
-}
-
-.page-wrapper {
-    padding-top: 0%;
-}
-
-#table,
-th,
-td {
-    table-layout: fixed;
-    size: 36cm;
-    width: 142%;
-
-    table-layout: auto;
-    border: 1px solid black;
-    border-collapse: collapse;
-
-
-}
-
-#dateprint {
-    display: block;
-}
-
-#total {
-    display: block;
-}
-
-.page-main-content {
-    padding-top: 0px;
-}
-
-
-
-#btotal {
-    display: none;
-}
-
-th,
-.td {
-    text-align: center;
-}
-
-
-}
-/* print css end */
 </style>
 
 <div id="main-content">
@@ -199,9 +102,7 @@ th,
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="printbutton"
-                                        onclick="document.title = 'Sales Report- {{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}';printDiv('printThisDiv')" type="submit">Download</button>
-
+                                        <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()" type="submit">Download</button>
 
                                     </div>
                                 </div>
@@ -268,11 +169,7 @@ th,
                                     {% else %}
                                     {% endif %}
                                 </table>
-                                <div class="col-md-12 text-right" id="totalcount">
-                                    <h6>Total Count:{{totals.total_count}}</h6>
-                                    <h6>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h6>
-                                    <h6>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h6>
-                                </div>
+                                
                             </div>
                           
                            
@@ -312,7 +209,7 @@ th,
 </nav>
 
 
-<div id="printThisDiv">
+<div id="pdftab">
     <h3 style="display: inline-block">Sales Report</h3>
     <h3 id="demo" style="display: inline-block"></h3>
     <h3 id="demo1" style="display: inline-block"></h3>
@@ -383,15 +280,6 @@ th,
 
 
 
-<script>
-     function printDiv(printThisDiv) {
-        var printContents = document.getElementById(printThisDiv).innerHTML;
-        // var originalContents = document.body.innerHTML;
-        document.body.innerHTML = printContents;
-        window.print();
-        document.body.innerHTML = originalContents;
-    }
-</script>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -485,6 +373,126 @@ th,
 
 
 
+
+</script>
+
+
+
+
+<script>
+    //   pdftab hide
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Hide the pdftab div when the page loads
+        var pdftab = document.getElementById("pdftab");
+        if (pdftab) {
+            pdftab.style.display = "none";
+        }
+    });
+</script>
+
+<script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+
+<script>
+    function generateAndOpenPDF() {
+        // Disable the button to prevent multiple clicks
+        var pdfButton = document.getElementById("pdfButton");
+        if (pdfButton) {
+            pdfButton.disabled = true;
+        }
+
+        var pdftab = document.getElementById("pdftab");
+
+        // Show the pdftab div when generateAndOpenPDF function is called
+        if (pdftab) {
+            pdftab.style.display = "block"; // or "inline" or "inline-block" depending on your layout
+        }
+
+        var element = document.getElementById('pdftab');
+        if (!element) {
+            console.error("Element with ID 'pdftab' not found.");
+
+            // Re-enable the button in case of an error
+            if (pdfButton) {
+                pdfButton.disabled = false;
+            }
+
+            return;
+        }
+
+        var rowsPerPage = 10; // Number of rows to display per page
+
+        // Configuration options for html2pdf
+        var options = {
+            margin: 10,
+            filename: 'Sales_Report{{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
+        };
+
+        // Call html2pdf with the specified options
+        html2pdf(element, options)
+            .then(function (pdf) {
+                var totalPages = pdf.internal.getNumberOfPages();
+
+                for (var i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(10);
+                    pdf.setTextColor(150);
+
+                    // Calculate the range of rows to display on this page
+                    var startRow = (i - 1) * rowsPerPage;
+                    var endRow = Math.min(i * rowsPerPage, element.rows.length);
+
+                    // Loop through the rows and display only the selected range
+                    for (var j = startRow; j < endRow; j++) {
+                        var row = element.rows[j];
+                        var cells = row.getElementsByTagName('td');
+
+                        for (var k = 0; k < cells.length; k++) {
+                            pdf.text(cells[k].innerText, 20 + k * 30, 15 + (j % rowsPerPage) * 10);
+                        }
+                    }
+
+                    pdf.text('Footer content', 20, pdf.internal.pageSize.height - 40);
+                }
+
+                // Get the PDF data as a Blob
+                var pdfBlob = pdf.output('blob');
+
+                // Create a link to the Blob data with the Google Drive viewer link
+                var driveViewerLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(URL.createObjectURL(pdfBlob));
+
+                // Open the link in a new tab
+                window.open(driveViewerLink, '_blank');
+
+                // Hide the pdftab div after generating and opening the PDF
+                if (pdftab) {
+                    pdftab.style.display = "none";
+                }
+
+                // Re-enable the button after generating and opening the PDF
+                if (pdfButton) {
+                    pdfButton.disabled = false;
+                }
+
+                console.log("PDF generated and opened successfully:", pdf);
+            })
+            .catch(function (error) {
+                console.error("Error generating PDF:", error);
+
+                // Restore the display property of the pdftab div in case of an error
+                if (pdftab) {
+                    pdftab.style.display = "none";
+                }
+
+                // Re-enable the button in case of an error
+                if (pdfButton) {
+                    pdfButton.disabled = false;
+                }
+            });
+    }
 
 </script>
 

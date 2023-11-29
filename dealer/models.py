@@ -15,6 +15,8 @@ class DealerGameTest(models.Model):
     count = models.IntegerField()
     d_amount = models.FloatField()
     c_amount = models.FloatField()
+    d_amount_admin = models.FloatField()
+    c_amount_admin = models.FloatField()
 
     def __str__(self):
         return str(self.dealer)
@@ -29,6 +31,8 @@ class DealerGame(models.Model):
     count = models.IntegerField()
     d_amount = models.FloatField()
     c_amount = models.FloatField()
+    d_amount_admin = models.FloatField()
+    c_amount_admin = models.FloatField()
     combined = models.BooleanField()
 
     def __str__(self):

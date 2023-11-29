@@ -114,6 +114,7 @@
                         </a>
 
                     </div>
+                    
                     <form method="POST" id="submit-form">
                         {% csrf_token %}
                         <div class="body" style="padding: 10px !important; background-color: #ff75c8;">
@@ -137,19 +138,20 @@
                                 </div>
                                 <label class="control-inline fancy-checkbox ml-auto">
                                     <input type="checkbox" name="checkbox2" required data-parsley-mincheck="2"
-                                        data-parsley-errors-container="#error-checkbox2" id="R">
+                                        data-parsley-errors-container="#error-checkbox2" id="R" autofocus>
                                     <span>R</span>
                                 </label>
                             </div>
 
                             <div id="defaultFields" class="row">
                                 <div class="form-group mt-3 col-lg-3 col-6">
-                                    <input type="number" class="form-control" id="numberInput" placeholder="Number"
-                                        required  autofocus>
+                                    
+                                    <input type="number" class="form-control" id="numberInput" placeholder="Number" 
+                                        required  autofocus  @loaded="showKeyboard" >
                                 </div>
                                 <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="countInput" placeholder="Count"
-                                        required>
+                                        required autofocus >
                                 </div>
                             </div>
 
@@ -335,6 +337,11 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+
+
+
+
     function bill() {
         Swal.fire({
             icon: 'success',
@@ -2511,12 +2518,30 @@
 }
 
 
+
+
+
 </script>
 
 
-
-
-
+<script>
+    import * as utils from "tns-core-modules/utils/utils";
+    
+    export default {
+        methods: {
+            showKeyboard({ object }) {
+                if (object.android) {
+                    setTimeout(() => {
+                        object.focus();
+                        utils.ad.showSoftInput(object);
+                    }, 10);
+                } else {
+                    object.focus();
+                }
+            }
+        }
+    }
+    </script>
 
 
 

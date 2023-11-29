@@ -9,7 +9,7 @@ class PlayTime(models.Model):
     game_time = models.TimeField()
 
     def __str__(self):
-        return str(self.start_time)
+        return str(self.game_time)
 
 class AgentPackage(models.Model):
     agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
@@ -112,6 +112,9 @@ class Winning(models.Model):
     prize = models.DecimalField(max_digits=10, decimal_places=2)
     commission = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    prize_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    commission_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    total_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
     def __str__(self):
         return str(self.date)

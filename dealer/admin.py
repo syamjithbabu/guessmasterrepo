@@ -4,9 +4,9 @@ from dealer.models import DealerGameTest,DealerGame
 # Register your models here.
 
 @admin.register(DealerGameTest)
-class DealerGameTestAdmin(admin.ModelAdmin):
+class DealerGameTest(admin.ModelAdmin):
     list_display = ('dealer', 'time', 'date', 'LSK', 'number', 'count', 'd_amount', 'c_amount')
 
 @admin.register(DealerGame)
-class DealerGameAdmin(admin.ModelAdmin):
+class DealerGame(admin.ModelAdmin):
     list_display = ('dealer', 'time', 'date', 'LSK', 'number', 'count', 'd_amount', 'c_amount')
