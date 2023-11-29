@@ -709,6 +709,7 @@ def winning_report(request):
         if select_time != 'all':
             winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),date__range=[from_date, to_date],time=select_time)
             print(winnings)
+           
             aggregated_winnings = winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
                 total_commission=Sum('commission'),
@@ -2558,4 +2559,64 @@ def change_password(request):
     else:
         form= PasswordChangeForm(user=request.user)
     return render(request,'agent/change_password.html',{'form':form})
+
+
+
+
+
+
+
+def total_balance(request):
+    agent_obj = Agent.objects.get(user=request.user)
+
+    dealers = Dealer.objects.filter(agent=agent_obj,).all()
+    report_data = []
+
+    
+    agent_sale_amount = AgentGame.objects.filter(agent=agent_obj,).aggregate(total_sale_amount=Sum('c_amount'))['total_sale_amount'] or 0
+    agentcollection = CollectionReport.objects.filter(agent=agent_obj)
+    winning = Winning.objects.filter(agent=agent_obj).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+    sale_amount =  agent_sale_amount
+    from_agent = agentcollection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    to_agent = agentcollection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    total_collection_amount = from_agent - to_agent
+    print(total_collection_amount, "collection")
+    win_amount = float(winning)
+    balance = float(sale_amount)  - float(winning) - float(total_collection_amount)
+    report_data.append({
+            'dealer' : agent_obj,
+            'sale_amount' : balance
+        })
+
+
+        
+    for dealer in dealers:
+
+        dealer_sale_amount = DealerGame.objects.filter(dealer=dealer,).aggregate(total_sale_amount=Sum('c_amount'))['total_sale_amount'] or 0
+        dealercollection = DealerCollectionReport.objects.filter(dealer=dealer)
+
+        winning = Winning.objects.filter(dealer=dealer).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        sale_amount =  dealer_sale_amount
+        from_dealer = dealercollection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        to_dealer = dealercollection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        total_collection_amount = from_dealer - to_dealer
+        print(total_collection_amount, "collection")
+        win_amount = float(winning)
+        balance = float(sale_amount)  - float(winning) - float(total_collection_amount)
+        report_data.append({
+            'dealer' : dealer,
+            'sale_amount' : balance
+        })
+        
+
+
+    total_balance = sum(entry['sale_amount'] for entry in report_data)
+    context = {
+        'report_data' : report_data,
+        'total_balance' : total_balance,
+        'agent_balance':balance
+    }
+    return render(request,'agent/total_balance.html',context)
+
+
  

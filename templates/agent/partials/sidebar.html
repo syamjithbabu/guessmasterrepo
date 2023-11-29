@@ -4,7 +4,7 @@
         <div class="user-account">
             <div class="dropdown">
                 <span>Welcome,</span>
-                <a href="javascript:void(0);" class="dropdown-toggle user-name" data-toggle="dropdown"><strong>{{request.user}}</strong></a>
+                <a href="javascript:void(0);" class="dropdown-toggle user-name" data-toggle="dropdown"><strong>{{request.user}}(Agent)</strong></a>
                 <ul class="dropdown-menu dropdown-menu-right account">
                     
                     <li><a href="{% url 'website:logout' %}"><i class="icon-power"></i>Logout</a></li>
@@ -111,6 +111,10 @@
                                
                            
                             </ul>
+                        </li>
+                        <li>
+                            <a href=" {% url 'agent:total_balance' %}" ><i class="icon-note"></i> <span>Total Balance</span></a>
+                         
                         </li>
                         <li>
                             <a href="{% url 'agent:change_password' %}" class="has-arrow"><i class="icon-wrench"></i> <span>Change Password</span></a>

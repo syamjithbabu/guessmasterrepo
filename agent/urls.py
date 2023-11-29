@@ -50,6 +50,8 @@ urlpatterns = [
     path('view-limit',views.view_limits,name="view_limits"),
     path('edit-limit/<int:id>',views.edit_limit,name="edit_limit"),
     path('change-password',views.change_password,name="change_password"),
+    path('total-balance',views.total_balance,name="total_balance"),
+
 
 
 ]
