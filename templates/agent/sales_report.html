@@ -134,7 +134,7 @@
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
                                         <button class="btn btn-primary" id="pdfButton"
-                                        onclick="generateAndOpenPDF()">Download pdf</button>
+                                        onclick="generateAndOpenPDF()">Download</button>
 
 
                                     </div>
@@ -414,6 +414,13 @@ function getOption() {
 
 <script>
     function generateAndOpenPDF() {
+
+    var dateFrom = document.getElementById('from-date').value;
+    var dateTo = document.getElementById('to-date').value;
+
+    console.log(dateFrom)
+    console.log(dateTo)
+
     // Disable the button to prevent multiple clicks
     var pdfButton = document.getElementById("pdfButton");
     if (pdfButton) {
@@ -444,7 +451,7 @@ function getOption() {
     // Configuration options for html2pdf
     var options = {
         margin: 10,
-        filename: 'sales_report- {{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}.pdf',
+        filename: 'Sales Report - ' + dateFrom + ' to ' + dateTo + '( {{selected_game_time}} )',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
