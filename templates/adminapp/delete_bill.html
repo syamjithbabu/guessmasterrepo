@@ -32,7 +32,7 @@
         {% else %}
         <h6>User : {{ bill.user.dealer.agent.user }}</h6>
         {% endif %}
-        <a href="{% url 'adminapp:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+        <a onclick="deleteBill()" href="{% url 'adminapp:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
     </div>
     <div class="body">
         <div class="table-responsive">
@@ -79,7 +79,18 @@
 </div>
 </div>
 
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function deleteBill(){
+        console.log("working")
+        Swal.fire({
+           icon: 'success',
+           title: 'Deleted!',
+           text: 'Bill deleted successfully.',
+       });
+    }
+</script>
 
 
 {% endblock %}

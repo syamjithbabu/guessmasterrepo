@@ -809,14 +809,13 @@ def submit_data(request):
     if request.method == 'POST':
         data_list = json.loads(request.body, object_pairs_hook=OrderedDict)
         for data in data_list:
+            selected_customer = data.get('customer')
             link_text = data.get('linkText')
             value1 = data.get('value1')
             value2 = data.get('value2')
             value3 = data.get('value3')
             value4 = data.get('value4')
             timeId = data.get('timeId')
-
-            print(value2)
 
             value3_admin = float(value2) * float(amounts[link_text])
             print(value3_admin, "dealer game for admin")
@@ -976,6 +975,7 @@ def submit_data(request):
             dealer_game_test = DealerGameTest(
                     agent=agent_obj,
                     dealer=dealer_obj,
+                    customer=selected_customer,
                     time=time,
                     LSK=link_text,
                     number=value1,
@@ -1016,6 +1016,7 @@ def submit_data(request):
             dealer_game_record = DealerGame(
                 agent=agent_obj,
                 dealer=test_record.dealer,
+                customer=test_record.customer,
                 time=test_record.time,
                 date=test_record.date,
                 LSK=test_record.LSK,

@@ -1237,10 +1237,10 @@ def sales_report(request):
         dealer_bills_totals = dealer_bills.aggregate(total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'),total_count=Sum('total_count'))
 
         totals = {
-            'total_c_amount': agent_bills_totals['total_c_amount'] + dealer_bills_totals['total_c_amount'],
-            'total_d_amount': agent_bills_totals['total_d_amount'] + dealer_bills_totals['total_d_amount'],
-            'total_count': agent_bills_totals['total_count'] + dealer_bills_totals['total_count'],
-        }
+            'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+            'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount'] or 0),
+            'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount'] or 0)
+            }
 
         select_agent = 'all'
         select_time = 'all'
@@ -1992,7 +1992,7 @@ def republish_results(request,id):
                     commission_admin = ((agent_package.double2_dc)*(game.count))
                     total_admin = ((prize_admin)+(commission_admin))
                     single_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-        return redirect('adminapp:index')
+        return redirect('adminapp:republish_results',id=id)
     print(field_values)
     context = {
         'result' : last_result,
@@ -3641,6 +3641,199 @@ def total_balance(request):
         'total_balance' : total_balance
     }
     return render(request,'adminapp/total_balance.html',context)
+
+def tickets_report(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    agents = Agent.objects.filter().all()
+    times = PlayTime.objects.filter().all()
+    report_data = []
+    lsk_single = ['A','B','C']
+    lsk_double = ['AB','BC','AC']
+    if request.method == 'POST':
+        select_agent = request.POST.get('select-agent')
+        select_time = request.POST.get('select-time')
+        from_date = request.POST.get('from-date')
+        to_date = request.POST.get('to-date')
+        if select_time != 'all':
+            if select_agent != 'all':
+                agent_instance = Agent.objects.get(id=select_agent)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time, agent=select_agent)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,  agent=select_agent)
+                agent_super_lsk_count = agent_games.filter(LSK='Super').count()
+                agent_box_lsk_count = agent_games.filter(LSK='Box').count()
+                agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).count()
+                agent_double_lsk_count = agent_games.filter(LSK__in=lsk_double).count()
+
+                dealer_super_lsk_count = dealer_games.filter(LSK='Super').count()
+                dealer_box_lsk_count = dealer_games.filter(LSK='Box').count()
+                dealer_single_lsk_count = dealer_games.filter(LSK__in=lsk_single).count()
+                dealer_double_lsk_count = dealer_games.filter(LSK__in=lsk_double).count()
+
+                super_lsk_count = agent_super_lsk_count + dealer_super_lsk_count
+                box_lsk_count = agent_box_lsk_count + dealer_box_lsk_count
+                single_lsk_count = agent_single_lsk_count + dealer_single_lsk_count
+                double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
+                report_data.append({
+                    'agent': agent_instance,
+                    'super_lsk_count': super_lsk_count,
+                    'box_lsk_count' : box_lsk_count,
+                    'single_lsk_count' : single_lsk_count,
+                    'double_lsk_count' : double_lsk_count
+                })
+                context = {
+                    'agents' : agents,
+                    'times' : times,
+                    'selected_agent' : select_agent,
+                    'report_data' : report_data,
+                    'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request, 'adminapp/tickets_report.html',context)
+            else:
+                for agent in agents:
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,agent=agent)
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,agent=agent)
+                    agent_super_lsk_count = agent_games.filter(LSK='Super').count()
+                    agent_box_lsk_count = agent_games.filter(LSK='Box').count()
+                    agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).count()
+                    agent_double_lsk_count = agent_games.filter(LSK__in=lsk_double).count()
+
+                    dealer_super_lsk_count = dealer_games.filter(LSK='Super').count()
+                    dealer_box_lsk_count = dealer_games.filter(LSK='Box').count()
+                    dealer_single_lsk_count = dealer_games.filter(LSK__in=lsk_single).count()
+                    dealer_double_lsk_count = dealer_games.filter(LSK__in=lsk_double).count()
+
+                    super_lsk_count = agent_super_lsk_count + dealer_super_lsk_count
+                    box_lsk_count = agent_box_lsk_count + dealer_box_lsk_count
+                    single_lsk_count = agent_single_lsk_count + dealer_single_lsk_count
+                    double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
+                    report_data.append({
+                        'agent': agent,
+                        'super_lsk_count': super_lsk_count,
+                        'box_lsk_count' : box_lsk_count,
+                        'single_lsk_count' : single_lsk_count,
+                        'double_lsk_count' : double_lsk_count
+                    })
+                context = {
+                    'agents' : agents,
+                    'times' : times,
+                    'selected_agent' : 'all',
+                    'report_data' : report_data,
+                    'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request, 'adminapp/tickets_report.html',context)
+        else:
+            if select_agent != 'all':
+                agent_instance = Agent.objects.get(id=select_agent)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=select_agent)
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],  agent=select_agent)
+                agent_super_lsk_count = agent_games.filter(LSK='Super').count()
+                agent_box_lsk_count = agent_games.filter(LSK='Box').count()
+                agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).count()
+                agent_double_lsk_count = agent_games.filter(LSK__in=lsk_double).count()
+
+                dealer_super_lsk_count = dealer_games.filter(LSK='Super').count()
+                dealer_box_lsk_count = dealer_games.filter(LSK='Box').count()
+                dealer_single_lsk_count = dealer_games.filter(LSK__in=lsk_single).count()
+                dealer_double_lsk_count = dealer_games.filter(LSK__in=lsk_double).count()
+
+                super_lsk_count = agent_super_lsk_count + dealer_super_lsk_count
+                box_lsk_count = agent_box_lsk_count + dealer_box_lsk_count
+                single_lsk_count = agent_single_lsk_count + dealer_single_lsk_count
+                double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
+                report_data.append({
+                    'agent': agent_instance,
+                    'super_lsk_count': super_lsk_count,
+                    'box_lsk_count' : box_lsk_count,
+                    'single_lsk_count' : single_lsk_count,
+                    'double_lsk_count' : double_lsk_count
+                })
+                select_time = 'all'
+                context = {
+                    'agents' : agents,
+                    'times' : times,
+                    'selected_agent' : select_agent,
+                    'report_data' : report_data,
+                    'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date
+                }
+                return render(request, 'adminapp/tickets_report.html',context)
+            else:
+                for agent in agents:
+                    agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
+                    dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
+                    agent_super_lsk_count = agent_games.filter(LSK='Super').count()
+                    agent_box_lsk_count = agent_games.filter(LSK='Box').count()
+                    agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).count()
+                    agent_double_lsk_count = agent_games.filter(LSK__in=lsk_double).count()
+
+                    dealer_super_lsk_count = dealer_games.filter(LSK='Super').count()
+                    dealer_box_lsk_count = dealer_games.filter(LSK='Box').count()
+                    dealer_single_lsk_count = dealer_games.filter(LSK__in=lsk_single).count()
+                    dealer_double_lsk_count = dealer_games.filter(LSK__in=lsk_double).count()
+
+                    super_lsk_count = agent_super_lsk_count + dealer_super_lsk_count
+                    box_lsk_count = agent_box_lsk_count + dealer_box_lsk_count
+                    single_lsk_count = agent_single_lsk_count + dealer_single_lsk_count
+                    double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
+
+                    print(single_lsk_count)
+                    report_data.append({
+                        'agent': agent,
+                        'super_lsk_count': super_lsk_count,
+                        'box_lsk_count' : box_lsk_count,
+                        'single_lsk_count' : single_lsk_count,
+                        'double_lsk_count' : double_lsk_count
+                    })
+                select_time = 'all'
+                context = {
+                    'agents' : agents,
+                    'times' : times,
+                    'selected_agent' : 'all',
+                    'selected_time' : select_time,
+                    'report_data' : report_data
+                }
+                return render(request, 'adminapp/tickets_report.html',context)
+    for agent in agents:
+        agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
+        dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
+        agent_super_lsk_count = agent_games.filter(LSK='Super').count()
+        agent_box_lsk_count = agent_games.filter(LSK='Box').count()
+        agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).count()
+        agent_double_lsk_count = agent_games.filter(LSK__in=lsk_double).count()
+
+        dealer_super_lsk_count = dealer_games.filter(LSK='Super').count()
+        dealer_box_lsk_count = dealer_games.filter(LSK='Box').count()
+        dealer_single_lsk_count = dealer_games.filter(LSK__in=lsk_single).count()
+        dealer_double_lsk_count = dealer_games.filter(LSK__in=lsk_double).count()
+
+        super_lsk_count = agent_super_lsk_count + dealer_super_lsk_count
+        box_lsk_count = agent_box_lsk_count + dealer_box_lsk_count
+        single_lsk_count = agent_single_lsk_count + dealer_single_lsk_count
+        double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
+
+        print(single_lsk_count)
+        report_data.append({
+            'agent': agent,
+            'super_lsk_count': super_lsk_count,
+            'box_lsk_count' : box_lsk_count,
+            'single_lsk_count' : single_lsk_count,
+            'double_lsk_count' : double_lsk_count
+        })
+    select_time = 'all'
+    context = {
+        'agents' : agents,
+        'times' : times,
+        'selected_agent' : 'all',
+        'selected_time' : select_time,
+        'report_data' : report_data
+    }
+    return render(request, 'adminapp/tickets_report.html',context)
 
 
 

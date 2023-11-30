@@ -60,5 +60,6 @@ urlpatterns = [
     path('settings',views.settings,name="settings"),
     path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit"), 
     path('total-balance',views.total_balance,name="total_balance"),
+    path('tickets-report',views.tickets_report,name="tickets_report")
 
 ]

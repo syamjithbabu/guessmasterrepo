@@ -151,7 +151,7 @@ th, td{
                                 </div>
                                 <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="countInput" placeholder="Count"
-                                        required>
+                                        required oninput="validateCountInput(this)">
                                 </div>
                             </div>
 
@@ -2134,6 +2134,16 @@ th, td{
 
 <script>
 
+        document.addEventListener("DOMContentLoaded", function() {
+            var selectedCustomer = document.getElementById("customer");
+            console.log(selectedCustomer);
+            // Add an event listener for the "change" event
+            selectedCustomer.addEventListener("change", function() {
+                // Log the selected value when it changes
+                console.log("Customer: " + selectedCustomer.value);
+            });
+        });
+
 
    function saveDataToViews() {
         Swal.fire({
@@ -2141,6 +2151,8 @@ th, td{
            title: 'Success!',
            text: 'Your bill created successfully.',
        });
+       const selectedCustomer = document.getElementById("customer").value;
+        console.log(selectedCustomer);
        const timeId = {{time.id}};
        const tableRows = document.querySelectorAll("#mainTable tbody tr");
        const data = [];
@@ -2148,6 +2160,7 @@ th, td{
        tableRows.forEach(row => {
            const cells = row.getElementsByTagName("td");
            const rowData = {
+                customer: selectedCustomer,
                linkText: cells[0].textContent,
                value1: cells[1].textContent,
                value2: cells[2].textContent,
@@ -2375,6 +2388,15 @@ th, td{
    // Set interval for subsequent color changes every 30 minutes
    setInterval(change, 3600000);
    </script>
+
+<script>
+    function validateCountInput(input) {
+        input.value = input.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        if (input.value.length > 2) {
+            input.value = input.value.slice(0, 2); // Limit to 2 digits
+        }
+    }
+</script>
 
 
 

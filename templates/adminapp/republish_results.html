@@ -303,7 +303,7 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary mb-3">Re-Publish</button>
+        <button type="submit" onclick="deleteBill()" class="btn btn-primary mb-3">Re-Publish</button>
         </form>
 </div>
 
@@ -347,6 +347,19 @@
         });
     });
     </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function deleteBill(){
+        console.log("working")
+        Swal.fire({
+           icon: 'success',
+           title: 'Re-Published!',
+           text: 'Result re-published successfully.',
+       });
+    }
+</script>
     
     
     

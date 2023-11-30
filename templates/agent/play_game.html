@@ -151,7 +151,7 @@
                                 </div>
                                 <div class="form-group mt-3 col-lg-3 col-6">
                                     <input type="number" class="form-control" id="countInput" placeholder="Count"
-                                        required autofocus >
+                                        required autofocus  oninput="validateCountInput(this)">
                                 </div>
                             </div>
 
@@ -2542,6 +2542,15 @@
         }
     }
     </script>
+
+<script>
+    function validateCountInput(input) {
+        input.value = input.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        if (input.value.length > 2) {
+            input.value = input.value.slice(0, 2); // Limit to 2 digits
+        }
+    }
+</script>
 
 
 <script>
