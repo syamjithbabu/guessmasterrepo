@@ -75,6 +75,7 @@ class AgentGame(models.Model):
     
 class Bill(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.CharField(max_length=100,null=True)
     time_id = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField()
     agent_games = models.ManyToManyField(AgentGame)

@@ -146,7 +146,11 @@
                                         {% for bill in dealer_bills %}
                                             <tr>
                                                 <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                                                {% if bill.customer == '' %}
                                                 <td>{{ bill.user }}</td>
+                                                {% else %}
+                                                <td>{{ bill.customer }}</td>
+                                                {% endif %}
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>
                                                 <td>{{ bill.total_d_amount|floatformat:2 }}</td>

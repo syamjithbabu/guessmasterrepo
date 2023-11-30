@@ -28,7 +28,11 @@
     <div class="header">
         <h6>Bill ID : {{bill.id}}</h6>
         <h6>Date : {{bill.date}}</h6>
-        <h6>User : {{bill.user}}</h6>
+        <h6>User : {% if bill.customer == '' %}
+            {{ bill.user }}
+            {% else %}
+            {{ bill.customer }}
+            {% endif %}</h6>
         <a onclick="deleteBill()" href="{% url 'dealer:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
     </div>
     <div class="body">

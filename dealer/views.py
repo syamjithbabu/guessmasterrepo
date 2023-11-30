@@ -1052,6 +1052,7 @@ def submit_data(request):
             # Create the Bill record
             bill = Bill.objects.create(
                 user=dealer_obj,
+                customer=selected_customer,
                 time_id=time,
                 date=current_date,
                 total_c_amount=total_c_amount,

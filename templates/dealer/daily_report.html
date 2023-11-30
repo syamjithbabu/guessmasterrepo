@@ -131,7 +131,11 @@
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
+                                            {% if bill.customer == '' %}
                                             <td>{{ bill.user }}</td>
+                                            {% else %}
+                                            <td>{{ bill.customer }}</td>
+                                            {% endif %}
                                             <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                             <td>{{ bill.win_amount|floatformat:2 }}</td>
                                             <td>{{ bill.total_d_amount|floatformat:2 }}</td>
