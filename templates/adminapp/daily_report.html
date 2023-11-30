@@ -231,23 +231,26 @@
                     {% for bill in dealer_bills %}
                         <tr class="l-blue" style="text-align: center;">
                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
-                            {% if bill.user.agent %}
-                                <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
-                            {% else %}
-                                <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
-                            {% endif %}
-                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
-                            <td>{{ bill.win_amount|floatformat:2 }}</td>
-                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                {% if bill.user.agent %}
+                                                    <td>{{ bill.user.agent.user }}</td>  {# Display the agent's name for an agent's bill #}
+                                                    <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                                    <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                {% else %}
+                                                    <td>{{ bill.user.dealer.agent.user }}</td>  {# Display the agent's name for a dealer's bill #}
+                                                    <td>{{ bill.total_c_amount_admin|floatformat:2 }}</td>
+                                                    <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                    <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                {% endif %}
                         </tr>
                     {% endfor %}
                     {% for bill in dealer_only_bills %}
                         <tr class="l-blue" style="text-align: center;">
                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
-                            <td>{{ bill.user.dealer.user }}</td>  {# Display the agent's name for a dealer's bill #}
-                            <td>{{ bill.total_c_amount|floatformat:2 }}</td>
-                            <td>{{ bill.win_amount|floatformat:2 }}</td>
-                            <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.user.dealer.user }}</td>  {# Display the agent's name for a dealer's bill #}
+                                                <td>{{ bill.total_c_amount_admin|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -400,7 +403,7 @@
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-    document.getElementById("demo4").innerHTML = " : " + "{{ selected_time}}";
+    document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
 
 
 </script>
@@ -424,6 +427,8 @@
 <script>
     function generateAndOpenPDF() {
         // Disable the button to prevent multiple clicks
+        var dateFrom = document.getElementById('from-date').value;
+        var dateTo = document.getElementById('to-date').value;
         var pdfButton = document.getElementById("pdfButton");
         if (pdfButton) {
             pdfButton.disabled = true;
@@ -453,7 +458,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'Daily_Report{{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}.pdf',
+            filename: 'Daily Report -' + dateFrom + ' to ' + dateTo + ' - ' + '{{ selected_game_time }}',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },

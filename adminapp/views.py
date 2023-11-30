@@ -1244,6 +1244,7 @@ def sales_report(request):
 
         select_agent = 'all'
         select_time = 'all'
+        selected_game_time = 'all times'
         context = {
             'agents' : agents,
             'times' : times,
@@ -1253,6 +1254,7 @@ def sales_report(request):
             'selected_agent' : select_agent,
             'selected_dealer' : 'all',
             'selected_time' : select_time,
+            'selected_game_time' : selected_game_time,
             'agent_games' : agent_games,
             'dealer_games' : dealer_games
         }
@@ -2330,6 +2332,7 @@ def daily_report(request):
         print(total_balance,"total balance")
         select_agent = 'all'
         select_time = 'all'
+        selected_game_time = 'all times'
         context = {
             'agents' : agents,
             'times' : times,
@@ -2340,6 +2343,7 @@ def daily_report(request):
             'selected_agent' : select_agent,
             'selected_dealer' : 'all',
             'selected_time' : select_time,
+            'selected_game_time' : selected_game_time
         }
         return render(request,'adminapp/daily_report.html',context)
 

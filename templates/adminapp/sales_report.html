@@ -330,7 +330,8 @@
                 <tbody>
                     {% for bill in agent_bills %}
                     <tr class="main-row l-pink" style="text-align: center;">
-                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                        </td>
                         {% if bill.user.agent.user %}
                         <td>{{ bill.user }}</td>
                         {% else %}
@@ -360,7 +361,8 @@
 
                     {% for bill in dealer_bills %}
                     <tr class="main-row l-pink" style="text-align: center;">
-                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                        <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                        </td>
                         {% if bill.user.agent.user %}
                         <td>{{ bill.user }}</td>
                         {% else %}
@@ -392,8 +394,8 @@
                         <td>{{ bill.user.dealer.user }}</td>
                         <td>{{ bill.id }}</td>
                         <td>{{ bill.total_count }}</td>
-                        <td>{{ bill.total_d_amount|floatformat:2 }}</td>
-                        <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                        <td>{{ bill.total_d_amount_admin|floatformat:2 }}</td>
+                        <td>{{ bill.total_c_amount_admin|floatformat:2 }}</td>
                     </tr>
 
                     {% for game in bill.dealer_games.all %}
@@ -403,8 +405,8 @@
                         <td>{{ game.LSK }}</td>
                         <td>{{ game.number }}</td>
                         <td>{{ game.count }}</td>
-                        <td>{{ game.d_amount|floatformat:2 }}</td>
-                        <td>{{ game.c_amount|floatformat:2 }}</td>
+                        <td>{{ game.d_amount_admin|floatformat:2 }}</td>
+                        <td>{{ game.c_amount_admin|floatformat:2 }}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -541,7 +543,7 @@
         document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
         document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
 
-        document.getElementById("demo4").innerHTML = " : " + "{{ selected_time}}";
+        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
 
     </script>
 
@@ -556,6 +558,7 @@
         if (pdftab) {
             pdftab.style.display = "none";
         }
+        console.log("{{selected_game_time}},hello")
     });
 </script>
 
@@ -563,6 +566,8 @@
 
 <script>
     function generateAndOpenPDF() {
+        var dateFrom = document.getElementById('from-date').value;
+        var dateTo = document.getElementById('to-date').value;
         // Disable the button to prevent multiple clicks
         var pdfButton = document.getElementById("pdfButton");
         if (pdfButton) {
@@ -593,7 +598,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'Sales_Report{{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}.pdf',
+            filename: 'Sales Report -' + dateFrom + ' to ' + dateTo + ' - ' + '{{ selected_game_time }}',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
