@@ -267,7 +267,7 @@
                                         <td>{{row.count}}</td>
                                         <td>{{row.d_amount|floatformat:2}}</td>
                                         <td>{{row.c_amount|floatformat:2}}</td>
-                                        <td><button type="button" onclick="editDealerRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
+                                        <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -293,22 +293,6 @@
                 <button type="button" onclick="closeModal()" class="btn btn-primary">Cancel</button>
                 <button type="button" onclick="updateRow()" class="btn btn-warning">Update</button>
                 <button type="button" onclick="deleteRow()" class="btn btn-danger">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="dealereditModal" class="modal">
-        <div class="modal-content">
-            <h6>LSK: <span id="modalDealerRowLSK"></span></h6>
-            <h6>Number: <span id="modalDealerRowNumber"></span></h6>
-            <h6>Count: <span id="modalDealerRowCount"></span></h6>
-            <div class="form-group mt-3">
-                <input type="text" class="form-control" id="editedCountDealer" placeholder="Change Count" required>
-            </div>
-            <div class="body">
-                <button type="button" onclick="closeModalDealer()" class="btn btn-primary">Cancel</button>
-                <button type="button" onclick="updateRowDealer()" class="btn btn-warning">Update</button>
-                <button type="button" onclick="deleteRowDealer()" class="btn btn-danger">Delete</button>
             </div>
         </div>
     </div>
@@ -2230,29 +2214,128 @@
 </script>
 
 <script>
+    const dataQueue = [];
 
-    async function sendDataToDjango(linkText, value1, value2, value3, value4) {
+async function sendDataToDjango(linkText, value1, value2, value3, value4) {
+    const timeId = {{time.id}};
+    const selectDealer = document.getElementById("selected-dealer").value;
+    const propertyOrder = ['selectDealer','linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
+    const datas = {};
 
+    propertyOrder.forEach(property => {
+        datas[property] = eval(property);  // Assuming the variables are in the local scope
+    });
+
+    console.log('Adding to queue:', datas);
+    dataQueue.push(datas);
+
+    // Check if there's data in the queue
+    if (dataQueue.length === 1) {
+        processQueue();
+    }
+}
+
+async function processQueue() {
+    // Get the first data object in the queue
+    const data = dataQueue[0];
+
+    try {
+        // Make the AJAX request and wait for it to complete
+        const response = await $.ajax({
+            url: '/agent/check-limit/',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify(data),
+        });
+
+        console.log('Data sent successfully:', data);
+        console.log('Stringified Data:', JSON.stringify(data));
+
+        // Remove the processed data from the queue
+        dataQueue.shift();
+
+        console.log(response);
+
+        if (response.message === 'time over') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Time over!',
+                text: 'Time over for the game.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            location.reload();
+        }
+
+        if (response.message === 'Limit exceeded') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Limit exceeded!',
+                text: 'Your daily limit exceeded.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        if (response.message === 'Blocked number') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Blocked number!',
+                text: 'This number and LSK is blocked.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        if (response.message === 'LSK blocked') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'LSK limit exceeded!',
+                text: 'This LSK limit exceeded.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        // If there are more items in the queue, process the next one
+        if (dataQueue.length > 0) {
+            processQueue();
+        }
+
+        console.log(response.row_id);
+
+        // Create and append the row after the AJAX request is successful
         var newRow = document.createElement("tr");
 
+        newRow.setAttribute("data-row-id", response.row_id);
+
         newRow.innerHTML = `
-            <td>${linkText}</td>
-            <td>${value1}</td>
-            <td>${value2}</td>
-            <td>${value3}</td>
-            <td>${value4}</td>
+            <td>${data.linkText}</td>
+            <td>${data.value1}</td>
+            <td>${data.value2}</td>
+            <td>${data.value3}</td>
+            <td>${data.value4}</td>
             <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
         `;
 
-        // Add the new row to the table
         var tableBody = document.querySelector("#mainTable tbody");
         tableBody.insertBefore(newRow, tableBody.firstChild);
 
         updateTotal();
-
+    } catch (error) {
+        // Handle error if needed
+        console.error('Error sending data:', error.statusText);
     }
+}
 
 </script>
+
 
     <script>
      document.addEventListener("DOMContentLoaded", function() {
@@ -2266,35 +2349,17 @@
         });
 
     function saveDataToViews() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Your bill created successfully.',
-        });
         const selectDealer = document.getElementById("selected-dealer").value;
-        console.log(selectDealer);
         const timeId = {{time.id}};
-        const tableRows = document.querySelectorAll("#mainTable tbody tr");
-        const data = [];
 
-        tableRows.forEach(row => {
-            const cells = row.getElementsByTagName("td");
-            const rowData = {
-                selectedDealer : selectDealer,
-                linkText: cells[0].textContent,
-                value1: cells[1].textContent,
-                value2: cells[2].textContent,
-                value3: cells[3].textContent,
-                value4: cells[4].textContent,
-                timeId: timeId,
-            };
-            data.push(rowData);
-            console.log(rowData);
-        });
+        const data = {
+            selectDealer: selectDealer,
+            timeId: timeId,
+        };
 
         // Make an AJAX request to save the data to Django views
         $.ajax({
-            url: '/agent/submit-data/',
+            url: '/agent/save-data/',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -2303,20 +2368,36 @@
             data: JSON.stringify(data),
             success: function (response) {
                 console.log('Data saved successfully:', response);
-                location.reload();
-                // Optionally, you can update the UI or perform other actions after saving
+
+                if (response.message === 'Bill saved') {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Bill saved successfully.',
+                    });
+                    location.reload();
+                } else {
+                    // Handle other success scenarios if needed
+                }
             },
             error: function (error) {
-                console.error('Error saving data:', error.statusText);
+                console.error('Error saving data:', error);
+
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to save the bill.',
+                });
             }
         });
-        
     }
+
     </script>
     
     <script>
         function updateTotal() {
-            console.log("yes");
             var table = document.getElementById("mainTable");
             var rows = table.querySelectorAll("tbody tr");
             var countValues = [];
@@ -2324,10 +2405,8 @@
             var cAmountValues = [];
     
             rows.forEach(function (row) {
-                var countCell = row.cells[2]; // Assuming "count" is in the third cell (index 2)
+                var countCell = row.cells[2];
                 var count = parseFloat(countCell.textContent);
-
-                console.log(count,"count")
     
                 var damountCell = row.cells[3];
                 var dAmount = parseFloat(damountCell.textContent);
@@ -2363,17 +2442,12 @@
             var totalCountSpan = document.getElementById("totalCount");
             totalCountSpan.textContent = total;
     
-            console.log("Total Count:", total);
-    
             var totalDamountSpan = document.getElementById("totalDAmount");
             totalDamountSpan.textContent = damount.toFixed(2);
-    
-            console.log("Total D Amount:", damount);
+
     
             var totalCamountSpan = document.getElementById("totalCAmount");
             totalCamountSpan.textContent = camount.toFixed(2);
-    
-            console.log("Total C Amount:", camount);
 
         }
     </script>
@@ -2412,7 +2486,35 @@
     }
     
     function updateRow() {
+        const rowId = rowToEdit.getAttribute("data-row-id");
+        const selectDealer = document.getElementById("selected-dealer").value;
         const editedCount = document.getElementById("editedCount").value;
+        const url = `/agent/update-test-row/${rowId}`;
+        console.log(editedCount);
+        var data = {
+            editedCount: editedCount,
+            selectDealer: selectDealer,
+        };
+        closeModal();
+        fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken, // Include the CSRF token
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                } else {
+                    // Handle errors here
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors here
+            });
 
         // Update the count in the row in the HTML
         const cells = rowToEdit.getElementsByTagName("td");
@@ -2428,6 +2530,7 @@
     }
 
     function updateCell3(cells, lsk, editedCount) {
+        
         // Fetch the rate and dc based on LSK
         const rate = amounts[lsk] || 0;
         const dc = dcs[lsk] || 0;
@@ -2442,56 +2545,16 @@
         cells[4].textContent = newDC.toFixed(2);
     }
 
-    function updateRowDealer(button) {
-        const rowId = rowToEdit.getAttribute("data-row-id");
-        const editedCount = document.getElementById("editedCountDealer").value;
-        const url = `/dealer/update-test-row/${rowId}`;
-        console.log(editedCount);
-        var data = {
-            editedCount: editedCount
-        };
-        closeModalDealer();
-        fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken, // Include the CSRF token
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModalDealer();
-                    location.reload();
-                } else {
-                    // Handle errors here
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle errors here
-            });
-        }
-
-
         function deleteRow() {
             // Get the reference to the row being deleted
+            const selectDealer = document.getElementById("selected-dealer").value;
             const rowToDelete = rowToEdit;
 
-            // Remove the row from the table
-            rowToDelete.parentNode.removeChild(rowToDelete);
+            const rowId = rowToEdit.getAttribute("data-row-id");
 
-            // Close the modal
-            updateTotal();
-            closeModal();
-        }
+            console.log(rowId);
 
-    function deleteRowDealer(button) {
-        console.log("delete is working")
-        if (rowToEdit) {
-            const rowId = rowToEdit.getAttribute("data-row-id"); // You may need to set a data attribute on the row for identification
-            console.log(rowId)
-            const url = `/dealer/delete-test-row/${rowId}`;
+            const url = `/agent/delete-test-row/${rowId}/?selectDealer=${selectDealer}`;
             fetch(url, {
                 method: 'DELETE',
                 headers: {
@@ -2501,8 +2564,7 @@
             })
             .then(response => {
                 if (response.ok) {
-                    closeModalDealer();
-                    location.reload();
+                    closeModal();
                 } else {
                     // Handle errors here
                 }
@@ -2511,13 +2573,14 @@
                 console.error('Error:', error);
                 // Handle errors here
             });
-        } else {
-            console.error("Row not found for deletion.");
+
+            // Remove the row from the table
+            rowToDelete.parentNode.removeChild(rowToDelete);
+
+            // Close the modal
+            updateTotal();
+            closeModal();
         }
-        
-}
-
-
 
 
 

@@ -1,4 +1,4 @@
-{% extends 'adminapp/partials/base.html' %}
+{% extends 'agent/partials/base.html' %}
 {% load static %}
 {% block content %}
 
@@ -233,7 +233,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'TOTAL_BALANCE.pdf',
+            filename: 'TOTAL BALANCE',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },

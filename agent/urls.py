@@ -32,14 +32,11 @@ urlpatterns = [
     path('new-package',views.new_package,name="new_package"),
     path('edit-package/<int:id>',views.edit_package,name="edit_package"),
     path('delete-package/<int:id>',views.delete_package,name="delete_package"),
-    path('submit-data/',views.submit_data,name="submit_data"),
     path('check-limit/',views.check_limit, name='check_limit'),
-    path('check-blocked/',views.check_blocked, name='check_blocked'),
-    path('check-game/',views.check_game, name='check_game'),
-    path('save-data/<int:id>',views.save_data,name="save_data"),
+    path('save-data/',views.save_data,name="save_data"),
 
-    path('delete-test-row/<int:id>',views.agent_game_test_delete,name="agent_game_test_delete"),
-    path('update-test-row/<int:id>',views.agent_game_test_update,name="agent_game_test_update"),
+    path('delete-test-row/<str:id>/',views.agent_game_test_delete,name="agent_game_test_delete"),
+    path('update-test-row/<str:id>',views.agent_game_test_update,name="agent_game_test_update"),
 
     path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
     path('deleting-bill/<int:id>',views.deleting_bill,name="deleting_bill"),

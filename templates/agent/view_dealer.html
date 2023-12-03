@@ -54,7 +54,11 @@
                             <p class="c_name">{{dealer.user.username}}</p>
                         </td>                                  
                         <td>
-                            <address><i class="zmdi zmdi-pin"></i> FL 32904</address>
+                            <address><i class="zmdi zmdi-pin">{% for package in packages %}
+                                {% if package.dealer == dealer %}
+                                    {{ package.package_name }}
+                                {% endif %}
+                            {% endfor %}</i></address>
                         </td>
                         <td>       
                             {% if dealer.user.is_active %}      

@@ -122,6 +122,7 @@
                                                      <th class="th">Box</th>
                                                      <th class="th">Single</th>
                                                      <th class="th">Double</th>
+                                                     <th class="th">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
@@ -131,7 +132,8 @@
                                                     <td class="td2">{{data.super_lsk_count}}</td>
                                                     <td class="td2">{{data.box_lsk_count}}</td>
                                                     <td class="td3">{{data.single_lsk_count}}</td>   
-                                                    <td class="td2">{{data.double_lsk_count}}</td>                                              
+                                                    <td class="td2">{{data.double_lsk_count}}</td>     
+                                                    <td class="td2">{{data.total_lsk_count}}</td>                                           
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -158,13 +160,14 @@
 </div>
 
 <div id="pdftab">
-    <h3 style="display: inline-block">Balance Report</h3>
+    <h3 style="display: inline-block">Tickets Report</h3>
     <h3 id="demo" style="display: inline-block"></h3>
     <h3 id="demo1" style="display: inline-block"></h3>
 
     <h3 id="demo"></h3>
     <h3 id="demo1"></h3>
     <h3 id="demo3"></h3>
+    <h3 id="demo4"></h3>
     <hr>
     <div class="body">
 
@@ -179,6 +182,7 @@
                         <th class="th">Box</th>
                         <th class="th">Single</th>
                         <th class="th">Double</th>
+                        <th class="th">Total</th>
                     </tr>
                 </thead>
                 <tbody class="not-summary">
@@ -188,7 +192,8 @@
                         <td class="td2">{{data.super_lsk_count}}</td>
                         <td class="td2">{{data.box_lsk_count}}</td>
                         <td class="td3">{{data.single_lsk_count}}</td>   
-                        <td class="td2">{{data.double_lsk_count}}</td>                                              
+                        <td class="td2">{{data.double_lsk_count}}</td> 
+                        <td class="td2">{{data.total_lsk_count}}</td>                                             
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -281,6 +286,7 @@
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
+    document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
 
 
 
@@ -302,6 +308,8 @@
 
 <script>
     function generateAndOpenPDF() {
+        var dateFrom = document.getElementById('from-date').value;
+        var dateTo = document.getElementById('to-date').value;
         // Disable the button to prevent multiple clicks
         var pdfButton = document.getElementById("pdfButton");
         if (pdfButton) {
@@ -332,7 +340,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'Tickets Report - {{selected_from}} to {{selected_to}}',
+            filename: 'Tickets Report -' + dateFrom + ' to ' + dateTo + ' - ' + '{{ selected_game_time }}',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },

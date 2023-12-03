@@ -2105,32 +2105,127 @@ th, td{
 </script>
 
 <script>
-    
-    // Create a queue to hold the data objects
     const dataQueue = [];
-    
-    async function sendDataToDjango(linkText, value1, value2, value3, value4) {
 
+async function sendDataToDjango(linkText, value1, value2, value3, value4) {
+    const timeId = {{time.id}};
+    const customer = document.getElementById("customer").value;
+    const propertyOrder = ['customer','linkText', 'value1', 'value2', 'value3', 'value4', 'timeId'];
+    const datas = {};
+
+    propertyOrder.forEach(property => {
+        datas[property] = eval(property);  // Assuming the variables are in the local scope
+    });
+
+    console.log('Adding to queue:', datas);
+    dataQueue.push(datas);
+
+    // Check if there's data in the queue
+    if (dataQueue.length === 1) {
+        processQueue();
+    }
+}
+
+async function processQueue() {
+    // Get the first data object in the queue
+    const data = dataQueue[0];
+
+    try {
+        // Make the AJAX request and wait for it to complete
+        const response = await $.ajax({
+            url: '/dealer/check-limit/',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify(data),
+        });
+
+        console.log('Data sent successfully:', data);
+        console.log('Stringified Data:', JSON.stringify(data));
+
+        // Remove the processed data from the queue
+        dataQueue.shift();
+
+        console.log(response);
+
+        if (response.message === 'time over') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Time over!',
+                text: 'Time over for the game.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            location.reload();
+        }
+
+        if (response.message === 'Limit exceeded') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Limit exceeded!',
+                text: 'Your daily limit exceeded.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        if (response.message === 'Blocked number') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Blocked number!',
+                text: 'This number and LSK is blocked.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        if (response.message === 'LSK blocked') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'LSK limit exceeded!',
+                text: 'This LSK limit exceeded.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        // If there are more items in the queue, process the next one
+        if (dataQueue.length > 0) {
+            processQueue();
+        }
+
+        console.log(response.row_id);
+
+        // Create and append the row after the AJAX request is successful
         var newRow = document.createElement("tr");
 
+        newRow.setAttribute("data-row-id", response.row_id);
+
         newRow.innerHTML = `
-            <td>${linkText}</td>
-            <td>${value1}</td>
-            <td>${value2}</td>
-            <td>${value3}</td>
-            <td>${value4}</td>
+            <td>${data.linkText}</td>
+            <td>${data.value1}</td>
+            <td>${data.value2}</td>
+            <td>${data.value3}</td>
+            <td>${data.value4}</td>
             <td><button type="button" onclick="editRow(this)" class="btn btn-info" title="Edit"><i class="fa fa-edit"></i></button></td>
         `;
-        
-        // Add the new row to the table
+
         var tableBody = document.querySelector("#mainTable tbody");
         tableBody.insertBefore(newRow, tableBody.firstChild);
-        updateTotal();
 
-        
+        updateTotal();
+    } catch (error) {
+        // Handle error if needed
+        console.error('Error sending data:', error.statusText);
     }
-    
-    </script>
+}
+
+</script>
 
 <script>
 
@@ -2145,53 +2240,51 @@ th, td{
         });
 
 
-   function saveDataToViews() {
-        Swal.fire({
-           icon: 'success',
-           title: 'Success!',
-           text: 'Your bill created successfully.',
-       });
-       const selectedCustomer = document.getElementById("customer").value;
-        console.log(selectedCustomer);
-       const timeId = {{time.id}};
-       const tableRows = document.querySelectorAll("#mainTable tbody tr");
-       const data = [];
+    function saveDataToViews() {
+        const customer = document.getElementById("customer").value;
+        const timeId = {{time.id}};
 
-       tableRows.forEach(row => {
-           const cells = row.getElementsByTagName("td");
-           const rowData = {
-                customer: selectedCustomer,
-               linkText: cells[0].textContent,
-               value1: cells[1].textContent,
-               value2: cells[2].textContent,
-               value3: cells[3].textContent,
-               value4: cells[4].textContent,
-               timeId: timeId,
-           };
-           data.push(rowData);
-           console.log(rowData);
-       });
+        const data = {
+            customer: customer,
+            timeId: timeId,
+        };
 
-       // Make an AJAX request to save the data to Django views
-       $.ajax({
-           url: '/dealer/submit-data/',
-           type: 'POST',
-           contentType: 'application/json',
-           headers: {
-               'X-CSRFToken': csrftoken,
-           },
-           data: JSON.stringify(data),
-           success: function (response) {
-               console.log('Data saved successfully:', response);
-               location.reload();
-               // Optionally, you can update the UI or perform other actions after saving
-           },
-           error: function (error) {
-               console.error('Error saving data:', error.statusText);
-           }
-       });
-       
-   }
+        // Make an AJAX request to save the data to Django views
+        $.ajax({
+            url: '/dealer/save-data/',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify(data),
+            success: function (response) {
+                console.log('Data saved successfully:', response);
+
+                if (response.message === 'Bill saved') {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Bill saved successfully.',
+                    });
+                    location.reload();
+                } else {
+                    // Handle other success scenarios if needed
+                }
+            },
+            error: function (error) {
+                console.error('Error saving data:', error);
+
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to save the bill.',
+                });
+            }
+        });
+    }
    </script>
 
 <script>
@@ -2275,7 +2368,33 @@ th, td{
     }
     
     function updateRow() {
+        const rowId = rowToEdit.getAttribute("data-row-id");
         const editedCount = document.getElementById("editedCount").value;
+        const url = `/dealer/update-test-row/${rowId}`;
+        console.log(editedCount);
+        var data = {
+            editedCount: editedCount,
+        };
+        closeModal();
+        fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken, // Include the CSRF token
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                } else {
+                    // Handle errors here
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors here
+            });
 
         // Update the count in the row in the HTML
         const cells = rowToEdit.getElementsByTagName("td");
@@ -2306,8 +2425,31 @@ th, td{
     }
 
     function deleteRow() {
-            // Get the reference to the row being deleted
             const rowToDelete = rowToEdit;
+
+            const rowId = rowToEdit.getAttribute("data-row-id");
+
+            console.log(rowId);
+
+            const url = `/dealer/delete-test-row/${rowId}/`;
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken, // Include the CSRF token
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                } else {
+                    // Handle errors here
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors here
+            });
 
             // Remove the row from the table
             rowToDelete.parentNode.removeChild(rowToDelete);

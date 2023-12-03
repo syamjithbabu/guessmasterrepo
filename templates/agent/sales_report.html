@@ -147,9 +147,6 @@
                                         </label>
                                     </div>
                                 </div>
-
-
-
                             </ul>
                         </form>
                     </div>
@@ -185,8 +182,8 @@
                                             <td style="text-align: center;">{{ bill.user }}</td>
                                             <td style="text-align: center;">{{ bill.id }}</td>
                                             <td style="text-align: center;">{{ bill.total_count }}</td>
-                                            <td style="text-align: center;">{{ bill.total_d_amount }}</td>
-                                            <td  style="text-align: center;">{{ bill.total_c_amount }}</td>
+                                            <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            <td  style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
                                         </tr>
                                         {% for game in bill.agent_games.all %}
                                         {% if game in agent_games %}
@@ -227,8 +224,13 @@
                                             <td style="text-align: center;">{{ bill.user }}</td>
                                             <td style="text-align: center;">{{ bill.id }}</td>
                                             <td style="text-align: center;">{{ bill.total_count }}</td>
-                                            <td style="text-align: center;">{{ bill.total_d_amount }}</td>
-                                            <td style="text-align: center;">{{ bill.total_c_amount }}</td>
+                                            {% if for_agent %}
+                                            <td style="text-align: center;">{{ bill.total_d_amount_admin|floatformat:2 }}</td>
+                                            <td style="text-align: center;">{{ bill.total_c_amount_admin|floatformat:2 }}</td>
+                                            {% else %}
+                                            <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
+                                            {% endif %}
                                         </tr>
                                         {% for game in bill.dealer_games.all %}
                                         {% if game in dealer_games %}
@@ -237,8 +239,13 @@
                                             <td style="text-align: center;">{{ game.LSK }}</td>
                                             <td style="text-align: center;">{{ game.number }}</td>
                                             <td style="text-align: center;">{{ game.count }}</td>
+                                            {% if for_agent %}
+                                            <td style="text-align: center;">{{ game.d_amount_admin }}</td>
+                                            <td style="text-align: center;">{{ game.c_amount_admin }}</td>
+                                            {% else %}
                                             <td style="text-align: center;">{{ game.d_amount }}</td>
                                             <td style="text-align: center;">{{ game.c_amount }}</td>
+                                            {% endif %}
                                         </tr>
                                         {% endif %}
                                         {% endfor %}
@@ -449,7 +456,7 @@ function getOption() {
     // Configuration options for html2pdf
     var options = {
         margin: 10,
-        filename: 'Sales Report - ' + dateFrom + ' to ' + dateTo + '( {{selected_game_time}} )',
+        filename: 'Sales Report - ' + dateFrom + ' to ' + dateTo + ' - ' + '{{selected_game_time}}',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
@@ -602,8 +609,7 @@ function getOption() {
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-    document.getElementById("demo4").innerHTML = " : " + "{{ selected_time}}";
-    console.log("{{ selected_time}}")
+    document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
 
 </script>
 

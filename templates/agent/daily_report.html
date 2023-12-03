@@ -146,9 +146,21 @@
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
                                             <td>{{ bill.user }}</td>
+                                            {% if for_agent %}
+                                                {% if bill.user.is_agent %}
+                                                <td>{{ bill.total_c_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                {% else %}
+                                                <td>{{ bill.total_c_amount_admin|floatformat:2 }}</td>
+                                                <td>{{ bill.win_amount_admin|floatformat:2 }}</td>
+                                                <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                                {% endif %}
+                                            {% else %}
                                             <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                             <td>{{ bill.win_amount|floatformat:2 }}</td>
                                             <td>{{ bill.total_d_amount|floatformat:2 }}</td>
+                                            {% endif %}
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -178,7 +190,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td class="td">{{total_c_amount.total_c_amount|floatformat:2}}</td>
+                    <td class="td">{{total_c_amount|floatformat:2}}</td>
                     <td class="td">{{total_winning|floatformat:2 }}</td>
                     <td class="td">{{total_balance|floatformat:2 }}</td>
                 </tr>
@@ -223,7 +235,7 @@
                 </table>
                 <hr>
                 <div class="col-md-12 text-right" id="totalcount">
-                    <h6>Sales Amount :{{total_c_amount.total_c_amount|floatformat:2}}</h6>
+                    <h6>Sales Amount :{{total_c_amount_admin|floatformat:2}}</h6>
                     <h6>Win Amount : {{total_winning|floatformat:2 }}</h6>
                     <h6>Balance : {{total_balance|floatformat:2 }}</h6>
                 </div>
@@ -251,6 +263,8 @@
 
     <script>
         function generateAndOpenPDF() {
+            var dateFrom = document.getElementById('from-date').value;
+            var dateTo = document.getElementById('to-date').value;
             // Disable the button to prevent multiple clicks
             var pdfButton = document.getElementById("pdfButton");
             if (pdfButton) {
@@ -281,7 +295,7 @@
             // Configuration options for html2pdf
             var options = {
                 margin: 10,
-                filename: 'Daily_report- {{selected_from}} to {{selected_to}} -{{ selected_game_time.game_time }}',
+                filename: 'Daily Report - ' + dateFrom + ' to ' + dateTo + ' - ' + '{{selected_game_time}}',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
@@ -430,7 +444,7 @@
 
         document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
         document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-        document.getElementById("demo4").innerHTML = " : " + "{{ selected_time}}";
+        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time}}";
 
 
 

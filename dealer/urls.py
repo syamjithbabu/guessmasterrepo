@@ -17,8 +17,8 @@ urlpatterns = [
     path('winning_countreport',views.winning_countreport,name="winning_countreport"),
     path('balance-report',views.balance_report,name="balance_report"),
     path('play-game/<int:id>',views.play_game,name="play_game"),
-    path('submit-data/',views.submit_data,name="submit_data"),
-    path('save-data/<int:id>',views.save_data,name="save_data"),
+    path('check-limit/',views.check_limit,name="check_limit"),
+    path('save-data/',views.save_data,name="save_data"),
     path('edit-bill-times',views.edit_bill_times,name="edit_bill_times"),
     path('edit-bill/<int:id>',views.edit_bill,name="edit_bill"),
     path('delete-bill/<int:id>',views.delete_bill,name="delete_bill"),
@@ -26,7 +26,7 @@ urlpatterns = [
     path('change-password',views.change_password,name="change_password"),
     path('deleting-row/<int:id>/<int:bill_id>',views.delete_row,name="deleting_row"),
 
-    path('delete-test-row/<int:id>',views.dealer_game_test_delete,name="dealer_game_test_delete"),
-    path('update-test-row/<int:id>',views.dealer_game_test_update,name="dealer_game_test_update"),
+    path('delete-test-row/<str:id>/',views.dealer_game_test_delete,name="dealer_game_test_delete"),
+    path('update-test-row/<str:id>',views.dealer_game_test_update,name="dealer_game_test_update"),
 
 ]

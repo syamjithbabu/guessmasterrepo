@@ -284,7 +284,6 @@
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-    document.getElementById("demo4").innerHTML = " : " + "{{ selected_time}}";
 
 
 
@@ -307,6 +306,8 @@
 
 <script>
     function generateAndOpenPDF() {
+        var dateFrom = document.getElementById('from-date').value;
+        var dateTo = document.getElementById('to-date').value;
         // Disable the button to prevent multiple clicks
         var pdfButton = document.getElementById("pdfButton");
         if (pdfButton) {
@@ -337,7 +338,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'Payment_Report{{selected_from}} to {{selected_to}}.pdf',
+            filename: 'Payment Report -' + dateFrom + ' to ' + dateTo,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
