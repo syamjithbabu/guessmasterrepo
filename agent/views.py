@@ -633,6 +633,17 @@ def daily_report(request):
                 print("daily report issue")
                 bills = Bill.objects.filter(Q(user=agent_obj.user) | Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time).all()
                 print(bills)
+                for_agent = 'yes'
+                context = {
+                    'dealers' : dealers,
+                    'times' : times,
+                    'selected_dealer' : 'all',
+                    'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'selected_game_time' : selected_game_time,
+                    'for_agent' : for_agent
+                }
                 for bill in bills:
                     user = bill.user
                     winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date__range=[from_date, to_date],time=select_time)
