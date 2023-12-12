@@ -127,7 +127,7 @@ th, td{
                             <div class="row clearfix">
                                 <div class="col-lg-3 col-6">
                                     <div class="mb-3">
-                                        <input type="text" name="customer" id="customer">
+                                        <input type="text" class="form-control" name="customer" id="customer">
                                     </div>
                                 </div>
                             </div>
@@ -310,6 +310,8 @@ th, td{
         </tbody>
     </table>
 </nav>
+
+<h1 id="bill-id" style="display: none;">{{bill_id.id}}</h1>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
@@ -2241,50 +2243,76 @@ async function processQueue() {
 
 
     function saveDataToViews() {
-        const customer = document.getElementById("customer").value;
-        const timeId = {{time.id}};
+            var totalCount = document.getElementById('totalCount').textContent;
+            var totalDAmount = document.getElementById('totalDAmount').textContent;
+            var totalCAmount = document.getElementById('totalCAmount').textContent;
+            var billId = document.getElementById('bill-id').textContent;
+            Swal.fire({
+                icon: 'question',
+                title: 'Save Bill?',
+                html: `<p>Bill No: ${billId}</p>
+                        <p>Total Count: ${totalCount}</p>
+                        <p>Total Amount: ${totalCAmount}</p>`,
+                text: 'Are you sure you want to save.',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                confirmButtonText: 'Save',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const customer = document.getElementById("customer").value;
+                    const timeId = {{time.id}};
 
-        const data = {
-            customer: customer,
-            timeId: timeId,
-        };
+                    const data = {
+                        customer: customer,
+                        timeId: timeId,
+                    };
 
-        // Make an AJAX request to save the data to Django views
-        $.ajax({
-            url: '/dealer/save-data/',
-            type: 'POST',
-            contentType: 'application/json',
-            headers: {
-                'X-CSRFToken': csrftoken,
-            },
-            data: JSON.stringify(data),
-            success: function (response) {
-                console.log('Data saved successfully:', response);
+                    // Make an AJAX request to save the data to Django views
+                    $.ajax({
+                        url: '/dealer/save-data/',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                        },
+                        data: JSON.stringify(data),
+                        success: function (response) {
+                            console.log('Data saved successfully:', response);
 
-                if (response.message === 'Bill saved') {
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Bill saved successfully.',
+                            if (response.message === 'Bill saved') {
+                                // Show success message
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'Bill saved successfully.',
+                                }).then((result) => {
+                                    // Reload the page when the user clicks "OK"
+                                    if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                // Handle other success scenarios if needed
+                            }
+                        },
+                        error: function (error) {
+                            console.error('Error saving data:', error);
+
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Failed to save the bill.',
+                            });
+                        }
                     });
-                    location.reload();
-                } else {
-                    // Handle other success scenarios if needed
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // User clicked "Cancel," do nothing or handle as needed
                 }
-            },
-            error: function (error) {
-                console.error('Error saving data:', error);
+            });
+        }
 
-                // Show error message
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to save the bill.',
-                });
-            }
-        });
-    }
+    
    </script>
 
 <script>
@@ -2535,7 +2563,7 @@ async function processQueue() {
     function validateCountInput(input) {
         input.value = input.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
         if (input.value.length > 2) {
-            input.value = input.value.slice(0, 2); // Limit to 2 digits
+            input.value = input.value.slice(0, 3); // Limit to 2 digits
         }
     }
 </script>

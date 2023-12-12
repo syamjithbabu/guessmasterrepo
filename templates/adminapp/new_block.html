@@ -98,7 +98,7 @@
                                             </div>
                                             <div class="tab-pane show active" id="tabSet3">
                                                 <ul class="nav nav-tabs-new">
-                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="Super" type="radio"><span><i></i>Super</span></label></li>
+                                                    <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="Super" type="radio" checked><span><i></i>Super</span></label></li>
                                                     <li class="nav-item"><label class="fancy-radio"><input name="select-lsk" value="Box" type="radio"><span><i></i>Box</span></label></li>
                                                 </ul>
                                             </div>
@@ -142,6 +142,7 @@
 
 <script>
     document.getElementById("button1").addEventListener("click", function () {
+        document.querySelector('input[name="select-lsk"][value="A"]').checked = true;
         document.getElementById("button1").classList.add("selected-button");
         document.getElementById("button2").classList.remove("selected-button");
         document.getElementById("button3").classList.remove("selected-button");
@@ -151,6 +152,7 @@
     });
 
     document.getElementById("button2").addEventListener("click", function () {
+        document.querySelector('input[name="select-lsk"][value="AB"]').checked = true;
         document.getElementById("button1").classList.remove("selected-button");
         document.getElementById("button2").classList.add("selected-button");
         document.getElementById("button3").classList.remove("selected-button");
@@ -160,6 +162,7 @@
     });
 
     document.getElementById("button3").addEventListener("click", function () {
+        document.querySelector('input[name="select-lsk"][value="Super"]').checked = true;
         document.getElementById("button1").classList.remove("selected-button");
         document.getElementById("button2").classList.remove("selected-button");
         document.getElementById("button3").classList.add("selected-button");
@@ -168,6 +171,45 @@
         document.getElementById("tabSet3").classList.add("show", "active");
     });
 </script>
+
+<script>
+    var button1 = document.getElementById("button1");
+
+    var numberInput = document.getElementById("numberInput");
+    var countInput = document.getElementById("countInput");
+
+    maxDigits = 3;
+
+
+    button1.addEventListener("click", function () {
+        maxDigits = 1;
+        numberInput.value = "";
+        numberInput.maxLength = maxDigits;
+        numberInput.focus();
+    });
+
+    button2.addEventListener("click", function () {
+        maxDigits = 2;
+        numberInput.value = "";
+        numberInput.maxLength = maxDigits;
+        numberInput.focus();
+    });
+
+    button3.addEventListener("click", function () {
+        maxDigits = 3;
+        numberInput.value = "";
+        numberInput.maxLength = maxDigits;
+        numberInput.focus();
+    });
+
+    numberInput.addEventListener("input", function () {
+        if (numberInput.value.length === maxDigits) {
+            countInput.focus();
+        }
+    });
+
+</script>
+
 <script>
     $(document).ready(function() {
         $("#summary-button").change(function() {

@@ -5,6 +5,8 @@ from dealer.models import DealerGame
 from django.db.models import Sum
 from django.utils import timezone
 import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -48,6 +50,7 @@ class DealerPackage(models.Model):
     
 class AgentGameTest(models.Model):
     agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    customer = models.CharField(max_length=100,null=True)
     time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField(auto_now_add=True)
     LSK = models.CharField(max_length=100)
@@ -58,9 +61,11 @@ class AgentGameTest(models.Model):
 
     def __str__(self):
         return str(self.agent)
+
     
 class AgentGame(models.Model):
     agent = models.ForeignKey(Agent,on_delete=models.CASCADE,null=True)
+    customer = models.CharField(max_length=100,null=True)
     time = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField(auto_now_add=True)
     LSK = models.CharField(max_length=100)
@@ -75,7 +80,7 @@ class AgentGame(models.Model):
     
 class Bill(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    customer = models.CharField(max_length=100,null=True)
+    customer = models.CharField(max_length=100)
     time_id = models.ForeignKey(PlayTime,on_delete=models.CASCADE,null=True)
     date = models.DateField()
     agent_games = models.ManyToManyField(AgentGame)

@@ -131,7 +131,6 @@
                             <div class="table-responsive">
                                 <table class="table m-b-0  ">
                                     {% if dealer_bills %}
-                           
                                     <thead class="l-blue">
                                         <tr>
                                             <th>Date</th>
@@ -146,31 +145,44 @@
                                         {% for bill in dealer_bills %}
                                             <tr>
                                                 <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
-                                                {% if bill.customer == '' %}
-                                                <td>{{ bill.user }}</td>
+                                                {% if bill.customer != '' %}
+                                                    <td>{{ bill.customer }}</td>
                                                 {% else %}
-                                                <td>{{ bill.customer }}</td>
+                                                    <td>{{ bill.user }}</td>
                                                 {% endif %}
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>
                                                 <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                                                 <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                                             </tr>
-                                            {% for game in bill.dealer_games.all %}
+                                            {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
+                                            {% for group in games_by_id %}
+                                                {% for game in group.list %}
                                                 {% if game in dealer_games %}
-                                                    <tr class="expand-row" style="display: none;">
-                                                        <td>#</td>
-                                                        <td>{{ game.LSK }}</td>
-                                                        <td>{{ game.number }}</td>
-                                                        <td>{{ game.count }}</td>
-                                                        <td>{{ game.d_amount|floatformat:2 }}</td>
-                                                        <td>{{ game.c_amount|floatformat:2 }}</td>
-                                                    </tr>
+                                                <tr class="expand-row" style="display: none;">
+                                                    <td>#</td>
+                                                    <td>{{ game.LSK }}</td>
+                                                    <td>{{ game.number }}</td>
+                                                    <td>{{ game.count }}</td>
+                                                    <td>{{ game.d_amount|floatformat:2 }}</td>
+                                                    <td>{{ game.c_amount|floatformat:2 }}</td>
+                                                </tr>
                                                 {% endif %}
+                                                {% endfor %}
                                             {% endfor %}
-                                            {% endfor %}
+                                        {% endfor %}
                                     </tbody>
                                     {% else %}
+                                    <div class="col-lg-12 col-md-6 col-sm-6">
+                                        <div class="card text-center bg-info">
+                                            <div class="body">
+                                                <div class="p-15 text-light">
+                                                    <span style="font-size: 20px; color: black;">Nothing to show!</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </a>
+                                    </div>
                                     {% endif %}
                                 </table>
                                 
@@ -193,7 +205,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom l-parpl" id="btotal">
+    <nav class="navbar-bottom" id="btotal">
         <table>
             <thead>
                 <tr>
@@ -243,27 +255,30 @@
                         <tr>
                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
                                                 {% if bill.customer == '' %}
-                                                <td>{{ bill.user }}</td>
+                                                    <td>{{ bill.user }}</td>
                                                 {% else %}
-                                                <td>{{ bill.customer }}</td>
+                                                    <td>{{ bill.customer }}</td>
                                                 {% endif %}
                                                 <td>{{ bill.id }}</td>
                                                 <td>{{ bill.total_count }}</td>
                                                 <td>{{ bill.total_d_amount|floatformat:2 }}</td>
                                                 <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                         </tr>
-                        {% for game in bill.dealer_games.all %}
-                            {% if game in dealer_games %}
-                                <tr class="expand-row" style="text-align: center;">
-                                    <td>#</td>
-                                    <td>{{ game.LSK }}</td>
-                                    <td>{{ game.number }}</td>
-                                    <td>{{ game.count }}</td>
-                                    <td>{{ game.d_amount|floatformat:2 }}</td>
-                                    <td>{{ game.c_amount|floatformat:2 }}</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                        {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
+                                            {% for group in games_by_id %}
+                                                {% for game in group.list %}
+                                                {% if game in dealer_games %}
+                                                <tr class="expand-row" style="text-align: center;">
+                                                    <td>#</td>
+                                                    <td>{{ game.LSK }}</td>
+                                                    <td>{{ game.number }}</td>
+                                                    <td>{{ game.count }}</td>
+                                                    <td>{{ game.d_amount|floatformat:2 }}</td>
+                                                    <td>{{ game.c_amount|floatformat:2 }}</td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
                         {% endfor %}
                 </tbody>
                 {% else %}
@@ -377,7 +392,26 @@
 
     document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
     document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-    document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time }}";
+    var selectedGameTime = "{{ selected_game_time }}";
+        document.getElementById("demo4").innerHTML = ": " + formatTime(selectedGameTime);
+
+
+
+    function formatTime(time) {
+  // Split the time into hours and minutes
+  var timeArray = time.split(":");
+  var hours = timeArray[0];
+
+  // Convert hours to 12-hour format
+  var ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Handle midnight (00:00) as 12 AM
+
+
+
+  // Format the time in h:mm AM/PM format
+  return hours + ":" +"00" + ampm;
+}
 
 
 
@@ -435,7 +469,7 @@
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'Sales Report -' + dateFrom + ' to ' + dateTo + ' - ' + '{{selected_game_time}}',
+            filename: 'Sales Report -' + dateFrom + ' to ' + dateTo + ' - ' + formatTime(selectedGameTime),
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },

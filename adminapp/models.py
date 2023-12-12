@@ -117,7 +117,7 @@ class Winning(models.Model):
     total_admin = models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
     def __str__(self):
-        return str(self.date)
+        return str(self.position)
 
 class CollectionReport(models.Model):
     date = models.DateField()
@@ -151,6 +151,7 @@ class CombinedGame(models.Model):
     user = models.CharField(max_length=100)
     remaining_limit = models.IntegerField(null=True, blank=True)
     combined = models.BooleanField()
+    cleared = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.LSK} - {self.number}"

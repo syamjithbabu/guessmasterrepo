@@ -27,7 +27,11 @@
     <div class="header">
         <h6>Bill ID : {{bill.id}}</h6>
         <h6>Date : {{bill.date}}</h6>
+        {% if bill.customer != '' %}
+        <h6>User : {{bill.customer}}</h6>
+        {% else %}
         <h6>User : {{bill.user}}</h6>
+        {% endif %}
         <a onclick="deleteBill()" href="{% url 'agent:deleting_bill' bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
     </div>
     <div class="body">
@@ -43,27 +47,34 @@
                 </thead>
                     <tbody>
                         {% if bill.user.agent %}
-                        {% for game in bill.agent_games.all %}
-                    <tr>
-                        <td>{{game.LSK}}</td>
-                        <td>{{game.number}}</td> 
-                        <td>{{game.count}}</td>                                  
-                        <td>
-                            <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                        {% regroup bill.agent_games.all|dictsort:"id" by id as games_by_id %}
+                        {% for group in games_by_id %}
+                            {% for game in group.list %}
+                                <tr>
+                                    <td>{{ game.LSK }}</td>
+                                    <td>{{ game.number }}</td> 
+                                    <td>{{ game.count }}</td>                                  
+                                    <td>
+                                        <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}  
+                  
                     {% else %}
-                    {% for game in bill.dealer_games.all %}
-                    <tr>
-                        <td>{{game.LSK}}</td>
-                        <td>{{game.number}}</td> 
-                        <td>{{game.count}}</td>                                  
-                        <td>
-                            <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                    {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
+                        {% for group in games_by_id %}
+                            {% for game in group.list %}
+                                <tr>
+                                    <td>{{ game.LSK }}</td>
+                                    <td>{{ game.number }}</td> 
+                                    <td>{{ game.count }}</td>                                  
+                                    <td>
+                                        <a href="{% url 'agent:deleting_row' game.id bill.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}  
                     {% endif %}
                 </tbody>
             </table>

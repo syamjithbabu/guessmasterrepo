@@ -99,7 +99,7 @@
 
 
 
-<nav class="navbar-bottom l-turquoise" id="btotal">
+<nav class="navbar-bottom" id="btotal">
     <table>
         <thead>
             <tr>
@@ -124,7 +124,15 @@
 
 
 <div id="pdftab">
+    <h3 style="display: inline-block">Total Balance</h3>
+        <h3 id="demo" style="display: inline-block"></h3>
+        <h3 id="demo1" style="display: inline-block"></h3>
+        <h3 id="demo4" style="display: inline-block;"></h3>
 
+        <h3 id="demo"></h3>
+        <h3 id="demo1"></h3>
+        <h3 id="demo3"></h3>
+        <hr>
     <div class="body">
         <div class="table-responsive">
             <table class="table" style="text-align: center;">
@@ -192,6 +200,9 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         // Hide the pdftab div when the page loads
+        var currentDate = new Date();
+        var formattedDate = currentDate.toISOString().slice(0,10);
+        document.getElementById("demo").innerHTML = " : " + formattedDate;
         var pdftab = document.getElementById("pdftab");
         if (pdftab) {
             pdftab.style.display = "none";
@@ -229,11 +240,13 @@
         }
 
         var rowsPerPage = 10; // Number of rows to display per page
+        var currentDate = new Date();
+        var formattedDate = currentDate.toISOString().slice(0,10);
 
         // Configuration options for html2pdf
         var options = {
             margin: 10,
-            filename: 'TOTAL BALANCE',
+            filename: 'TOTAL BALANCE' + ' Till ' + formattedDate,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },

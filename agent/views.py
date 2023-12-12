@@ -1478,6 +1478,7 @@ def balance_report(request):
     current_date = timezone.now().astimezone(ist).date()
     report_data = []
     total_balance = []
+    admin_report = []
     if request.method == 'POST':
         select_agent = request.POST.get('select-agent')
         print(select_agent)
@@ -1526,7 +1527,7 @@ def balance_report(request):
             total_collection_amount = from_agent - to_agent
             total_d_amount = agent_total_d_amount
             win_amount = float(winning)
-            balance = float(total_d_amount) - float(total_collection_amount) - float(winning)
+            balance = float(winning) - float(total_d_amount) - float(total_collection_amount)
             if total_d_amount:
                 report_data.append({
                     'date' : current_date,
@@ -1550,7 +1551,7 @@ def balance_report(request):
                 print(dealer_games)
                 collection = DealerCollectionReport.objects.filter(date__range=[from_date, to_date], dealer=dealer)
                 print(collection)
-                winning = Winning.objects.filter(dealer=dealer,date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+                winning = Winning.objects.filter(dealer=dealer,date__range=[from_date, to_date]).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
                 dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
                 total_d_amount = dealer_total_d_amount
                 from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
@@ -1568,11 +1569,40 @@ def balance_report(request):
                         'win_amount' : win_amount
                     })
             total_balance = sum(entry['balance'] for entry in report_data)
+
+            agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=agent_obj)
+            dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=agent_obj)
+            agent_total_d_amount_admin = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
+            dealer_total_d_amount_admin = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount_admin'))['dealer_total_d_amount'] or 0
+            print(dealer_total_d_amount_admin,"dealer")
+            collection_admin = CollectionReport.objects.filter(date__range=[from_date, to_date], agent=agent_obj)
+            winning_agent_admin = Winning.objects.filter(agent=agent_obj,date__range=[from_date, to_date]).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+            winning_dealer_admin = Winning.objects.filter(dealer__agent=agent_obj,date__range=[from_date, to_date]).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+            from_agent = collection_admin.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+            to_agent = collection_admin.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+            total_collection_amount = to_agent - from_agent
+            win_amount_admin = float(winning_agent_admin) + float(winning_dealer_admin)
+            total_d_amount_admin = agent_total_d_amount_admin + dealer_total_d_amount_admin
+            balance_admin = float(win_amount_admin) - float(total_d_amount_admin) - float(total_collection_amount)
+
+            admin_report.append({
+                'date' : current_date,
+                'admin': 'admin',
+                'total_d_amount_admin': total_d_amount_admin,
+                'from_or_to' : total_collection_amount,
+                'balance_admin' : balance_admin,
+                'win_amount_admin' : win_amount_admin
+            })
+                
+            total_balance_admin = sum(entry['balance_admin'] for entry in admin_report)
+
             context = {
                 'dealers' : dealers,
                 'selected_agent' : 'all',
                 'report_data': report_data,
                 'total_balance' : total_balance,
+                'admin_report' : admin_report,
+                'total_balance_admin' : total_balance_admin,
                 'selected_from' : from_date,
                 'selected_to' : to_date
             }
@@ -1597,13 +1627,6 @@ def balance_report(request):
             'balance' : balance,
             'win_amount' : win_amount,
         })
-    total_balance = sum(entry['balance'] for entry in report_data)
-    context = {
-        'dealers' : dealers,
-        'selected_agent' : 'all',
-        'report_data': report_data,
-        'total_balance' : total_balance,
-    }
     for dealer in dealers:
         dealer_games = DealerGame.objects.filter(date=current_date, agent=agent_obj,dealer=dealer)
         print(dealer_games)
@@ -1627,11 +1650,44 @@ def balance_report(request):
                 'win_amount' : win_amount
             })
     total_balance = sum(entry['balance'] for entry in report_data)
+
+    #for admin
+
+    agent_games = AgentGame.objects.filter(date=current_date, agent=agent_obj)
+    dealer_games = DealerGame.objects.filter(date=current_date, agent=agent_obj)
+    agent_total_d_amount_admin = agent_games.aggregate(agent_total_d_amount=Sum('c_amount'))['agent_total_d_amount'] or 0
+    dealer_total_d_amount_admin = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount_admin'))['dealer_total_d_amount'] or 0
+    print(dealer_total_d_amount_admin,"dealer")
+    collection_admin = CollectionReport.objects.filter(date=current_date, agent=agent_obj)
+    winning_agent_admin = Winning.objects.filter(agent=agent_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+    winning_dealer_admin = Winning.objects.filter(dealer__agent=agent_obj,date=current_date).aggregate(total_winning=Sum('total_admin'))['total_winning'] or 0
+    from_agent = collection_admin.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    to_agent = collection_admin.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+    total_collection_amount = to_agent - from_agent
+    win_amount_admin = float(winning_agent_admin) + float(winning_dealer_admin)
+    total_d_amount_admin = agent_total_d_amount_admin + dealer_total_d_amount_admin
+    balance_admin = float(win_amount_admin) - float(total_d_amount_admin) - float(total_collection_amount)
+
+    admin_report.append({
+        'date' : current_date,
+        'admin': 'admin',
+        'total_d_amount_admin': total_d_amount_admin,
+        'from_or_to' : total_collection_amount,
+        'balance_admin' : balance_admin,
+        'win_amount_admin' : win_amount_admin
+    })
+        
+    total_balance_admin = sum(entry['balance_admin'] for entry in admin_report)
+
+    print(admin_report)
+
     context = {
         'dealers' : dealers,
         'selected_agent' : 'all',
         'report_data': report_data,
-        'total_balance' : total_balance
+        'admin_report': admin_report,
+        'total_balance' : total_balance,
+        'total_balance_admin' : total_balance_admin,
     }
     return render(request, 'agent/balance_report.html',context)
 
@@ -1663,7 +1719,7 @@ def edit_bill(request,id):
         search_dealer = request.POST.get('dealer-select')
         print(search_dealer,"the user id")
         if search_dealer == 'all':
-            return redirect('agent:edit_bill')
+            return redirect('agent:edit_bill',id=id)
         else:
             pass
         try:
@@ -1759,6 +1815,7 @@ def play_game(request,id):
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
     print(current_date)
+    bill_id = Bill.objects.filter().last()
     dealers = Dealer.objects.filter(agent=agent_obj).all()
     if current_time > time.end_time:
         return redirect('agent:index')
@@ -1788,6 +1845,7 @@ def play_game(request,id):
             'total_c_amount': total_c_amount,
             'total_d_amount': total_d_amount,
             'total_count': total_count,
+            'bill_id' : bill_id
         }
         return render(request,'agent/play_game.html',context)
     else:
@@ -1811,7 +1869,8 @@ def play_game(request,id):
             'total_c_amount': total_c_amount,
             'total_d_amount': total_d_amount,
             'total_count': total_count,
-            'selected_dealer' : 'False'
+            'selected_dealer' : 'False',
+            'bill_id' : bill_id
         }
         return render(request,'agent/play_game.html',context)
 
@@ -2028,6 +2087,20 @@ def agent_game_test_update(request,id):
             DealerGameTest.objects.filter(id=id).update(count=edited_count,d_amount=updated_d_amount,c_amount=updated_c_amount,d_amount_admin=updated_d_amount_admin,c_amount_admin=updated_c_amount_admin)
             return JsonResponse({'status':'success'})
 
+def get_total_count(model, date, time, link_text, number):
+    return model.objects.filter(date=date, time=time, LSK=link_text, number=number).aggregate(total_count=Sum('count'))['total_count'] or 0
+
+def get_game_totals(model, date, time, link_text):
+    return {
+        'total_super': model.objects.filter(date=date, time=time, LSK='Super').aggregate(total_super=Sum('count'))['total_super'] or 0,
+        'total_box': model.objects.filter(date=date, time=time, LSK='Box').aggregate(total_box=Sum('count'))['total_box'] or 0,
+        'total_ab': model.objects.filter(date=date, time=time, LSK='AB').aggregate(total_ab=Sum('count'))['total_ab'] or 0,
+        'total_bc': model.objects.filter(date=date, time=time, LSK='BC').aggregate(total_bc=Sum('count'))['total_bc'] or 0,
+        'total_ac': model.objects.filter(date=date, time=time, LSK='AC').aggregate(total_ac=Sum('count'))['total_ac'] or 0,
+        'total_a': model.objects.filter(date=date, time=time, LSK='A').aggregate(total_a=Sum('count'))['total_a'] or 0,
+        'total_b': model.objects.filter(date=date, time=time, LSK='B').aggregate(total_b=Sum('count'))['total_b'] or 0,
+        'total_c': model.objects.filter(date=date, time=time, LSK='C').aggregate(total_c=Sum('count'))['total_c'] or 0,
+    }
 
 def check_limit(request):
     ist = pytz_timezone('Asia/Kolkata')
@@ -2037,6 +2110,7 @@ def check_limit(request):
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
         print(data)
         select_dealer = data.get('selectDealer')
+        customer = data.get('customer')
         link_text = data.get('linkText')
         value1 = data.get('value1')
         value2 = data.get('value2')
@@ -2063,7 +2137,9 @@ def check_limit(request):
                     if blocked_numbers:
                         agent_game_count = AgentGame.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
                         dealer_game_count = DealerGame.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
-                        blocked_number_count = (agent_game_count) + (dealer_game_count) + int(value2)
+                        agent_game_test_count = AgentGameTest.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
+                        dealer_game_test_count = DealerGameTest.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
+                        blocked_number_count = (agent_game_count) + (dealer_game_count) + (agent_game_test_count) + (dealer_game_test_count) + int(value2)
                         sale_count = (agent_game_count) + (dealer_game_count)
                         for block in blocked_numbers:
                             if blocked_number_count > block.count:
@@ -2072,6 +2148,7 @@ def check_limit(request):
                                 pass
                 except:
                     pass
+
                 try:
                     game_limit = GameLimit.objects.get(time=time)
                     limits = {
@@ -2084,102 +2161,37 @@ def check_limit(request):
                         'B' : game_limit.b,
                         'C' : game_limit.c,
                         }
-                    agent_games_super = AgentGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    agent_games_test_super = AgentGameTest.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    dealer_games_super = DealerGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    dealer_games_test_super = DealerGameTest.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    agent_games_box = AgentGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    agent_games_test_box = AgentGameTest.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    dealer_games_box = DealerGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    dealer_games_test_box = DealerGameTest.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    agent_games_ab = AgentGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    agent_games_test_ab = AgentGameTest.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    dealer_games_ab = DealerGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    dealer_games_test_ab = DealerGameTest.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    agent_games_bc = AgentGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    agent_games_test_bc = AgentGameTest.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    dealer_games_bc = DealerGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    dealer_games_test_bc = DealerGameTest.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    agent_games_ac = AgentGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    agent_games_test_ac = AgentGameTest.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    dealer_games_ac = DealerGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    dealer_games_test_ac = DealerGameTest.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    agent_games_a = AgentGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    agent_games_test_a = AgentGameTest.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    dealer_games_a = DealerGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    dealer_games_test_a = DealerGameTest.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    agent_games_b = AgentGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    agent_games_test_b = AgentGameTest.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    dealer_games_b = DealerGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    dealer_games_test_b = DealerGameTest.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    agent_games_c = AgentGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    agent_games_test_c = AgentGameTest.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    dealer_games_c = DealerGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    dealer_games_test_c = DealerGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-
-                    games_super = (agent_games_super['total_super'] or 0) + (dealer_games_super['total_super'] or 0) + (agent_games_test_super['total_super'] or 0) + (dealer_games_test_super['total_super'] or 0)
-                    games_box = (agent_games_box['total_box'] or 0) + (dealer_games_box['total_box'] or 0) + (agent_games_test_box['total_box'] or 0) + (dealer_games_test_box['total_box'] or 0)
-                    games_ab = (agent_games_ab['total_ab'] or 0) + (dealer_games_ab['total_ab'] or 0) + (agent_games_test_ab['total_ab'] or 0) + (dealer_games_test_ab['total_ab'] or 0)
-                    games_bc = (agent_games_bc['total_bc'] or 0) + (dealer_games_bc['total_bc'] or 0) + (agent_games_test_bc['total_bc'] or 0) + (dealer_games_test_bc['total_bc'] or 0)
-                    games_ac = (agent_games_ac['total_ac'] or 0) + (dealer_games_ac['total_ac'] or 0) + (agent_games_test_ac['total_ac'] or 0) + (dealer_games_test_ac['total_ac'] or 0)
-                    games_a = (agent_games_a['total_a'] or 0) + (dealer_games_a['total_a'] or 0) + (agent_games_test_a['total_a'] or 0) + (dealer_games_test_a['total_a'] or 0)
-                    games_b = (agent_games_b['total_b'] or 0) + (dealer_games_b['total_b'] or 0) + (agent_games_test_b['total_b'] or 0) + (dealer_games_test_b['total_b'] or 0)
-                    games_c = (agent_games_c['total_c'] or 0) + (dealer_games_c['total_c'] or 0) + (agent_games_test_c['total_c'] or 0) + (dealer_games_test_c['total_c'] or 0)
-
-                    if link_text == 'Super':
-                        total_super = int(games_super) + int(value2)
-                        total = int(total_super) + int(value2)
-                        if total_super > game_limit.super:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'Box':
-                        total_box = int(games_box)+int(value2)
-                        total = int(total_box) + int(value2)
-                        if total_box > game_limit.box:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'AB':
-                        total_ab = int(games_ab)+int(value2)
-                        total = int(total_ab) + int(value2)
-                        if total_ab > game_limit.ab:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'BC':
-                        total_bc = int(games_bc)+int(value2)
-                        total = int(total_bc) + int(value2)
-                        if total_bc > game_limit.bc:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'AC':
-                        total_ac = int(games_ac)+int(value2)
-                        total = int(total_ac) + int(value2)
-                        if total_ac > game_limit.ac:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'A':
-                        total_a = int(games_a)+int(value2)
-                        total = int(total_a) + int(value2)
-                        if total_a > game_limit.a:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'B':
-                        total_b = int(games_b)+int(value2)
-                        total = int(total_b) + int(value2)
-                        if total_b > game_limit.b:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'C':
-                        total_c = int(games_c)+int(value2)
-                        total = int(total_c) + int(value2)
-                        if total_c > game_limit.c:
-                            return JsonResponse({'message' : 'LSK blocked'})
+                    agent_games = AgentGame.objects.filter(date=current_date, time=time, LSK=link_text)
+                    agent_games_test = AgentGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
+                    dealer_games = DealerGame.objects.filter(date=current_date, time=time, LSK=link_text)
+                    dealer_games_test = DealerGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
+                    total_counts = {
+                        'agent_game_count': agent_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'dealer_game_count': dealer_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'agent_game_test_count': agent_games_test.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'dealer_game_test_count': dealer_games_test.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                    }
+                    games_total = sum([
+                        agent_games.aggregate(total=Sum('count'))['total'] or 0,
+                        dealer_games.aggregate(total=Sum('count'))['total'] or 0,
+                        agent_games_test.aggregate(total=Sum('count'))['total'] or 0,
+                        dealer_games_test.aggregate(total=Sum('count'))['total'] or 0,
+                    ])
+                    total_count_key = limits.get(link_text, None)
+                    if total_count_key is not None:
+                        print("limit checking")
+                        total = games_total + int(value2)
+                        if total > getattr(game_limit, link_text.lower()):
+                            return JsonResponse({'message': 'LSK blocked'})
                 except:
                     pass
+                
                 if add > limit.daily_limit:
                     return JsonResponse({'message': 'Limit exceeded'})
                 else:
                     agent_game_test = AgentGameTest.objects.create(
                         agent=agent_obj,
+                        customer=customer,
                         time=time,
                         LSK=link_text,
                         number=value1,
@@ -2228,7 +2240,9 @@ def check_limit(request):
                     if blocked_numbers:
                         agent_game_count = AgentGame.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
                         dealer_game_count = DealerGame.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
-                        blocked_number_count = (agent_game_count) + (dealer_game_count) + int(value2)
+                        agent_game_test_count = AgentGameTest.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
+                        dealer_game_test_count = DealerGameTest.objects.filter(date=current_date,time=time,LSK=link_text,number=value1).aggregate(total_count=Sum('count'))['total_count'] or 0
+                        blocked_number_count = (agent_game_count) + (dealer_game_count) + (agent_game_test_count) + (dealer_game_test_count) + int(value2)
                         sale_count = (agent_game_count) + (dealer_game_count)
                         for block in blocked_numbers:
                             if blocked_number_count > block.count:
@@ -2237,6 +2251,7 @@ def check_limit(request):
                                 pass
                 except:
                     pass
+                
                 try:
                     game_limit = GameLimit.objects.get(time=time)
                     limits = {
@@ -2249,97 +2264,31 @@ def check_limit(request):
                         'B' : game_limit.b,
                         'C' : game_limit.c,
                         }
-                    agent_games_super = AgentGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    agent_games_test_super = AgentGameTest.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    dealer_games_super = DealerGame.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    dealer_games_test_super = DealerGameTest.objects.filter(date=current_date,time=time,LSK='Super').aggregate(total_super=Sum('count')) or {'total_super': 0}
-                    agent_games_box = AgentGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    agent_games_test_box = AgentGameTest.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    dealer_games_box = DealerGame.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    dealer_games_test_box = DealerGameTest.objects.filter(date=current_date,time=time,LSK='Box').aggregate(total_box=Sum('count')) or {'total_box': 0}
-                    agent_games_ab = AgentGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    agent_games_test_ab = AgentGameTest.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    dealer_games_ab = DealerGame.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    dealer_games_test_ab = DealerGameTest.objects.filter(date=current_date,time=time,LSK='AB').aggregate(total_ab=Sum('count')) or {'total_ab': 0}
-                    agent_games_bc = AgentGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    agent_games_test_bc = AgentGameTest.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    dealer_games_bc = DealerGame.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    dealer_games_test_bc = DealerGameTest.objects.filter(date=current_date,time=time,LSK='BC').aggregate(total_bc=Sum('count')) or {'total_bc': 0}
-                    agent_games_ac = AgentGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    agent_games_test_ac = AgentGameTest.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    dealer_games_ac = DealerGame.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    dealer_games_test_ac = DealerGameTest.objects.filter(date=current_date,time=time,LSK='AC').aggregate(total_ac=Sum('count')) or {'total_ac': 0}
-                    agent_games_a = AgentGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    agent_games_test_a = AgentGameTest.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    dealer_games_a = DealerGame.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    dealer_games_test_a = DealerGameTest.objects.filter(date=current_date,time=time,LSK='A').aggregate(total_a=Sum('count')) or {'total_a': 0}
-                    agent_games_b = AgentGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    agent_games_test_b = AgentGameTest.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    dealer_games_b = DealerGame.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    dealer_games_test_b = DealerGameTest.objects.filter(date=current_date,time=time,LSK='B').aggregate(total_b=Sum('count')) or {'total_b': 0}
-                    agent_games_c = AgentGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    agent_games_test_c = AgentGameTest.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    dealer_games_c = DealerGame.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-                    dealer_games_test_c = DealerGameTest.objects.filter(date=current_date,time=time,LSK='C').aggregate(total_c=Sum('count')) or {'total_c': 0}
-
-                    games_super = (agent_games_super['total_super'] or 0) + (dealer_games_super['total_super'] or 0) + (agent_games_test_super['total_super'] or 0) + (dealer_games_test_super['total_super'] or 0)
-                    games_box = (agent_games_box['total_box'] or 0) + (dealer_games_box['total_box'] or 0) + (agent_games_test_box['total_box'] or 0) + (dealer_games_test_box['total_box'] or 0)
-                    games_ab = (agent_games_ab['total_ab'] or 0) + (dealer_games_ab['total_ab'] or 0) + (agent_games_test_ab['total_ab'] or 0) + (dealer_games_test_ab['total_ab'] or 0)
-                    games_bc = (agent_games_bc['total_bc'] or 0) + (dealer_games_bc['total_bc'] or 0) + (agent_games_test_bc['total_bc'] or 0) + (dealer_games_test_bc['total_bc'] or 0)
-                    games_ac = (agent_games_ac['total_ac'] or 0) + (dealer_games_ac['total_ac'] or 0) + (agent_games_test_ac['total_ac'] or 0) + (dealer_games_test_ac['total_ac'] or 0)
-                    games_a = (agent_games_a['total_a'] or 0) + (dealer_games_a['total_a'] or 0) + (agent_games_test_a['total_a'] or 0) + (dealer_games_test_a['total_a'] or 0)
-                    games_b = (agent_games_b['total_b'] or 0) + (dealer_games_b['total_b'] or 0) + (agent_games_test_b['total_b'] or 0) + (dealer_games_test_b['total_b'] or 0)
-                    games_c = (agent_games_c['total_c'] or 0) + (dealer_games_c['total_c'] or 0) + (agent_games_test_c['total_c'] or 0) + (dealer_games_test_c['total_c'] or 0)
-
-                    if link_text == 'Super':
-                        total_super = int(games_super) + int(value2)
-                        total = int(total_super) + int(value2)
-                        if total_super > game_limit.super:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'Box':
-                        total_box = int(games_box)+int(value2)
-                        total = int(total_box) + int(value2)
-                        if total_box > game_limit.box:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'AB':
-                        total_ab = int(games_ab)+int(value2)
-                        total = int(total_ab) + int(value2)
-                        if total_ab > game_limit.ab:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'BC':
-                        total_bc = int(games_bc)+int(value2)
-                        total = int(total_bc) + int(value2)
-                        if total_bc > game_limit.bc:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'AC':
-                        total_ac = int(games_ac)+int(value2)
-                        total = int(total_ac) + int(value2)
-                        if total_ac > game_limit.ac:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'A':
-                        total_a = int(games_a)+int(value2)
-                        total = int(total_a) + int(value2)
-                        if total_a > game_limit.a:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'B':
-                        total_b = int(games_b)+int(value2)
-                        total = int(total_b) + int(value2)
-                        if total_b > game_limit.b:
-                            return JsonResponse({'message' : 'LSK blocked'})
-
-                    elif link_text == 'C':
-                        total_c = int(games_c)+int(value2)
-                        total = int(total_c) + int(value2)
-                        if total_c > game_limit.c:
-                            return JsonResponse({'message' : 'LSK blocked'})
+                    agent_games = AgentGame.objects.filter(date=current_date, time=time, LSK=link_text)
+                    agent_games_test = AgentGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
+                    dealer_games = DealerGame.objects.filter(date=current_date, time=time, LSK=link_text)
+                    dealer_games_test = DealerGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
+                    total_counts = {
+                        'agent_game_count': agent_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'dealer_game_count': dealer_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'agent_game_test_count': agent_games_test.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                        'dealer_game_test_count': dealer_games_test.aggregate(total_count=Sum('count'))['total_count'] or 0,
+                    }
+                    games_total = sum([
+                        agent_games.aggregate(total=Sum('count'))['total'] or 0,
+                        dealer_games.aggregate(total=Sum('count'))['total'] or 0,
+                        agent_games_test.aggregate(total=Sum('count'))['total'] or 0,
+                        dealer_games_test.aggregate(total=Sum('count'))['total'] or 0,
+                    ])
+                    total_count_key = limits.get(link_text, None)
+                    if total_count_key is not None:
+                        print("limit checking")
+                        total = games_total + int(value2)
+                        if total > getattr(game_limit, link_text.lower()):
+                            return JsonResponse({'message': 'LSK blocked'})
                 except:
                     pass
+                
                 if add > limit.daily_limit:
                     return JsonResponse({'message': 'Limit exceeded'})
                 else:
@@ -2364,7 +2313,6 @@ def check_limit(request):
 @login_required
 @agent_required
 def save_data(request):
-    print("hello")
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     agent_obj = Agent.objects.get(user=request.user)
@@ -2373,13 +2321,15 @@ def save_data(request):
         data = json.loads(request.body, object_pairs_hook=OrderedDict)
         print(data)
         select_dealer = data.get('selectDealer')
+        customer = data.get('customer')
         play_time = data.get('timeId')
         time = PlayTime.objects.get(id=play_time)
         print(select_dealer)
+        print(customer)
 
     try:
         if select_dealer == 'False':
-            agent_game_test = AgentGameTest.objects.filter(agent=agent_obj, time=time, date=current_date)
+            agent_game_test = AgentGameTest.objects.filter(agent=agent_obj, time=time, date=current_date).order_by('id')
 
             # Create AgentGame records based on AgentGameTest
             agent_game_records = []
@@ -2387,6 +2337,7 @@ def save_data(request):
             for test_record in agent_game_test:
                 agent_game_record = AgentGame(
                     agent=test_record.agent,
+                    customer=test_record.customer,
                     time=test_record.time,
                     date=test_record.date,
                     LSK=test_record.LSK,
@@ -2411,6 +2362,7 @@ def save_data(request):
                 # Create the Bill record
                 bill = Bill.objects.create(
                     user=agent_obj.user,
+                    customer=customer,
                     time_id=time,
                     date=current_date,
                     total_c_amount=total_c_amount,
@@ -2422,7 +2374,7 @@ def save_data(request):
 
         else:
 
-            dealer_game_test = DealerGameTest.objects.filter(agent=agent_obj,created_by=agent_obj,time=time, date=current_date)
+            dealer_game_test = DealerGameTest.objects.filter(agent=agent_obj,created_by=agent_obj,time=time, date=current_date).order_by('id')
 
             dealer_game_records = []
 
@@ -2596,7 +2548,7 @@ def total_balance(request):
     win_amount = float(winning)
     balance = float(winning) - float(total_collection_amount) - float(sale_amount)
     report_data.append({
-            'dealer' : agent_obj,
+            'dealer' : 'admin',
             'sale_amount' : balance
         })
 

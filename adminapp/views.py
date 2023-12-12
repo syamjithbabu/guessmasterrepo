@@ -24,7 +24,7 @@ from django.http import JsonResponse
 from django.contrib.auth.forms import AdminPasswordChangeForm,SetPasswordForm
 from django.contrib.auth.forms import AdminPasswordChangeForm,PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 # Create your views here.
@@ -349,13 +349,21 @@ def delete_package(request,id):
 
 @login_required
 @admin_required
-def add_result(request):
+def add_result_times(request):
+    times = PlayTime.objects.filter().all().order_by('id')
+    context = {
+        'times' : times
+    }
+    return render(request,'adminapp/add_result_times.html',context)
+
+@login_required
+@admin_required
+def add_result(request,id):
     timings = PlayTime.objects.filter().all().order_by('id')
     print(timings)
     if request.method == 'POST':
         date = request.POST.get('date')
-        time = request.POST.get('time')
-        play_time = PlayTime.objects.get(id=time)
+        play_time = PlayTime.objects.get(id=id)
         print(play_time.id,"the time is")
         first = request.POST.get('first')
         second = request.POST.get('second')
@@ -392,7 +400,81 @@ def add_result(request):
         field28 = request.POST.get('field28')
         field29 = request.POST.get('field29')
         field30 = request.POST.get('field30')
-        already_result_check = Result.objects.filter(date=date,time=time)
+
+        fields = [
+            ('field1', request.POST.get('field1')),
+            ('field2', request.POST.get('field2')),
+            ('field3', request.POST.get('field3')),
+            ('field4', request.POST.get('field4')),
+            ('field5', request.POST.get('field5')),
+            ('field6', request.POST.get('field6')),
+            ('field7', request.POST.get('field7')),
+            ('field8', request.POST.get('field8')),
+            ('field9', request.POST.get('field9')),
+            ('field10', request.POST.get('field10')),
+            ('field11', request.POST.get('field11')),
+            ('field12', request.POST.get('field12')),
+            ('field13', request.POST.get('field13')),
+            ('field14', request.POST.get('field14')),
+            ('field15', request.POST.get('field15')),
+            ('field16', request.POST.get('field16')),
+            ('field17', request.POST.get('field17')),
+            ('field18', request.POST.get('field18')),
+            ('field19', request.POST.get('field19')),
+            ('field20', request.POST.get('field20')),
+            ('field21', request.POST.get('field21')),
+            ('field22', request.POST.get('field22')),
+            ('field23', request.POST.get('field23')),
+            ('field24', request.POST.get('field24')),
+            ('field25', request.POST.get('field25')),
+            ('field26', request.POST.get('field26')),
+            ('field27', request.POST.get('field27')),
+            ('field28', request.POST.get('field28')),
+            ('field29', request.POST.get('field29')),
+            ('field30', request.POST.get('field30')),
+        ]
+
+        fields = [(name, value) for name, value in fields if value is not None]
+
+        # Sort the list of tuples based on values
+        fields.sort(key=lambda x: int(x[1]) if x[1].isdigit() else float('inf'))
+
+        # Assign the sorted values back to the fields
+        for i, (name, _) in enumerate(fields, start=1):
+            locals()[name] = request.POST.get(f'field{i}')
+
+        field1 = fields[0][1]
+        field2 = fields[1][1]
+        field3 = fields[2][1]
+        field4 = fields[3][1]
+        field5 = fields[4][1]
+        field6 = fields[5][1]
+        field7 = fields[6][1]
+        field8 = fields[7][1]
+        field9 = fields[8][1]
+        field10 = fields[9][1]
+        field11 = fields[10][1]
+        field12 = fields[11][1]
+        field13 = fields[12][1]
+        field14 = fields[13][1]
+        field15 = fields[14][1]
+        field16 = fields[15][1]
+        field17 = fields[16][1]
+        field18 = fields[17][1]
+        field19 = fields[18][1]
+        field20 = fields[19][1]
+        field21 = fields[20][1]
+        field22 = fields[21][1]
+        field23 = fields[22][1]
+        field24 = fields[23][1]
+        field25 = fields[24][1]
+        field26 = fields[25][1]
+        field27 = fields[26][1]
+        field28 = fields[27][1]
+        field29 = fields[28][1]
+        field30 = fields[29][1]
+
+        already_result_check = Result.objects.filter(date=date,time=play_time)
         if already_result_check:
             messages.info(request, "Result already published on this date and time!")
             context = {
@@ -403,14 +485,22 @@ def add_result(request):
             result = Result.objects.create(date=date,time=play_time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
             result.save()
             messages.info(request, "Result published!")
-            agent_games = AgentGame.objects.filter(date=date,time=time).all()
+            agent_games = AgentGame.objects.filter(date=date,time=play_time).all()
             print(agent_games,"agent games")
-            dealer_games = DealerGame.objects.filter(date=date,time=time).all()
+            dealer_games = DealerGame.objects.filter(date=date,time=play_time).all()
             if agent_games:
                 for game in agent_games:
                     print("Game",game)
                     print("Game id",game.id)
                     game_number = game.number
+                    if game.LSK == 'Box' and game_number == result.first:
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
+                        agent_package = AgentPackage.objects.get(agent=game.agent)
+                        prize = ((agent_package.box_first_prize)*(game.count))
+                        commission = ((agent_package.box_first_prize_dc)*(game.count))
+                        total = ((prize)+(commission))
+                        print(prize,commission,total)
+                        box_first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     if game.LSK == 'Box' and game_number != result.first:
                         combinations = get_combinations(game_number)
                         print("Combinations:", combinations)
@@ -418,7 +508,7 @@ def add_result(request):
                             for combination in combinations:
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
-                                    matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                                    matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                                     agent_package = AgentPackage.objects.get(agent=game.agent)
                                     prize = ((agent_package.box_series_prize)*(game.count))
                                     commission = ((agent_package.box_series_dc)*(game.count))
@@ -429,7 +519,7 @@ def add_result(request):
                             for combination in combinations:
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
-                                    matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                                    matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                                     agent_package = AgentPackage.objects.get(agent=game.agent)
                                     prize = ((agent_package.box_series_prize)*(game.count))*2
                                     commission = ((agent_package.box_series_dc)*(game.count))*2
@@ -437,105 +527,354 @@ def add_result(request):
                                     print(prize,commission,total)
                                     box_series_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
                     elif game.number in result.__dict__.values():
-                        matched_field = [field for field, value in result.__dict__.items() if value == game.number]
-                        if matched_field:
+                        matched_fields = [field for field, value in result.__dict__.items() if value == game.number]
+                        if matched_fields:
                             print("hello")
-                            matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                            matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                             print(matching_bills.id)
-                            print(f"Agent game number {game.number} matched with Result field: {matched_field[0]} for Agent: {game.agent}")
                             agent_package = AgentPackage.objects.get(agent=game.agent)
                             if game.LSK == "Super":
-                                if matched_field[0] == 'first':
-                                    prize = ((agent_package.first_prize)*(game.count))
-                                    commission = ((agent_package.first_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                                elif matched_field[0] == 'second':
-                                    prize = ((agent_package.second_prize)*(game.count))
-                                    commission = ((agent_package.second_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    second_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                                elif matched_field[0] == 'third':
-                                    prize = ((agent_package.third_prize)*(game.count))
-                                    commission = ((agent_package.third_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    third_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
-                                elif matched_field[0] == 'fourth':
-                                    prize = ((agent_package.fourth_prize)*(game.count))
-                                    commission = ((agent_package.fourth_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    fourth_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
-                                elif matched_field[0] == 'fifth':
-                                    prize = ((agent_package.fifth_prize)*(game.count))
-                                    commission = ((agent_package.fifth_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    fifth_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
-                                else :
-                                    prize = ((agent_package.guarantee_prize)*(game.count))
-                                    commission = ((agent_package.guarantee_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
-                            elif game.LSK == "Box":
-                                if matched_field[0] == 'first':
-                                    prize = ((agent_package.box_first_prize)*(game.count))
-                                    commission = ((agent_package.box_first_prize_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    print(prize,commission,total)
-                                    box_first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                for matched_field in matched_fields:
+                                    if matched_field == 'first':
+                                        prize = ((agent_package.first_prize)*(game.count))
+                                        commission = ((agent_package.first_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'second':
+                                        print("second also")
+                                        prize = ((agent_package.second_prize)*(game.count))
+                                        commission = ((agent_package.second_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        second_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'third':
+                                        prize = ((agent_package.third_prize)*(game.count))
+                                        commission = ((agent_package.third_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        third_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'fourth':
+                                        prize = ((agent_package.fourth_prize)*(game.count))
+                                        commission = ((agent_package.fourth_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        fourth_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'fifth':
+                                        prize = ((agent_package.fifth_prize)*(game.count))
+                                        commission = ((agent_package.fifth_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        fifth_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field1':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field2':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field3':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field4':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field5':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field6':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field7':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field8':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field9':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field10':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field11':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field12':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field13':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field14':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field15':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field16':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field17':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field18':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field19':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field20':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field21':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field22':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field23':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field24':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field25':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field26':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field27':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field28':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field29':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                    if matched_field == 'field30':
+                                        prize = ((agent_package.guarantee_prize)*(game.count))
+                                        commission = ((agent_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         agent_package = AgentPackage.objects.get(agent=game.agent)
                         print(date,time,game.agent.user.id,game.id)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'B' and result.first[1] == game.number[0]:
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'C' and result.first[2] == game.number[0]:
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'AB' and result.first[:2] == game.number[:2]:
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.double2_prize)*(game.count))
                         commission = ((agent_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.double2_prize)*(game.count))
                         commission = ((agent_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.double2_prize)*(game.count))
                         commission = ((agent_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
                         single_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
             if dealer_games:
                 for game in dealer_games:
+                    agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                     print("Game",game)
                     print("Game id",game.id)
                     game_number = game.number
+                    if game.LSK == 'Box' and game_number == result.first:
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        dealer_package = DealerPackage.objects.get(dealer=game.dealer)
+                        prize = ((dealer_package.box_first_prize)*(game.count))
+                        commission = ((dealer_package.box_first_prize_dc)*(game.count))
+                        total = ((prize)+(commission))
+                        prize_admin = ((agent_package.box_first_prize)*(game.count))
+                        commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
+                        total_admin = ((prize_admin)+(commission_admin))
+                        box_first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     if game.LSK == 'Box' and game_number != result.first:
                         combinations = get_combinations(game_number)
                         print("Combinations:", combinations)
@@ -543,8 +882,7 @@ def add_result(request):
                             for combination in combinations:
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
-                                    matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
-                                    agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
+                                    matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                                     print(agent_package,"this is got")
                                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                     prize = ((dealer_package.box_series_prize)*(game.count))
@@ -559,8 +897,7 @@ def add_result(request):
                             for combination in combinations:
                                 if combination == result.first:
                                     print(f"Combination {combination} matches the first field for Game {game.id}")
-                                    matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
-                                    agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
+                                    matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                     prize = ((dealer_package.box_series_prize)*(game.count))*2
                                     commission = ((dealer_package.box_series_dc)*(game.count))*2
@@ -571,83 +908,438 @@ def add_result(request):
                                     print(prize,commission,total)
                                     box_series_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.number in result.__dict__.values():
-                        matched_field = [field for field, value in result.__dict__.items() if value == game.number]
-                        if matched_field:
+                        matched_fields = [field for field, value in result.__dict__.items() if value == game.number]
+                        if matched_fields:
                             print("hello")
-                            matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                            matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                             print(matching_bills.id)
-                            print(f"Dealer game number {game.number} matched with Result field: {matched_field[0]} for Dealer: {game.dealer}")
-                            agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                             print(agent_package,"this is got")
                             dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                             if game.LSK == "Super":
-                                if matched_field[0] == 'first':
-                                    prize = ((dealer_package.first_prize)*(game.count))
-                                    commission = ((dealer_package.first_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.first_prize)*(game.count))
-                                    commission_admin = ((agent_package.first_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                                elif matched_field[0] == 'second':
-                                    prize = ((dealer_package.second_prize)*(game.count))
-                                    commission = ((dealer_package.second_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.second_prize)*(game.count))
-                                    commission_admin = ((agent_package.second_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    second_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                                elif matched_field[0] == 'third':
-                                    prize = ((dealer_package.third_prize)*(game.count))
-                                    commission = ((dealer_package.third_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.third_prize)*(game.count))
-                                    commission_admin = ((agent_package.third_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    third_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                                elif matched_field[0] == 'fourth':
-                                    prize = ((dealer_package.fourth_prize)*(game.count))
-                                    commission = ((dealer_package.fourth_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.fourth_prize)*(game.count))
-                                    commission_admin = ((agent_package.fourth_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    fourth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                                elif matched_field[0] == 'fifth':
-                                    prize = ((dealer_package.fifth_prize)*(game.count))
-                                    commission = ((dealer_package.fifth_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.fifth_prize)*(game.count))
-                                    commission_admin = ((agent_package.fifth_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    fifth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                                else :
-                                    prize = ((dealer_package.guarantee_prize)*(game.count))
-                                    commission = ((dealer_package.guarantee_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
-                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            elif game.LSK == "Box":
-                                if matched_field[0] == 'first':
-                                    prize = ((dealer_package.box_first_prize)*(game.count))
-                                    commission = ((dealer_package.box_first_prize_dc)*(game.count))
-                                    total = ((prize)+(commission))
-                                    prize_admin = ((agent_package.box_first_prize)*(game.count))
-                                    commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
-                                    total_admin = ((prize_admin)+(commission_admin))
-                                    print(prize,commission,total)
-                                    box_first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                for matched_field in matched_fields:
+                                    if matched_field == 'first':
+                                        prize = ((dealer_package.first_prize)*(game.count))
+                                        commission = ((dealer_package.first_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.first_prize)*(game.count))
+                                        commission_admin = ((agent_package.first_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'second':
+                                        prize = ((dealer_package.second_prize)*(game.count))
+                                        commission = ((dealer_package.second_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.second_prize)*(game.count))
+                                        commission_admin = ((agent_package.second_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        second_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'third':
+                                        prize = ((dealer_package.third_prize)*(game.count))
+                                        commission = ((dealer_package.third_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.third_prize)*(game.count))
+                                        commission_admin = ((agent_package.third_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        third_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'fourth':
+                                        prize = ((dealer_package.fourth_prize)*(game.count))
+                                        commission = ((dealer_package.fourth_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.fourth_prize)*(game.count))
+                                        commission_admin = ((agent_package.fourth_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        fourth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'fifth':
+                                        prize = ((dealer_package.fifth_prize)*(game.count))
+                                        commission = ((dealer_package.fifth_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.fifth_prize)*(game.count))
+                                        commission_admin = ((agent_package.fifth_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        fifth_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field1' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field2' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field3' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field4' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field5' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field6' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field7' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field8' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field9' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field10' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field11' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field12' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field13' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field14' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field15' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field16' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field17' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field18' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field19' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field20' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field21' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field22' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field23' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field24' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field25' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field26' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field27' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field28' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field29' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                    if matched_field == 'field30' :
+                                        prize = ((dealer_package.guarantee_prize)*(game.count))
+                                        commission = ((dealer_package.guarantee_dc)*(game.count))
+                                        total = ((prize)+(commission))
+                                        prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                        commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                        total_admin = ((prize_admin)+(commission_admin))
+                                        print(prize,commission,total)
+                                        matching_bills.win_amount = total
+                                        matching_bills.win_amount_admin = total_admin
+                                        matching_bills.save()
+                                        first_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
@@ -657,7 +1349,7 @@ def add_result(request):
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'B' and result.first[1] == game.number[0]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
                         total = ((prize)+(commission))
@@ -667,9 +1359,11 @@ def add_result(request):
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'C' and result.first[2] == game.number[0]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.single1_prize)*(game.count))
                         commission = ((dealer_package.single1_dc)*(game.count))
+                        print(prize,"####")
+                        print(commission,"$$$$")
                         total = ((prize)+(commission))
                         prize_admin = ((agent_package.single1_prize)*(game.count))
                         commission_admin = ((agent_package.single1_dc)*(game.count))
@@ -677,7 +1371,7 @@ def add_result(request):
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'AB' and result.first[:2] == game.number[:2]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
@@ -687,7 +1381,7 @@ def add_result(request):
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
@@ -697,7 +1391,7 @@ def add_result(request):
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                     elif game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
-                        matching_bills = Bill.objects.get(date=date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                        matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.dealer.user.id,dealer_games__id=game.id)
                         prize = ((dealer_package.double2_prize)*(game.count))
                         commission = ((dealer_package.double2_dc)*(game.count))
                         total = ((prize)+(commission))
@@ -718,6 +1412,7 @@ def sales_report(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     print(current_date)
+    items_per_page = 10
     if request.method == 'POST':
         select_agent = request.POST.get('select-agent')
         if select_agent != 'all':
@@ -762,11 +1457,42 @@ def sales_report(request):
                     print("agent,time,lsk selected")
                     print(agent_instance)
                     agent_games = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).order_by('id')
-                    print(agent_games)
                     dealer_games = DealerGame.objects.filter(Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).order_by('id')
-                    print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(Q(dealer__agent=agent_instance),date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -793,8 +1519,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : 'all',
@@ -813,8 +1538,41 @@ def sales_report(request):
                     print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__agent=agent_instance).order_by('id')
                     print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -825,8 +1583,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : 'all',
@@ -848,8 +1605,41 @@ def sales_report(request):
                     print(agent_games)
                     dealer_games = DealerGame.objects.filter(dealer__agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(dealer__agent=agent_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -876,8 +1666,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : 'all',
@@ -892,13 +1681,45 @@ def sales_report(request):
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
+                    print("this functionnnn")
                     #time,lsk not selected, agent selected
                     agent_games = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date]).order_by('id')
-                    print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_instance).order_by('id')
-                    print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(agent=agent_instance,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],dealer__agent=agent_instance).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -909,8 +1730,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : 'all',
@@ -940,6 +1760,16 @@ def sales_report(request):
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
                         'total_d_amount': (dealer_games_total['total_d_amount'] or 0)
                     }
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     for bill in dealer_bills:
                         for game in bill.dealer_games.filter(LSK__in=lsk_value):
                             print("Dealer Count of",bill.id," is" , game.count)
@@ -951,8 +1781,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_only_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : select_dealer,
@@ -971,6 +1800,16 @@ def sales_report(request):
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
                         'total_c_amount': (dealer_games_total['total_c_amount'] or 0),
@@ -979,8 +1818,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_only_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : select_dealer,
@@ -1001,6 +1839,16 @@ def sales_report(request):
                     dealer_games = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
@@ -1018,8 +1866,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_only_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : select_dealer,
@@ -1040,6 +1887,16 @@ def sales_report(request):
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     print(dealer_bills)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
                         'total_count': (dealer_games_total['total_count'] or 0),
@@ -1049,8 +1906,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_only_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : select_agent,
                         'selected_dealer' : select_dealer,
@@ -1071,8 +1927,41 @@ def sales_report(request):
                     print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -1099,8 +1988,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : 'all',
                         'selected_dealer' : 'all',
@@ -1118,8 +2006,41 @@ def sales_report(request):
                     print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).order_by('id')
                     print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -1130,8 +2051,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : 'all',
                         'selected_dealer' : 'all',
@@ -1151,8 +2071,41 @@ def sales_report(request):
                     print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).order_by('id')
                     print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     totals = {
@@ -1179,8 +2132,7 @@ def sales_report(request):
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : 'all',
                         'selected_dealer' : 'all',
@@ -1194,25 +2146,51 @@ def sales_report(request):
                     }
                     return render(request, 'adminapp/sales_report.html', context)
                 else:
+                    print("THIS FUNCTON")
                     #time,lsk not selected, agent selected
                     agent_games = AgentGame.objects.filter(date__range=[from_date, to_date]).order_by('id')
-                    print(agent_games)
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date]).order_by('id')
-                    print(dealer_games)
-                    agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date__range=[from_date, to_date]).distinct()
-                    dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
+                    agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games), date__range=[from_date, to_date]).distinct()
+                    agent_bills_totals = agent_bills_queryset.aggregate(
+                        total_c_amount=Sum('total_c_amount'),
+                        total_d_amount=Sum('total_d_amount'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Aggregate totals for dealer_bills
+                    dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games), date__range=[from_date, to_date]).distinct()
+                    dealer_bills_totals = dealer_bills_queryset.aggregate(
+                        total_c_amount_admin=Sum('total_c_amount_admin'),
+                        total_d_amount_admin=Sum('total_d_amount_admin'),
+                        total_count=Sum('total_count')
+                    )
+
+                    # Combine the three querysets
+                    combined_queryset = agent_bills_queryset | dealer_bills_queryset
+
+                    # Aggregate totals for the combined queryset
+                    totals = {
+                        'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
+                        'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+                        'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+                    }
+
+                    # Paginate the combined queryset
+                    paginator = Paginator(combined_queryset, 10)
+                    page = request.GET.get('page', 1)
+
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
-                    totals = {
-                        'total_count': (agent_games_total['total_count'] or 0) + (dealer_games_total['total_count'] or 0),
-                        'total_c_amount': (agent_games_total['total_c_amount'] or 0) + (dealer_games_total['total_c_amount'] or 0),
-                        'total_d_amount': (agent_games_total['total_d_amount'] or 0) + (dealer_games_total['total_d_amount'] or 0)
-                    }
                     context = {
                         'agents' : agents,
                         'times': times,
-                        'agent_bills' : agent_bills,
-                        'dealer_bills' : dealer_bills,
+                        'combined_bills' : combined_bills,
                         'totals' : totals,
                         'selected_agent' : 'all',
                         'selected_dealer' : 'all',
@@ -1229,18 +2207,41 @@ def sales_report(request):
         print("this is working")
         agent_games = AgentGame.objects.filter(date=current_date).all().order_by('id')
         dealer_games = DealerGame.objects.filter(date=current_date).all().order_by('id')
-        agent_bills = Bill.objects.filter(Q(agent_games__in=agent_games),date=current_date).distinct()
-        dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date=current_date).distinct()
+        agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games), date=current_date).distinct()
+        agent_bills_totals = agent_bills_queryset.aggregate(
+            total_c_amount=Sum('total_c_amount'),
+            total_d_amount=Sum('total_d_amount'),
+            total_count=Sum('total_count')
+        )
 
-        agent_bills_totals = agent_bills.aggregate(total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'),total_count=Sum('total_count'))
+        # Aggregate totals for dealer_bills
+        dealer_bills_queryset = Bill.objects.filter(Q(dealer_games__in=dealer_games), date=current_date).distinct()
+        dealer_bills_totals = dealer_bills_queryset.aggregate(
+            total_c_amount_admin=Sum('total_c_amount_admin'),
+            total_d_amount_admin=Sum('total_d_amount_admin'),
+            total_count=Sum('total_count')
+        )
 
-        dealer_bills_totals = dealer_bills.aggregate(total_c_amount=Sum('total_c_amount'),total_d_amount=Sum('total_d_amount'),total_count=Sum('total_count'))
+        # Combine the three querysets
+        combined_queryset = agent_bills_queryset | dealer_bills_queryset
 
+        # Aggregate totals for the combined queryset
         totals = {
             'total_count': (agent_bills_totals['total_count'] or 0) + (dealer_bills_totals['total_count'] or 0),
-            'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount'] or 0),
-            'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount'] or 0)
-            }
+            'total_c_amount': (agent_bills_totals['total_c_amount'] or 0) + (dealer_bills_totals['total_c_amount_admin'] or 0),
+            'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
+        }
+
+        # Paginate the combined queryset
+        paginator = Paginator(combined_queryset, 10)
+        page = request.GET.get('page', 1)
+
+        try:
+            combined_bills = paginator.page(page)
+        except PageNotAnInteger:
+            combined_bills = paginator.page(1)
+        except EmptyPage:
+            combined_bills = paginator.page(paginator.num_pages)
 
         select_agent = 'all'
         select_time = 'all'
@@ -1248,8 +2249,7 @@ def sales_report(request):
         context = {
             'agents' : agents,
             'times' : times,
-            'agent_bills' : agent_bills,
-            'dealer_bills' : dealer_bills,
+            'combined_bills' : combined_bills,
             'totals' : totals,
             'selected_agent' : select_agent,
             'selected_dealer' : 'all',
@@ -1371,7 +2371,7 @@ def monitor(request,id):
                     print(existing_combined_game.count)
                     if agent_game.LSK in limits:
                         limit = limits[agent_game.LSK]
-                        existing_combined_game.remaining_limit = existing_combined_game.count - limit
+                        existing_combined_game.remaining_limit = (existing_combined_game.count - existing_combined_game.cleared) - limit
                         print(existing_combined_game.remaining_limit,"remain")
                     existing_combined_game.combined = True
                     print(existing_combined_game.count)
@@ -1400,10 +2400,10 @@ def monitor(request,id):
             if key in existing_combined_games_dict:
                 existing_combined_game = existing_combined_games_dict[key]
                 if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
-                    existing_combined_game.count += existing_combined_game.count - limit
+                    existing_combined_game.count += dealer_game.count
                     if dealer_game.LSK in limits:
                         limit = limits[dealer_game.LSK]
-                        existing_combined_game.remaining_limit = existing_combined_game.count - limit
+                        existing_combined_game.remaining_limit = (existing_combined_game.count - existing_combined_game.cleared) - limit
                     existing_combined_game.combined = True
                     existing_combined_game.save()
                     dealer_game.combined = True
@@ -1509,7 +2509,8 @@ def monitor(request,id):
 def clear_limit(request,id,time_id):
     combined_game = get_object_or_404(CombinedGame,id=id)
     print(combined_game)
-    clear_limit = CombinedGame.objects.filter(id=id).update(remaining_limit=0)
+    count = combined_game.remaining_limit
+    clear_limit = CombinedGame.objects.filter(id=id).update(remaining_limit=0,cleared=count)
     print("cleared")
     return redirect('adminapp:monitor',id=time_id)
 
@@ -1532,6 +2533,8 @@ def set_monitor_times(request):
 @login_required
 @admin_required
 def set_monitor(request,id):
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
     time = PlayTime.objects.get(id=id)
     if request.method == 'POST':
         super = request.POST.get('super')
@@ -1544,6 +2547,18 @@ def set_monitor(request,id):
         c = request.POST.get('c')
         if Monitor.objects.filter(time=time):
             monitor = Monitor.objects.filter(time=time).update(super=super,box=box,ab=ab,bc=bc,ac=ac,a=a,b=b,c=c)
+            combined_games = CombinedGame.objects.filter(date=current_date,time=time).all()
+            print(combined_games)
+            for combined_game in combined_games:
+                combined_game.delete()
+            agent_games = AgentGame.objects.filter(date=current_date,time=time).all()
+            for agent_game in agent_games:
+                agent_game.combined = False
+                agent_game.save()
+            dealer_games = DealerGame.objects.filter(date=current_date,time=time).all()
+            for dealer_game in dealer_games:
+                dealer_game.combined = False
+                dealer_game.save()
             print("monitor updated")
         else:
             monitor = Monitor.objects.create(time=time,super=super,box=box,ab=ab,bc=bc,ac=ac,a=a,b=b,c=c)
@@ -1565,7 +2580,7 @@ def set_monitor(request,id):
 @login_required
 @admin_required
 def republish_times(request):
-    times = PlayTime.objects.filter().all()
+    times = PlayTime.objects.filter().all().order_by('id')
     context = {
         'times' : times
     }
@@ -1655,41 +2670,116 @@ def republish_results(request,id):
             'field30': '',
         }
     if request.method == 'POST':
-        first = request.POST.get('first')
-        second = request.POST.get('second')
-        third = request.POST.get('third')
-        fourth = request.POST.get('fourth')
-        fifth = request.POST.get('fifth')
-        field1 = request.POST.get('field1')
-        field2 = request.POST.get('field2')
-        field3 = request.POST.get('field3')
-        field4 = request.POST.get('field4')
-        field5 = request.POST.get('field5')
-        field6 = request.POST.get('field6')
-        field7 = request.POST.get('field7')
-        field8 = request.POST.get('field8')
-        field9 = request.POST.get('field9')
-        field10 = request.POST.get('field10')
-        field11 = request.POST.get('field11')
-        field12 = request.POST.get('field12')
-        field13 = request.POST.get('field13')
-        field14 = request.POST.get('field14')
-        field15 = request.POST.get('field15')
-        field16 = request.POST.get('field16')
-        field17 = request.POST.get('field17')
-        field18 = request.POST.get('field18')
-        field19 = request.POST.get('field19')
-        field20 = request.POST.get('field20')
-        field21 = request.POST.get('field21')
-        field22 = request.POST.get('field22')
-        field23 = request.POST.get('field23')
-        field24 = request.POST.get('field24')
-        field25 = request.POST.get('field25')
-        field26 = request.POST.get('field26')
-        field27 = request.POST.get('field27')
-        field28 = request.POST.get('field28')
-        field29 = request.POST.get('field29')
-        field30 = request.POST.get('field30')
+        first = request.POST.get('first', '')
+        second = request.POST.get('second', '')
+        third = request.POST.get('third', '')
+        fourth = request.POST.get('fourth', '')
+        fifth = request.POST.get('fifth', '')
+        field1 = request.POST.get('field1', '')
+        field2 = request.POST.get('field2', '')
+        field3 = request.POST.get('field3', '')
+        field4 = request.POST.get('field4', '')
+        field5 = request.POST.get('field5', '')
+        field6 = request.POST.get('field6', '')
+        field7 = request.POST.get('field7', '')
+        field8 = request.POST.get('field8', '')
+        field9 = request.POST.get('field9', '')
+        field10 = request.POST.get('field10', '')
+        field11 = request.POST.get('field11', '')
+        field12 = request.POST.get('field12', '')
+        field13 = request.POST.get('field13', '')
+        field14 = request.POST.get('field14', '')
+        field15 = request.POST.get('field15', '')
+        field16 = request.POST.get('field16', '')
+        field17 = request.POST.get('field17', '')
+        field18 = request.POST.get('field18', '')
+        field19 = request.POST.get('field19', '')
+        field20 = request.POST.get('field20', '')
+        field21 = request.POST.get('field21', '')
+        field22 = request.POST.get('field22', '')
+        field23 = request.POST.get('field23', '')
+        field24 = request.POST.get('field24', '')
+        field25 = request.POST.get('field25', '')
+        field26 = request.POST.get('field26', '')
+        field27 = request.POST.get('field27', '')
+        field28 = request.POST.get('field28', '')
+        field29 = request.POST.get('field29', '')
+        field30 = request.POST.get('field30', '')
+
+        fields = [
+            ('field1', request.POST.get('field1')),
+            ('field2', request.POST.get('field2')),
+            ('field3', request.POST.get('field3')),
+            ('field4', request.POST.get('field4')),
+            ('field5', request.POST.get('field5')),
+            ('field6', request.POST.get('field6')),
+            ('field7', request.POST.get('field7')),
+            ('field8', request.POST.get('field8')),
+            ('field9', request.POST.get('field9')),
+            ('field10', request.POST.get('field10')),
+            ('field11', request.POST.get('field11')),
+            ('field12', request.POST.get('field12')),
+            ('field13', request.POST.get('field13')),
+            ('field14', request.POST.get('field14')),
+            ('field15', request.POST.get('field15')),
+            ('field16', request.POST.get('field16')),
+            ('field17', request.POST.get('field17')),
+            ('field18', request.POST.get('field18')),
+            ('field19', request.POST.get('field19')),
+            ('field20', request.POST.get('field20')),
+            ('field21', request.POST.get('field21')),
+            ('field22', request.POST.get('field22')),
+            ('field23', request.POST.get('field23')),
+            ('field24', request.POST.get('field24')),
+            ('field25', request.POST.get('field25')),
+            ('field26', request.POST.get('field26')),
+            ('field27', request.POST.get('field27')),
+            ('field28', request.POST.get('field28')),
+            ('field29', request.POST.get('field29')),
+            ('field30', request.POST.get('field30')),
+        ]
+
+        fields = [(name, value) for name, value in fields if value is not None]
+
+        # Sort the list of tuples based on values
+        fields.sort(key=lambda x: int(x[1]) if x[1].isdigit() else float('inf'))
+
+        # Assign the sorted values back to the fields
+        for i, (name, _) in enumerate(fields, start=1):
+            locals()[name] = request.POST.get(f'field{i}')
+
+        field1 = fields[0][1]
+        field2 = fields[1][1]
+        field3 = fields[2][1]
+        field4 = fields[3][1]
+        field5 = fields[4][1]
+        field6 = fields[5][1]
+        field7 = fields[6][1]
+        field8 = fields[7][1]
+        field9 = fields[8][1]
+        field10 = fields[9][1]
+        field11 = fields[10][1]
+        field12 = fields[11][1]
+        field13 = fields[12][1]
+        field14 = fields[13][1]
+        field15 = fields[14][1]
+        field16 = fields[15][1]
+        field17 = fields[16][1]
+        field18 = fields[17][1]
+        field19 = fields[18][1]
+        field20 = fields[19][1]
+        field21 = fields[20][1]
+        field22 = fields[21][1]
+        field23 = fields[22][1]
+        field24 = fields[23][1]
+        field25 = fields[24][1]
+        field26 = fields[25][1]
+        field27 = fields[26][1]
+        field28 = fields[27][1]
+        field29 = fields[28][1]
+        field30 = fields[29][1]
+
+
         old_result_delete = Result.objects.filter(date=current_date,time=time).last()
         old_result_delete.delete()
         result = Result.objects.filter(date=current_date,time=time).create(date=current_date,time=time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
@@ -1702,6 +2792,14 @@ def republish_results(request,id):
                 print("Game",game)
                 print("Game id",game.id)
                 game_number = game.number
+                if game.LSK == 'Box' and game_number == result.first:
+                    matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
+                    agent_package = AgentPackage.objects.get(agent=game.agent)
+                    prize = ((agent_package.box_first_prize)*(game.count))
+                    commission = ((agent_package.box_first_prize_dc)*(game.count))
+                    total = ((prize)+(commission))
+                    print(prize,commission,total)
+                    box_first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
                 if game.LSK == 'Box' and game_number != result.first:
                     combinations = get_combinations(game_number)
                     print("Combinations:", combinations)
@@ -1716,7 +2814,7 @@ def republish_results(request,id):
                                 total = ((prize)+(commission))
                                 print(prize,commission,total)
                                 box_series_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                    elif len(combinations) == 3:
+                    if len(combinations) == 3:
                         for combination in combinations:
                             if combination == result.first:
                                 print(f"Combination {combination} matches the first field for Game {game.id}")
@@ -1727,73 +2825,299 @@ def republish_results(request,id):
                                 total = ((prize)+(commission))
                                 print(prize,commission,total)
                                 box_series_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                elif game.number in result.__dict__.values():
-                    matched_field = [field for field, value in result.__dict__.items() if value == game.number]
-                    if matched_field:
+                if game.number in result.__dict__.values():
+                    matched_fields = [field for field, value in result.__dict__.items() if value == game.number]
+                    print(matched_fields)
+                    if matched_fields:
                         print("hello")
                         matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                         print(matching_bills.id)
-                        print(f"Agent game number {game.number} matched with Result field: {matched_field[0]} for Agent: {game.agent}")
                         agent_package = AgentPackage.objects.get(agent=game.agent)
                         if game.LSK == "Super":
-                            if matched_field[0] == 'first':
-                                prize = ((agent_package.first_prize)*(game.count))
-                                commission = ((agent_package.first_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                            elif matched_field[0] == 'second':
-                                prize = ((agent_package.second_prize)*(game.count))
-                                commission = ((agent_package.second_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                second_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                            elif matched_field[0] == 'third':
-                                prize = ((agent_package.third_prize)*(game.count))
-                                commission = ((agent_package.third_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                third_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
-                            elif matched_field[0] == 'fourth':
-                                prize = ((agent_package.fourth_prize)*(game.count))
-                                commission = ((agent_package.fourth_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                fourth_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
-                            elif matched_field[0] == 'fifth':
-                                prize = ((agent_package.fifth_prize)*(game.count))
-                                commission = ((agent_package.fifth_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                fifth_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
-                            else :
-                                prize = ((agent_package.guarantee_prize)*(game.count))
-                                commission = ((agent_package.guarantee_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
-                        elif game.LSK == "Box":
-                            if matched_field[0] == 'first':
-                                prize = ((agent_package.box_first_prize)*(game.count))
-                                commission = ((agent_package.box_first_prize_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.save()
-                                box_first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'A' and result.first.startswith(game_number[0]):
+                            for matched_field in matched_fields:
+                                if matched_field == 'first':
+                                    prize = ((agent_package.first_prize)*(game.count))
+                                    commission = ((agent_package.first_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
+                                if matched_field == 'second':
+                                    print("second also")
+                                    prize = ((agent_package.second_prize)*(game.count))
+                                    commission = ((agent_package.second_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    second_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
+                                if matched_field == 'third':
+                                    prize = ((agent_package.third_prize)*(game.count))
+                                    commission = ((agent_package.third_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    third_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total)
+                                if matched_field == 'fourth':
+                                    prize = ((agent_package.fourth_prize)*(game.count))
+                                    commission = ((agent_package.fourth_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    fourth_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total)
+                                if matched_field == 'fifth':
+                                    prize = ((agent_package.fifth_prize)*(game.count))
+                                    commission = ((agent_package.fifth_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    fifth_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field1':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field2':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field3':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field4':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field5':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field6':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field7':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field8':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field9':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field10':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field11':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field12':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field13':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field14':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field15':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field16':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field17':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field18':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field19':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field20':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field21':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field22':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field23':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field24':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field25':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field26':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field27':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field28':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field29':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                                if matched_field == 'field30':
+                                    prize = ((agent_package.guarantee_prize)*(game.count))
+                                    commission = ((agent_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
+                        
+                if game.LSK == 'A' and result.first.startswith(game_number[0]):
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     print(time,game.agent.user.id,game.id)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
@@ -1803,7 +3127,7 @@ def republish_results(request,id):
                     matching_bills.win_amount = total
                     matching_bills.save()
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'B' and result.first[1] == game.number[0]:
+                if game.LSK == 'B' and result.first[1] == game.number[0]:
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                     prize = ((agent_package.single1_prize)*(game.count))
@@ -1812,7 +3136,7 @@ def republish_results(request,id):
                     matching_bills.win_amount = total
                     matching_bills.save()
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'C' and result.first[2] == game.number[0]:
+                if game.LSK == 'C' and result.first[2] == game.number[0]:
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                     prize = ((agent_package.single1_prize)*(game.count))
@@ -1821,7 +3145,7 @@ def republish_results(request,id):
                     matching_bills.win_amount = total
                     matching_bills.save()
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'AB' and result.first[:2] == game.number[:2]:
+                if game.LSK == 'AB' and result.first[:2] == game.number[:2]:
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                     prize = ((agent_package.double2_prize)*(game.count))
@@ -1830,7 +3154,7 @@ def republish_results(request,id):
                     matching_bills.win_amount = total
                     matching_bills.save()
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
+                if game.LSK == 'BC' and result.first[1] == game.number[0] and result.first[-1] == game.number[-1]:
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                     prize = ((agent_package.double2_prize)*(game.count))
@@ -1839,7 +3163,7 @@ def republish_results(request,id):
                     matching_bills.win_amount = total
                     matching_bills.save()
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
-                elif game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
+                if game.LSK == 'AC' and result.first[0] == game.number[0] and result.first[-1] == game.number[-1]:
                     agent_package = AgentPackage.objects.get(agent=game.agent)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.agent.user.id,agent_games__id=game.id)
                     prize = ((agent_package.double2_prize)*(game.count))
@@ -1850,9 +3174,20 @@ def republish_results(request,id):
                     single_prize = Winning.objects.create(date=current_date,time=time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total)
         if dealer_games:
             for game in dealer_games:
+                agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                 print("Game",game)
                 print("Game id",game.id)
                 game_number = game.number
+                if game.LSK == 'Box' and game_number == result.first:
+                    matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
+                    dealer_package = DealerPackage.objects.get(dealer=game.dealer)
+                    prize = ((dealer_package.box_first_prize)*(game.count))
+                    commission = ((dealer_package.box_first_prize_dc)*(game.count))
+                    total = ((prize)+(commission))
+                    prize_admin = ((agent_package.box_first_prize)*(game.count))
+                    commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
+                    total_admin = ((prize_admin)+(commission_admin))
+                    box_first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 if game.LSK == 'Box' and game_number != result.first:
                     combinations = get_combinations(game_number)
                     print("Combinations:", combinations)
@@ -1861,7 +3196,6 @@ def republish_results(request,id):
                             if combination == result.first:
                                 print(f"Combination {combination} matches the first field for Game {game.id}")
                                 matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
-                                agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                                 dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                 prize = ((dealer_package.box_series_prize)*(game.count))
                                 commission = ((dealer_package.box_series_dc)*(game.count))
@@ -1879,7 +3213,6 @@ def republish_results(request,id):
                             if combination == result.first:
                                 print(f"Combination {combination} matches the first field for Game {game.id}")
                                 matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
-                                agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                                 dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                                 prize = ((dealer_package.box_series_prize)*(game.count))*2
                                 commission = ((dealer_package.box_series_dc)*(game.count))*2
@@ -1893,100 +3226,434 @@ def republish_results(request,id):
                                 matching_bills.save()
                                 box_series_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.number in result.__dict__.values():
-                    matched_field = [field for field, value in result.__dict__.items() if value == game.number]
-                    if matched_field:
+                    matched_fields = [field for field, value in result.__dict__.items() if value == game.number]
+                    if matched_fields:
                         print("hello")
                         matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
                         print(matching_bills.id)
-                        print(f"Dealer game number {game.number} matched with Result field: {matched_field[0]} for Dealer: {game.dealer}")
-                        agent_package = AgentPackage.objects.get(agent=game.dealer.agent)
                         dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                         if game.LSK == "Super":
-                            if matched_field[0] == 'first':
-                                prize = ((dealer_package.first_prize)*(game.count))
-                                commission = ((dealer_package.first_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.first_prize)*(game.count))
-                                commission_admin = ((agent_package.first_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            elif matched_field[0] == 'second':
-                                prize = ((dealer_package.second_prize)*(game.count))
-                                commission = ((dealer_package.second_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.second_prize)*(game.count))
-                                commission_admin = ((agent_package.second_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                second_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            elif matched_field[0] == 'third':
-                                prize = ((dealer_package.third_prize)*(game.count))
-                                commission = ((dealer_package.third_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.third_prize)*(game.count))
-                                commission_admin = ((agent_package.third_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                third_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            elif matched_field[0] == 'fourth':
-                                prize = ((dealer_package.fourth_prize)*(game.count))
-                                commission = ((dealer_package.fourth_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.fourth_prize)*(game.count))
-                                commission_admin = ((agent_package.fourth_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                fourth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            elif matched_field[0] == 'fifth':
-                                prize = ((dealer_package.fifth_prize)*(game.count))
-                                commission = ((dealer_package.fifth_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.fifth_prize)*(game.count))
-                                commission_admin = ((agent_package.fifth_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                fifth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                            else :
-                                prize = ((dealer_package.guarantee_prize)*(game.count))
-                                commission = ((dealer_package.guarantee_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.guarantee_prize)*(game.count))
-                                commission_admin = ((agent_package.guarantee_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
-                        elif game.LSK == "Box":
-                            if matched_field[0] == 'first':
-                                prize = ((dealer_package.box_first_prize)*(game.count))
-                                commission = ((dealer_package.box_first_prize_dc)*(game.count))
-                                total = ((prize)+(commission))
-                                prize_admin = ((agent_package.box_first_prize)*(game.count))
-                                commission_admin = ((agent_package.box_first_prize_dc)*(game.count))
-                                total_admin = ((prize_admin)+(commission_admin))
-                                print(prize,commission,total)
-                                matching_bills.win_amount = total
-                                matching_bills.win_amount_admin = total_admin
-                                matching_bills.save()
-                                box_first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                            for matched_field in matched_fields:
+                                if matched_field == 'first':
+                                    prize = ((dealer_package.first_prize)*(game.count))
+                                    commission = ((dealer_package.first_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.first_prize)*(game.count))
+                                    commission_admin = ((agent_package.first_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'second':
+                                    prize = ((dealer_package.second_prize)*(game.count))
+                                    commission = ((dealer_package.second_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.second_prize)*(game.count))
+                                    commission_admin = ((agent_package.second_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    second_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="2",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'third':
+                                    prize = ((dealer_package.third_prize)*(game.count))
+                                    commission = ((dealer_package.third_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.third_prize)*(game.count))
+                                    commission_admin = ((agent_package.third_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    third_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="3",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'fourth':
+                                    prize = ((dealer_package.fourth_prize)*(game.count))
+                                    commission = ((dealer_package.fourth_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.fourth_prize)*(game.count))
+                                    commission_admin = ((agent_package.fourth_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    fourth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="4",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'fifth':
+                                    prize = ((dealer_package.fifth_prize)*(game.count))
+                                    commission = ((dealer_package.fifth_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.fifth_prize)*(game.count))
+                                    commission_admin = ((agent_package.fifth_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    fifth_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="5",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field1' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field2' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field3' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field4' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field5' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field6' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field7' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field8' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field9' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field10' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field11' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field12' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field13' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field14' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field15' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field16' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field17' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field18' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field19' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field20' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field21' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field22' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field23' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field24' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field25' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field26' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field27' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field28' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field29' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+                                if matched_field == 'field30' :
+                                    prize = ((dealer_package.guarantee_prize)*(game.count))
+                                    commission = ((dealer_package.guarantee_dc)*(game.count))
+                                    total = ((prize)+(commission))
+                                    prize_admin = ((agent_package.guarantee_prize)*(game.count))
+                                    commission_admin = ((agent_package.guarantee_dc)*(game.count))
+                                    total_admin = ((prize_admin)+(commission_admin))
+                                    print(prize,commission,total)
+                                    matching_bills.win_amount = total
+                                    matching_bills.win_amount_admin = total_admin
+                                    matching_bills.save()
+                                    first_prize = Winning.objects.create(date=current_date,time=time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
                 elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                     dealer_package = DealerPackage.objects.get(dealer=game.dealer)
                     matching_bills = Bill.objects.get(date=current_date,time_id=time,user=game.dealer.user.id,dealer_games__id=game.id)
@@ -2139,10 +3806,10 @@ def daily_report(request):
                     print(winnings)
                     if user.is_agent:
                         total_winning = sum(winning.total for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     else:
                         total_winning = sum(winning.total_admin for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
                     elif winnings != 0 and user.is_dealer:
@@ -2181,10 +3848,10 @@ def daily_report(request):
                     print("hello")
                     if user.is_agent:
                         total_winning = sum(winning.total for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     else:
                         total_winning = sum(winning.total_admin for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
                     elif winnings != 0 and user.is_dealer:
@@ -2223,7 +3890,7 @@ def daily_report(request):
                     winnings = Winning.objects.filter(Q(dealer=dealer_instance),date__range=[from_date, to_date],time=select_time,bill=bill.id)
                     print(winnings)
                     total_winning = sum(winning.total_admin for winning in winnings)
-                    bill.win_amount += total_winning
+                    bill.win_amount = total_winning
                     if winnings != 0:
                         bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
@@ -2257,7 +3924,7 @@ def daily_report(request):
                     print("hello")
                     total_winning = sum(winning.total_admin for winning in winnings)
                     print(total_winning)
-                    bill.win_amount += total_winning
+                    bill.win_amount = total_winning
                     if winnings != 0:
                         bill.total_d_amount = bill.total_c_amount_admin - total_winning
                     else:
@@ -2292,10 +3959,10 @@ def daily_report(request):
                     print(winnings)
                     if user.is_agent:
                         total_winning = sum(winning.total for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     else:
                         total_winning = sum(winning.total_admin for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
                         print(bill.total_d_amount)
@@ -2334,10 +4001,10 @@ def daily_report(request):
                     print(winnings)
                     if user.is_agent:
                         total_winning = sum(winning.total for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     else:
                         total_winning = sum(winning.total_admin for winning in winnings)
-                        bill.win_amount += total_winning
+                        bill.win_amount = total_winning
                     if winnings != 0 and user.is_agent:
                         bill.total_d_amount = bill.total_c_amount - total_winning
                         print(bill.total_d_amount)
@@ -2379,13 +4046,18 @@ def daily_report(request):
             else:
                 print("dealer")
             winnings = Winning.objects.filter(bill=bill.id,date=current_date)
+            for win in winnings:
+                print(win.total_admin)
             print(winnings)
             if user.is_agent:
                 total_winning = sum(winning.total for winning in winnings)
-                bill.win_amount += total_winning
+                bill.win_amount = total_winning
+                print("agent")
             else:
                 total_winning = sum(winning.total_admin for winning in winnings)
-                bill.win_amount += total_winning
+                print(total_winning,"total winning")
+                bill.win_amount = total_winning
+                print(bill.win_amount,"the win amount")
             if winnings != 0 and user.is_agent:
                 bill.total_d_amount = bill.total_c_amount - total_winning
                 print(bill.total_d_amount)
@@ -2427,6 +4099,16 @@ def countwise_report(request):
     current_time = timezone.now().astimezone(ist).time()
     agent_games = AgentGame.objects.filter(date=current_date).all()
     dealer_games = DealerGame.objects.filter(date=current_date).all()
+    combined_games = (
+        AgentGame.objects.filter(date=current_date)
+        .values('LSK', 'number')
+        .annotate(total_count=Sum('count'))
+        .union(
+            DealerGame.objects.filter(date=current_date)
+            .values('LSK', 'number')
+            .annotate(total_count=Sum('count'))
+        ).order_by('-total_count')
+    )
     totals_agent = AgentGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
     totals_dealer = DealerGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
     total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
@@ -2456,16 +4138,37 @@ def countwise_report(request):
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                combined_games = (
+                    AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
+                    .values('LSK', 'number')
+                    .annotate(total_count=Sum('count'))
+                    .union(
+                        DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
+                        .values('LSK', 'number')
+                        .annotate(total_count=Sum('count'))
+                    ).order_by('-total_count')
+                )
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             else:
                 agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time)
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time)
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
+                combined_games = (
+                    AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time)
+                    .values('LSK', 'number')
+                    .annotate(total_count=Sum('count'))
+                    .union(
+                        DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time)
+                        .values('LSK', 'number')
+                        .annotate(total_count=Sum('count'))
+                    ).order_by('-total_count')
+                )
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             context = {
                 'agent_games' : agent_games,
                 'dealer_games' : dealer_games,
+                'combined_games' : combined_games,
                 'selected_lsk' : lsk,
                 'selected_from' : from_date,
                 'selected_to' : to_date,
@@ -2481,16 +4184,37 @@ def countwise_report(request):
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
+                combined_games = (
+                    AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
+                    .values('LSK', 'number')
+                    .annotate(total_count=Sum('count'))
+                    .union(
+                        DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
+                        .values('LSK', 'number')
+                        .annotate(total_count=Sum('count'))
+                    ).order_by('-total_count')
+                )
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             else:
                 agent_games = AgentGame.objects.filter(date__range=[from_date, to_date])
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date])
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
+                combined_games = (
+                    AgentGame.objects.filter(date__range=[from_date, to_date])
+                    .values('LSK', 'number')
+                    .annotate(total_count=Sum('count'))
+                    .union(
+                        DealerGame.objects.filter(date__range=[from_date, to_date])
+                        .values('LSK', 'number')
+                        .annotate(total_count=Sum('count'))
+                    ).order_by('-total_count')
+                )
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             context = {
                 'agent_games' : agent_games,
                 'dealer_games' : dealer_games,
+                'combined_games' : combined_games,
                 'selected_lsk' : lsk,
                 'selected_from' : from_date,
                 'selected_to' : to_date,
@@ -2504,6 +4228,7 @@ def countwise_report(request):
     context = {
         'agent_games' : agent_games,
         'dealer_games' : dealer_games,
+        'combined_games' : combined_games,
         'total_count' : total_count,
         'times' : times,
         'selected_time' : 'all',
@@ -3276,9 +5001,9 @@ def delete_bill(request,id):
     date = bill.date
     print(date,"date")
     if AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date):
-        games = AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date).all()
+        games = AgentGame.objects.filter(agent__user=user_obj.id,time=time_id,date=date).order_by('id')
     else:
-        games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).all()
+        games = DealerGame.objects.filter(dealer__user=user_obj.id,time=time_id,date=date).order_by('id')
     print(games)
     context = {
         'bill' : bill,
@@ -3741,7 +5466,7 @@ def total_balance(request):
     total_balance = sum(entry['sale_amount'] for entry in report_data)
     context = {
         'report_data' : report_data,
-        'total_balance' : total_balance
+        'total_balance' : total_balance,
     }
     return render(request,'adminapp/total_balance.html',context)
 
@@ -3780,6 +5505,8 @@ def tickets_report(request):
                 double_lsk_count = agent_double_lsk_count + dealer_double_lsk_count
 
                 total_lsk_count = super_lsk_count + box_lsk_count + single_lsk_count + double_lsk_count
+
+                print(total_lsk_count)
 
                 report_data.append({
                     'agent': agent_instance,
@@ -3888,8 +5615,8 @@ def tickets_report(request):
                 return render(request, 'adminapp/tickets_report.html',context)
             else:
                 for agent in agents:
-                    agent_games = AgentGame.objects.filter(date=current_date, agent=agent)
-                    dealer_games = DealerGame.objects.filter(date=current_date, agent=agent)
+                    agent_games = AgentGame.objects.filter(date__range=[from_date, to_date], agent=agent)
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date], agent=agent)
                     agent_super_lsk_count = agent_games.filter(LSK='Super').aggregate(total_count=Sum('count'))['total_count'] or 0
                     agent_box_lsk_count = agent_games.filter(LSK='Box').aggregate(total_count=Sum('count'))['total_count'] or 0
                     agent_single_lsk_count = agent_games.filter(LSK__in=lsk_single).aggregate(total_count=Sum('count'))['total_count'] or 0
@@ -3924,6 +5651,8 @@ def tickets_report(request):
                     'times' : times,
                     'selected_agent' : 'all',
                     'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
                     'report_data' : report_data,
                     'selected_game_time' : selected_game_time
                 }

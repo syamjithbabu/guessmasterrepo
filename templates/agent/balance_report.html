@@ -105,6 +105,16 @@
                                                 </div>
                                             </div>
 
+                                            <div class="col-lg-2 col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <label class="control-inline fancy-checkbox ml-auto">
+                                                        <input type="checkbox" name="checkbox2" id="expand-button">
+                                                        <span>Admin</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+
                                         </div>
 
                                     </div>
@@ -135,7 +145,7 @@
 
                 </tr>
             </thead>
-            <tbody class="not-summary l-blush">
+            <tbody class="not-summary l-blush normal-row">
                 {% for data in report_data %}
                 <tr style="text-align: center;">
                     <td class="td2">{{data.date}}</td>
@@ -144,6 +154,18 @@
                     <td class="td3">{{data.win_amount|floatformat:2}}</td>
                     <td class="td3">{{data.from_or_to|floatformat:2}}</td>
                     <td class="td2">{{data.balance|floatformat:2}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody class="not-summary l-blush expand-row" style="display: none;">
+                {% for data in admin_report %}
+                <tr style="text-align: center;">
+                    <td class="td2">{{data.date}}</td>
+                    <td class="td3">{{data.admin}}</td>
+                    <td class="td2">{{data.total_d_amount_admin|floatformat:2}}</td>
+                    <td class="td3">{{data.win_amount_admin|floatformat:2}}</td>
+                    <td class="td3">{{data.from_or_to|floatformat:2}}</td>
+                    <td class="td2">{{data.balance_admin|floatformat:2}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -160,7 +182,7 @@
 </div>
 </div>
 
-<nav class="navbar-bottom l-turquoise" id="btotal" >
+<nav class="navbar-bottom normal-row" id="btotal" >
     <table>
         <thead>
             <tr>
@@ -177,6 +199,29 @@
                 <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
                 {% else %}
                 <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+</nav>
+
+<nav class="navbar-bottom l-turquoise expand-row"style="display: none;">
+    <table>
+        <thead>
+            <tr>
+                {% if total_balance_admin|default:0|add:0 >= 0 %}
+                <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
+                {% else %}
+                <th class="th1" style="color: red;">Balance</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% if total_balance_admin|default:0|add:0 >= 0 %}
+                <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance_admin|floatformat:2}}</td>
+                {% else %}
+                <td class="td1" style="color: red;">{{total_balance_admin|floatformat:2}}</td>
                 {% endif %}
             </tr>
         </tbody>
@@ -243,8 +288,10 @@
         $("#expand-button").change(function () {
             if (this.checked) {
                 $(".expand-row").show(); // Show the row when the checkbox is checked
+                $(".normal-row").hide();
             } else {
                 $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".normal-row").show();
             }
         });
     });
@@ -427,6 +474,20 @@
             });
     }
 
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#expand-button").change(function () {
+            if (this.checked) {
+                $(".expand-row").show(); // Show the row when the checkbox is checked
+            } else {
+                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+     
+            }
+        });
+    });
 </script>
 
 

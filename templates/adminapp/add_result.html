@@ -34,16 +34,7 @@
                                     <input type="date" class="form-control" id="date" name="date">
                                 </div>
                             </div>
-                            <div class="col-md-6 col-6">
-                                <div class="mb-3">
-                                    <label>Time</label>
-                                    <select name="time" class="form-control show-tick ms select2" data-placeholder="Select">
-                                        {% for time in timings %}
-                                        <option value="{{ time.id }}">{{time.game_time}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
+                            
                             
                         </div>
                     </div>
@@ -66,7 +57,7 @@
                                 <tr class="l-pink">
                                     <td>First</td>
                                     <td contenteditable="true" style="position: relative;">
-                                        <input type="number" class="auto-focus" required name="first" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
+                                        <input type="number" class="auto-focus" name="first" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: solid 1px; border-radius: 5px; background: transparent;">
                                     </td>
                                     
                                 </tr>
@@ -374,9 +365,6 @@
            text: 'Result published successfully.',
        });
     }
-</script>
-    
-    
-    
-    
+</script>    
+      
 {% endblock %}

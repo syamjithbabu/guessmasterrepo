@@ -90,7 +90,12 @@
                                                 {% for bill in bills %}
                                                 <tr data-dealer="{{ bill.agent.user }}">
                                                     <td class="table-cell">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}</td>
+                                                    {% if bill.customer != '' %}
+                                                    <td class="table-cell">{{bill.customer}}</td>
+                                                    {% else %}
                                                     <td class="table-cell">{{bill.user}}</td>
+                                                    {% endif %}
+                                                    
                                                     <td class="table-cell">{{bill.id}}</td>
                                                     <td class="table-cell">{{bill.total_count}}</td>
                                                     <td class="table-cell">{{bill.total_d_amount}}</td>

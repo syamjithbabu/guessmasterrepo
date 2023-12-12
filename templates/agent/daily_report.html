@@ -145,7 +145,11 @@
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
+                                            {% if bill.customer != '' %}
+                                            <td>{{ bill.customer }}</td>
+                                            {% else %}
                                             <td>{{ bill.user }}</td>
+                                            {% endif %}
                                             {% if for_agent %}
                                                 {% if bill.user.is_agent %}
                                                 <td>{{ bill.total_c_amount|floatformat:2 }}</td>
@@ -179,7 +183,7 @@
         </div>
     </div>
 
-    <nav class="navbar-bottom l-parpl" id="btotal">
+    <nav class="navbar-bottom" id="btotal">
         <table>
             <thead>
                 <tr>
@@ -225,7 +229,11 @@
                         <tr>
                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                             </td>
-                            <td>{{ bill.user }}</td>
+                            {% if bill.customer != '' %}
+                                <td>{{ bill.customer }}</td>
+                            {% else %}
+                                <td>{{ bill.user }}</td>
+                            {% endif %}
                             <td>{{ bill.total_c_amount|floatformat:2 }}</td>
                             <td>{{ bill.win_amount|floatformat:2 }}</td>
                             <td>{{ bill.total_d_amount|floatformat:2 }}</td>
@@ -295,7 +303,7 @@
             // Configuration options for html2pdf
             var options = {
                 margin: 10,
-                filename: 'Daily Report - ' + dateFrom + ' to ' + dateTo + ' - ' + '{{selected_game_time}}',
+                filename: 'Daily Report - ' + dateFrom + ' to ' + dateTo + ' - ' + formatTime(selectedGameTime),
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
@@ -444,8 +452,26 @@
 
         document.getElementById("demo").innerHTML = " : " + currentVal + " (" + fromDayOfWeek + ")";
         document.getElementById("demo1").innerHTML = "&nbsp; to &nbsp;" + currentValue + " (" + toDayOfWeek + ")";
-        document.getElementById("demo4").innerHTML = " : " + "{{ selected_game_time}}";
+        var selectedGameTime = "{{ selected_game_time }}";
+        document.getElementById("demo4").innerHTML = ": " + formatTime(selectedGameTime);
 
+
+
+    function formatTime(time) {
+  // Split the time into hours and minutes
+  var timeArray = time.split(":");
+  var hours = timeArray[0];
+
+  // Convert hours to 12-hour format
+  var ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Handle midnight (00:00) as 12 AM
+
+
+
+  // Format the time in h:mm AM/PM format
+  return hours + ":" +"00" + ampm;
+}
 
 
     </script>
