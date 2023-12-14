@@ -1411,8 +1411,8 @@ def sales_report(request):
     times = PlayTime.objects.filter().all().order_by('id')
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
-    print(current_date)
-    items_per_page = 10
+    print(current_date,"date for")
+    items_per_page = 15
     if request.method == 'POST':
         select_agent = request.POST.get('select-agent')
         if select_agent != 'all':
@@ -2148,6 +2148,7 @@ def sales_report(request):
                 else:
                     print("THIS FUNCTON")
                     #time,lsk not selected, agent selected
+
                     agent_games = AgentGame.objects.filter(date__range=[from_date, to_date]).order_by('id')
                     dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date]).order_by('id')
                     agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games), date__range=[from_date, to_date]).distinct()
@@ -2201,10 +2202,10 @@ def sales_report(request):
                         'agent_games' : agent_games,
                         'dealer_games' : dealer_games,
                         'selected_game_time' : selected_game_time,
+                        'paginator': paginator,
                     }
                     return render(request, 'adminapp/sales_report.html', context)
     else:
-        print("this is working")
         agent_games = AgentGame.objects.filter(date=current_date).all().order_by('id')
         dealer_games = DealerGame.objects.filter(date=current_date).all().order_by('id')
         agent_bills_queryset = Bill.objects.filter(Q(agent_games__in=agent_games), date=current_date).distinct()
@@ -2233,7 +2234,7 @@ def sales_report(request):
         }
 
         # Paginate the combined queryset
-        paginator = Paginator(combined_queryset, 10)
+        paginator = Paginator(combined_queryset, 15)
         page = request.GET.get('page', 1)
 
         try:
@@ -2256,7 +2257,7 @@ def sales_report(request):
             'selected_time' : select_time,
             'selected_game_time' : selected_game_time,
             'agent_games' : agent_games,
-            'dealer_games' : dealer_games
+            'dealer_games' : dealer_games,
         }
         return render(request,'adminapp/sales_report.html',context)
 
@@ -2312,9 +2313,7 @@ def change_game_time(request,id):
 @login_required
 @admin_required
 def monitor_times(request):
-    ist = pytz_timezone('Asia/Kolkata')
-    current_time = timezone.now().astimezone(ist).time()
-    matching_play_times = PlayTime.objects.filter(Q(start_time__lte=current_time) & Q(end_time__gte=current_time)).order_by('id')
+    matching_play_times = PlayTime.objects.filter().order_by('id')
     context = {
         'times' : matching_play_times
     }

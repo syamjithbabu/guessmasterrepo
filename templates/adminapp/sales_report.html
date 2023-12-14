@@ -139,7 +139,7 @@
 
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Search</button>
+                                        <button type="submit" id="search-query" class="btn btn-primary">Search</button>
 
                                     </div>
                                 </div>
@@ -172,7 +172,7 @@
                     <div class="card l-blue" style="padding-left: 0px;padding-right: 0px;">
                         <div class="body l-blue">
                             <div class="table-responsive">
-
+ 
                                 <table class="table m-b-0">
 
                                     <thead>
@@ -256,8 +256,8 @@
                                     <div class="pagination">
                                         <span class="step-links">
                                             {% if combined_bills.has_previous %}
-                                                <a href="?page=1">&laquo; first</a>
-                                                <a href="?page={{ combined_bills.previous_page_number }}">previous</a>
+                                                <a href="?page=1" class="pagination-link">&laquo; first</a>
+                                                <a href="?page={{ combined_bills.previous_page_number }}" class="pagination-link">previous</a>
                                             {% endif %}
                                     
                                             <span class="current">
@@ -265,8 +265,8 @@
                                             </span>
                                     
                                             {% if combined_bills.has_next %}
-                                                <a href="?page={{ combined_bills.next_page_number }}">next</a>
-                                                <a href="?page={{ combined_bills.paginator.num_pages }}">last &raquo;</a>
+                                                <a href="?page={{ combined_bills.next_page_number }}" class="pagination-link" id="next-link">next</a>
+                                                <a href="?page={{ combined_bills.paginator.num_pages }}" class="pagination-link">last &raquo;</a>
                                             {% endif %}
                                         </span>
                                     </div>
@@ -281,8 +281,8 @@
                         </div>
                     </div>
                 </div>
+                
             </div>
-
         </div>
     </div>
 
@@ -437,6 +437,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 
     <script>
         $(document).ready(function () {
