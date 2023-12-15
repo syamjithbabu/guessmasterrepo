@@ -38,7 +38,31 @@
         text-align: center;
     }
 
-   
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination button {
+        color: #007bff;
+        background-color: #ffffff;
+        padding: 4px 4px;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        border-radius: 4px;
+        margin: 0 4px;
+    }
+
+    .pagination button:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .pagination .active {
+        background-color: #007bff;
+        color: white;
+    }
 
     
 
@@ -59,13 +83,14 @@
             </div>
         </div>
 
+        <form method="POST">
+            {% csrf_token %}
         <div class="row clearfix serch">
             <div class="col-md-12" style="padding-left: 0px;padding-right: 0px;padding-top: 0px;">
                 <div class="card"   style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                     <div class="body ">
-                        <form method="POST">
-                            {% csrf_token %}
+                        
                             <ul class="nav nav-tabs-new2">
 
                                 <div class="col-6">
@@ -148,7 +173,7 @@
                                     </div>
                                 </div>
                             </ul>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -159,15 +184,12 @@
                 <div class="col-lg-12" style="padding-top: 0px;">
                     <div class="card " style="padding-left: 0px;padding-right: 0px;background-color:lavender;">
                         <div class="body">
-                            {% if agent_bills %}
-                            <div class="table-responsive" >
-                                
+                            <div class="table-responsive">
                                 <table class="table m-b-0">
-                                    
-                                    <thead class="l-blue"  style="text-align: center;">
+                                    <thead class="l-blue" style="text-align: center;">
                                         <tr style="text-align: center;">
                                             <th style="text-align: center;">Date</th>
-                                            <th style="text-align: center;">Agent</th>
+                                            <th style="text-align: center;">User</th>
                                             <th style="text-align: center;">Bill</th>
                                             <th style="text-align: center;">Count</th>
                                             <th style="text-align: center;">S.Amt</th>
@@ -175,112 +197,111 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for bill in agent_bills %}
-                                        <tr class="main-row l-blush" style="text-align: center;">
-                                            <td  style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
+                                        {% for bill in combined_bills %}
+                                        <tr class="main-row l-pink" style="text-align: center;">
+                                            <td style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
-                                            {% if bill.customer != '' %}
-                                            <td style="text-align: center;">{{ bill.customer }}</td>
+                                            {% if bill.user.agent.user %}
+                                            {% if bill.customer == '' %}
+                                            <td style="text-align: center;">{{ bill.user.agent.user }}</td>
                                             {% else %}
-                                            <td style="text-align: center;">{{ bill.user }}</td>
+                                            <td style="text-align: center;">{{ bill.customer }}</td>
                                             {% endif %}
                                             <td style="text-align: center;">{{ bill.id }}</td>
                                             <td style="text-align: center;">{{ bill.total_count }}</td>
                                             <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
-                                            <td  style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
-                                        </tr>
-                                        
-
-                                        {% regroup bill.agent_games.all|dictsort:"id" by id as games_by_id %}
-                                            {% for group in games_by_id %}
-                                                {% for game in group.list %}
-                                                {% if game in agent_games %}
-                                                <tr class="expand-row grouped-row l-pink" style="display: none;">
-                                                    <td  style="text-align: center;">#</td>
-                                                    <td  style="text-align: center;">{{ game.LSK }}</td>
-                                                    <td  style="text-align: center;">{{ game.number }}</td>
-                                                    <td  style="text-align: center;">{{ game.count }}</td>
-                                                    <td  style="text-align: center;">{{ game.d_amount }}</td>
-                                                    <td  style="text-align: center;">{{ game.c_amount }}</td>
-                                                </tr>
-                                                {% endif %}
-                                                {% endfor %}
-                                            {% endfor %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            {% endif %}
-                            {% if dealer_bills %}
-                            <div class="table-responsive">
-                                <table class="table m-b-0">
-                                    <thead class="l-blue">
-                                        <tr  style="text-align: center;">
-                                            <th  style="text-align: center;">Date</th>
-                                            <th style="text-align: center;">Dealer</th>
-                                            <th style="text-align: center;">Bill</th>
-                                            <th style="text-align: center;">Count</th>
-                                            <th style="text-align: center;">S.Amt</th>
-                                            <th style="text-align: center;">C.Amt</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="l-turquoise">
-                                        {% for bill in dealer_bills %}
-                                        <tr style="text-align: center;">
-                                            <td style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
-                                            </td>
-                                            <td style="text-align: center;">{{ bill.user }}</td>
+                                            <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
+                                            {% elif bill.user.dealer.user %}
+                                            <td style="text-align: center;">{{ bill.user.dealer.user }}</td>
                                             <td style="text-align: center;">{{ bill.id }}</td>
                                             <td style="text-align: center;">{{ bill.total_count }}</td>
                                             {% if for_agent %}
                                             <td style="text-align: center;">{{ bill.total_d_amount_admin|floatformat:2 }}</td>
                                             <td style="text-align: center;">{{ bill.total_c_amount_admin|floatformat:2 }}</td>
+                                            
                                             {% else %}
                                             <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
                                             <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
                                             {% endif %}
+                                            {% endif %}
                                         </tr>
-                                        
-
-
-
-                                        {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
-                                            {% for group in games_by_id %}
-                                                {% for game in group.list %}
-                                                {% if game in dealer_games %}
-                                                <tr class="expand-row" style="display: none; ">
-                                                    <td style="text-align: center;">#</td>
-                                                    <td style="text-align: center;">{{ game.LSK }}</td>
-                                                    <td style="text-align: center;">{{ game.number }}</td>
-                                                    <td style="text-align: center;">{{ game.count }}</td>
-                                                    {% if for_agent %}
-                                                    <td style="text-align: center;">{{ game.d_amount_admin }}</td>
-                                                    <td style="text-align: center;">{{ game.c_amount_admin }}</td>
-                                                    {% else %}
-                                                    <td style="text-align: center;">{{ game.d_amount }}</td>
-                                                    <td style="text-align: center;">{{ game.c_amount }}</td>
-                                                    {% endif %}
-                                                </tr>
-                                                {% endif %}
-                                                {% endfor %}
+        
+                                        {% regroup bill.agent_games.all|dictsort:"id" by id as games_by_id %}
+                                        {% for group in games_by_id %}
+                                            {% for game in group.list %}
+                                            {% if game in agent_games %}
+                                            <tr class="expand-row grouped-row" style="display: none;">
+                                                <td style="text-align: center;">#</td>
+                                                <td style="text-align: center;">{{ game.LSK }}</td>
+                                                <td style="text-align: center;">{{ game.number }}</td>
+                                                <td style="text-align: center;">{{ game.count }}</td>
+                                                <td style="text-align: center;">{{ game.d_amount|floatformat:2 }}</td>
+                                                <td style="text-align: center;">{{ game.c_amount|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
                                             {% endfor %}
+                                        {% endfor %}
+        
+                                        {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
+                                        {% for group in games_by_id %}
+                                            {% for game in group.list %}
+                                            {% if game in dealer_games %}
+                                            <tr class="expand-row grouped-row" style="display: none;">
+                                                <td style="text-align: center;">#</td>
+                                                <td style="text-align: center;">{{ game.LSK }}</td>
+                                                <td style="text-align: center;">{{ game.number }}</td>
+                                                <td style="text-align: center;">{{ game.count }}</td>
+                                                <td style="text-align: center;">{{ game.d_amount_admin|floatformat:2 }}</td>
+                                                <td style="text-align: center;">{{ game.c_amount_admin|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+        
+                                        {% regroup bill.dealer_only_games.all|dictsort:"id" by id as games_by_id %}
+                                        {% for group in games_by_id %}
+                                            {% for game in group.list %}
+                                            {% if game in dealer_only_games %}
+                                            <tr class="expand-row grouped-row" style="display: none;">
+                                                <td style="text-align: center;">#</td>
+                                                <td style="text-align: center;">{{ game.LSK }}</td>
+                                                <td style="text-align: center;">{{ game.number }}</td>
+                                                <td style="text-align: center;">{{ game.count }}</td>
+                                                <td style="text-align: center;">{{ game.d_amount_admin|floatformat:2 }}</td>
+                                                <td style="text-align: center;">{{ game.c_amount_admin|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                                <div class="pagination" style="padding-bottom: 30px;">
+                                    <span class="step-links">
+                                        {% if combined_bills.has_previous %}
+                                            <button type="submit" class="pagination-link" name="page" value="1">&laquo; First</button>
+                                            <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.previous_page_number }}">Previous</button>
+                                        {% endif %}
+                                        
+                                        <span class="current">
+                                            Page {{ combined_bills.number }} of {{ combined_bills.paginator.num_pages }}.
+                                        </span>                                         
+                                        {% if combined_bills.has_next %}
+                                        <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.next_page_number }}">Next</button>
+                                        <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.paginator.num_pages }}">Last &raquo;</button>
+                                        {% endif %}
+                                    </span>
+                                </div>
                             </div>
-                            {% else %}
-                            {% endif %}
-                           
-                        <!-- <div  style="padding-top: 50px;"></div> -->
-                        <div class="text-right" style="padding-top: 50px;">
+                            <div class="text-right" style="padding-top: 20px;">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-    </div>
+        </form>
+        
 </div>
 
 <nav class="navbar-bottom" id="btotal">

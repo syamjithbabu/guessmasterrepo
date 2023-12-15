@@ -17,6 +17,7 @@ from django.db.models import Sum
 from django.db.models import Q
 from django.db.models import F
 from django.contrib.auth.forms import PasswordChangeForm
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 # Create your views here.
@@ -234,6 +235,7 @@ def sales_report(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     print(current_date)
+    items_per_page = 15
     if request.method == 'POST':
         select_time = request.POST.get('select-time')
         lsk = request.POST.get('select-lsk')
@@ -261,6 +263,15 @@ def sales_report(request):
             if lsk != 'all':
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
+                combined_queryset = dealer_bills
+                paginator = Paginator(combined_queryset, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                 for bill in dealer_bills:
                     for game in bill.dealer_games.filter(LSK__in=lsk_value):
@@ -273,12 +284,30 @@ def sales_report(request):
             else:
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).distinct()
+                combined_queryset = dealer_bills
+                paginator = Paginator(combined_queryset, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         else:
             if lsk != 'all':
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                combined_queryset = dealer_bills
+                paginator = Paginator(combined_queryset, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
                 for bill in dealer_bills:
                     for game in bill.dealer_games.filter(LSK__in=lsk_value):
                         print("Game Count of",bill.id," is" , game.count)
@@ -291,9 +320,18 @@ def sales_report(request):
                 dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).order_by('id')
                 dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
                 totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                combined_queryset = dealer_bills
+                paginator = Paginator(combined_queryset, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
         context = {
             'times': times,
-            'dealer_bills' : dealer_bills,
+            'combined_bills' : combined_bills,
             'dealer_games' : dealer_games,
             'totals' : totals,
             'selected_time' : select_time,
@@ -306,11 +344,20 @@ def sales_report(request):
         dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all().order_by('id')
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
         totals = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+        combined_queryset = dealer_bills
+        paginator = Paginator(combined_queryset, 15)
+        page = request.POST.get('page', 1)
+        try:
+            combined_bills = paginator.page(page)
+        except PageNotAnInteger:
+            combined_bills = paginator.page(1)
+        except EmptyPage:
+            combined_bills = paginator.page(paginator.num_pages)
         select_time = 'all'
         selected_game_time = 'all times'
         context = {
             'times': times,
-            'dealer_bills' : dealer_bills,
+            'combined_bills' : combined_bills,
             'dealer_games' : dealer_games,
             'totals' : totals,
             'selected_time' : select_time,
@@ -333,6 +380,7 @@ def daily_report(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     print(current_date)
+    items_per_page = 15
     total_winning = []
     total_balance = []
     if request.method == 'POST':
@@ -347,10 +395,18 @@ def daily_report(request):
         total_winning = []
         total_balance = []
         if select_time != 'all':
-            dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj,time=select_time).all()
-            dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id,time_id=select_time).all()
+            dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).all()
+            dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
+            paginator = Paginator(dealer_bills, 15)
+            page = request.POST.get('page', 1)
+            try:
+                combined_bills = paginator.page(page)
+            except PageNotAnInteger:
+                combined_bills = paginator.page(1)
+            except EmptyPage:
+                combined_bills = paginator.page(paginator.num_pages)
             for bill in dealer_bills:
-                winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=bill.id,time=select_time)
+                winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
                 total_winning = sum(winning.total for winning in winnings)
                 bill.win_amount = total_winning
                 if winnings != 0:
@@ -359,37 +415,69 @@ def daily_report(request):
                     bill.total_d_amount = total_winning - bill.total_c_amount
                 total_winning = sum(bill.win_amount for bill in dealer_bills)
                 total_balance = sum(bill.total_d_amount for bill in dealer_bills)
-            total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))
+            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))
             context = {
                 'times': times,
-                'dealer_bills' : dealer_bills,
+                'combined_bills' : combined_bills,
                 'dealer_games' : dealer_games,
                 'total_c_amount' : total_c_amount,
                 'total_winning' : total_winning,
                 'total_balance' : total_balance,
                 'selected_time' : select_time,
                 'selected_game_time' : selected_game_time,
+                'selected_from' : from_date,
+                'selected_to' : to_date,
             }
             return render(request,'dealer/daily_report.html',context)
         else:
             dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj)
             dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
+            paginator = Paginator(dealer_bills, 15)
+            page = request.POST.get('page', 1)
+            try:
+                combined_bills = paginator.page(page)
+            except PageNotAnInteger:
+                combined_bills = paginator.page(1)
+            except EmptyPage:
+                combined_bills = paginator.page(paginator.num_pages)
             winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
-            totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-            
+            for bill in dealer_bills:
+                winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
+                total_winning = sum(winning.total for winning in winnings)
+                bill.win_amount = total_winning
+                if winnings != 0:
+                    bill.total_d_amount = bill.total_c_amount - total_winning
+                else:
+                    bill.total_d_amount = total_winning - bill.total_c_amount
+                total_winning = sum(bill.win_amount for bill in dealer_bills)
+                total_balance = sum(bill.total_d_amount for bill in dealer_bills)
+            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))
+            print(total_c_amount)
             context = {
                 'times': times,
-                'dealer_bills' : dealer_bills,
+                'combined_bills' : combined_bills,
                 'dealer_games' : dealer_games,
                 'winnings' : winning_for_bills,
-                'totals' : totals,
+                'total_c_amount' : total_c_amount,
+                'total_winning' : total_winning,
+                'total_balance' : total_balance,
                 'selected_time' : 'all',
                 'selected_game_time' : selected_game_time,
+                'selected_from' : from_date,
+                'selected_to' : to_date,
             }
             return render(request,'dealer/daily_report.html',context)
     else:
         dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all()
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
+        paginator = Paginator(dealer_bills, 15)
+        page = request.GET.get('page', 1)
+        try:
+            combined_bills = paginator.page(page)
+        except PageNotAnInteger:
+            combined_bills = paginator.page(1)
+        except EmptyPage:
+            combined_bills = paginator.page(paginator.num_pages)
         for bill in dealer_bills:
             winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=bill.id)
             total_winning = sum(winning.total for winning in winnings)
@@ -401,18 +489,19 @@ def daily_report(request):
             total_winning = sum(bill.win_amount for bill in dealer_bills)
             total_balance = sum(bill.total_d_amount for bill in dealer_bills)
         total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))
+        print(total_c_amount)
         select_time = 'all'
         selected_game_time = 'all times'
         context = {
             'times': times,
-            'dealer_bills' : dealer_bills,
+            'combined_bills' : combined_bills,
             'dealer_games' : dealer_games,
             'total_c_amount' : total_c_amount,
             'total_winning' : total_winning,
             'total_balance' : total_balance,
             'selected_time' : select_time,
             'dealer_games' : dealer_games,
-            'selected_game_time' : selected_game_time
+            'selected_game_time' : selected_game_time,
         }
     return render(request,'dealer/daily_report.html',context)
 

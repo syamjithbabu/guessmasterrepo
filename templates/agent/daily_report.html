@@ -37,6 +37,31 @@
     td {
         text-align: center;
     }
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination button {
+        color: #007bff;
+        background-color: #ffffff;
+        padding: 4px 4px;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        border-radius: 4px;
+        margin: 0 4px;
+    }
+
+    .pagination button:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .pagination .active {
+        background-color: #007bff;
+        color: white;
+    }
 </style>
 
 <div id="main-content">
@@ -56,13 +81,13 @@
             </div>
         </div>
 
+        <form method="POST">
+            {% csrf_token %}
         <div class="row clearfix" style="padding-left: 0px;padding-right: 0px;">
             <div class="col-md-12">
                 <div class="card  serch" style="padding-left: 0px;padding-right: 0px;background-color: antiquewhite;">
 
                     <div class="body">
-                        <form method="POST">
-                            {% csrf_token %}
                             <ul class="nav nav-tabs-new2">
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
@@ -117,7 +142,7 @@
                                     </div>
                                 </div>
                             </ul>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -141,7 +166,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="l-turquoise">
-                                        {% for bill in dealer_bills %}
+                                        {% for bill in combined_bills %}
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
@@ -170,9 +195,25 @@
                                     </tbody>
                                 </table>
 
+                                <div class="pagination" style="padding-bottom: 30px;">
+                                    <span class="step-links">
+                                        {% if combined_bills.has_previous %}
+                                            <button type="submit" class="pagination-link" name="page" value="1">&laquo; First</button>
+                                            <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.previous_page_number }}">Previous</button>
+                                        {% endif %}
+                                        
+                                        <span class="current">
+                                            Page {{ combined_bills.number }} of {{ combined_bills.paginator.num_pages }}.
+                                        </span>                                         
+                                        {% if combined_bills.has_next %}
+                                        <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.next_page_number }}">Next</button>
+                                        <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.paginator.num_pages }}">Last &raquo;</button>
+                                        {% endif %}
+                                    </span>
+                                </div>
 
                             </div>
-                            <div style="padding-top: 50px;"></div>
+                            
 
                         </div>
 
@@ -181,6 +222,7 @@
             </div>
 
         </div>
+    </form>
     </div>
 
     <nav class="navbar-bottom" id="btotal">
