@@ -23,6 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.forms import PasswordChangeForm,AdminPasswordChangeForm
 from django.db.models import F
 from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 @login_required
@@ -174,6 +175,7 @@ def sales_report(request):
     day_of_week = current_date.strftime('%A')
     print(day_of_week)
     print(current_date)
+    items_per_page = 15
     if request.method == 'POST':
         select_dealer = request.POST.get('select-dealer')
         print(select_dealer,"selected_dealer")
@@ -217,6 +219,15 @@ def sales_report(request):
                         agent_bills = Bill.objects.filter(date__range=[from_date, to_date],user=agent_obj.user.id,time_id=select_time,agent_games__in=agent_games).distinct()
                         print(agent_bills)
                         totals = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,agent=agent_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                        combined_queryset = agent_bills
+                        paginator = Paginator(combined_queryset, 15)
+                        page = request.POST.get('page', 1)
+                        try:
+                            combined_bills = paginator.page(page)
+                        except PageNotAnInteger:
+                            combined_bills = paginator.page(1)
+                        except EmptyPage:
+                            combined_bills = paginator.page(paginator.num_pages)
                         for bill in agent_bills:
                             for game in bill.agent_games.filter(LSK__in=lsk_value):
                                 print("Game Count of",bill.id," is" , game.count)
@@ -420,6 +431,15 @@ def sales_report(request):
                     dealer_bills = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date]).distinct()
                     totals_agent = AgentGame.objects.filter(Q(agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     totals_dealer = DealerGame.objects.filter(Q(dealer__agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
+                    combined_queryset = agent_bills | dealer_bills
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
                     totals = {
                         'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0),
                         'total_c_amount': (totals_agent['total_c_amount'] or 0) + (totals_dealer['total_c_amount'] or 0),
@@ -429,8 +449,7 @@ def sales_report(request):
         context = {
             'dealers': dealers,
             'times': times,
-            'agent_bills' : agent_bills,
-            'dealer_bills' : dealer_bills,
+            'combined_bills' : combined_bills,
             'totals' : totals,
             'selected_dealer' : select_dealer,
             'selected_time' : select_time,

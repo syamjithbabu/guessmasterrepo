@@ -1414,6 +1414,7 @@ def sales_report(request):
     print(current_date,"date for")
     items_per_page = 15
     if request.method == 'POST':
+        print("hello")
         select_agent = request.POST.get('select-agent')
         if select_agent != 'all':
             agent_instance = Agent.objects.get(id=select_agent)
@@ -1484,8 +1485,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1564,8 +1565,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1631,8 +1632,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1711,8 +1712,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1761,8 +1762,8 @@ def sales_report(request):
                         'total_d_amount': (dealer_games_total['total_d_amount'] or 0)
                     }
                     combined_queryset = dealer_bills
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1801,8 +1802,8 @@ def sales_report(request):
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date],time_id=select_time).distinct()
                     dealer_games_total = DealerGame.objects.filter(dealer=dealer_instance,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     combined_queryset = dealer_bills
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1840,8 +1841,8 @@ def sales_report(request):
                     print(dealer_games)
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     combined_queryset = dealer_bills
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1888,8 +1889,8 @@ def sales_report(request):
                     dealer_bills = Bill.objects.filter(Q(dealer_games__in=dealer_games),date__range=[from_date, to_date]).distinct()
                     print(dealer_bills)
                     combined_queryset = dealer_bills
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -1953,8 +1954,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -2032,8 +2033,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -2097,8 +2098,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)
@@ -2177,8 +2178,8 @@ def sales_report(request):
                     }
 
                     # Paginate the combined queryset
-                    paginator = Paginator(combined_queryset, 10)
-                    page = request.GET.get('page', 1)
+                    paginator = Paginator(combined_queryset, 15)
+                    page = request.POST.get('page', 1)
 
                     try:
                         combined_bills = paginator.page(page)

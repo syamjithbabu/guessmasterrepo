@@ -40,6 +40,33 @@
     td {
         text-align: center;
     }
+
+    .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination button {
+    color: #007bff;
+    background-color: #ffffff;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    margin: 0 4px;
+}
+
+.pagination button:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+}
+
 </style>
 
 <div id="main-content">
@@ -57,13 +84,15 @@
             </div>
         </div>
 
+        <form method="POST" id="salesReportForm">
+            {% csrf_token %}
+            <input type="hidden" id="currentPage" name="page" value="1">
         <div class="row clearfix">
             <div class="col-md-12">
                 <div class="card serch" style="background-color:antiquewhite">
 
                     <div class="body">
-                        <form method="POST">
-                            {% csrf_token %}
+                        
                             <ul class="nav nav-tabs-new2">
 
                                 <div class="col-6">
@@ -160,7 +189,7 @@
                                 </div>
 
                             </ul>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -253,27 +282,26 @@
                                             {% endfor %}
                                         {% endfor %}
                                     </tbody>
-                                    <div class="pagination">
+                                    
+                                </table>
+
+                            
+                                    <div class="pagination" style="padding-bottom: 30px;">
                                         <span class="step-links">
                                             {% if combined_bills.has_previous %}
-                                                <a href="?page=1" class="pagination-link">&laquo; first</a>
-                                                <a href="?page={{ combined_bills.previous_page_number }}" class="pagination-link">previous</a>
+                                                <button type="submit" class="pagination-link" name="page" value="1">&laquo; First</button>
+                                                <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.previous_page_number }}">Previous</button>
                                             {% endif %}
-                                    
+                                            
                                             <span class="current">
                                                 Page {{ combined_bills.number }} of {{ combined_bills.paginator.num_pages }}.
-                                            </span>
-                                    
+                                            </span>                                         
                                             {% if combined_bills.has_next %}
-                                                <a href="?page={{ combined_bills.next_page_number }}" class="pagination-link" id="next-link">next</a>
-                                                <a href="?page={{ combined_bills.paginator.num_pages }}" class="pagination-link">last &raquo;</a>
+                                            <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.next_page_number }}">Next</button>
+                                            <button type="submit" class="pagination-link" name="page" value="{{ combined_bills.paginator.num_pages }}">Last &raquo;</button>
                                             {% endif %}
                                         </span>
                                     </div>
-                                </table>
-
-                                
-
                             </div>
                             <div class="text-right" style="padding-top: 20px;">
 
@@ -284,6 +312,7 @@
                 
             </div>
         </div>
+        </form>
     </div>
 
     <nav class="navbar-bottom" id="btotal">
@@ -701,9 +730,5 @@
         }
 
     </script>
-
-
-
-
 
     {% endblock %}
