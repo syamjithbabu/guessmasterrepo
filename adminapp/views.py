@@ -28,6 +28,10 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from itertools import chain
 
 
+
+
+
+
 # Create your views here.
 
 @admin_required
@@ -1519,6 +1523,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                         bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1583,6 +1588,8 @@ def sales_report(request):
                         'total_d_amount': (agent_games_total['total_d_amount'] or 0) + (dealer_games_total['total_d_amount'] or 0)
                     }
                     context = {
+                        'combined_queryset':combined_queryset,
+
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1666,6 +1673,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                         bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1730,6 +1738,7 @@ def sales_report(request):
                         'total_d_amount': (agent_games_total['total_d_amount'] or 0) + (dealer_games_total['total_d_amount'] or 0)
                     }
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1781,6 +1790,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
                         bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1818,6 +1828,7 @@ def sales_report(request):
                         'total_d_amount': (dealer_games_total['total_d_amount'] or 0)
                     }
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1866,6 +1877,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
                         bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1906,6 +1918,7 @@ def sales_report(request):
                         'total_d_amount': (dealer_games_total['total_d_amount'] or 0)
                     }
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -1988,6 +2001,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                         bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -2051,6 +2065,7 @@ def sales_report(request):
                         'total_d_amount': (agent_games_total['total_d_amount'] or 0) + (dealer_games_total['total_d_amount'] or 0)
                     }
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -2119,7 +2134,7 @@ def sales_report(request):
                         for game in bill.dealer_games.filter(LSK__in=lsk_value):
                             print("Game Count of",bill.id," is" , game.count)
                             print("Game D Amount of",bill.id," is" , game.d_amount)
-                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount) 
                         bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
                         bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount_admin'))['total_d_amount']
                         bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount']
@@ -2132,6 +2147,7 @@ def sales_report(request):
                         bill.total_d_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
                         bill.total_c_amount = bill.agent_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -2191,6 +2207,7 @@ def sales_report(request):
                     agent_games_total = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
                     dealer_games_total = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount_admin'),total_d_amount=Sum('d_amount_admin'))
                     context = {
+                        'combined_queryset':combined_queryset,
                         'agents' : agents,
                         'times': times,
                         'combined_bills' : combined_bills,
@@ -2235,7 +2252,6 @@ def sales_report(request):
             'total_d_amount': (agent_bills_totals['total_d_amount'] or 0) + (dealer_bills_totals['total_d_amount_admin'] or 0)
         }
 
-        # Paginate the combined queryset
         paginator = Paginator(combined_queryset, 15)
         page = request.GET.get('page', 1)
 
@@ -2250,6 +2266,7 @@ def sales_report(request):
         select_time = 'all'
         selected_game_time = 'all times'
         context = {
+                        'combined_queryset':combined_queryset,
             'agents' : agents,
             'times' : times,
             'combined_bills' : combined_bills,
