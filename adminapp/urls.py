@@ -1,12 +1,13 @@
 from . import views
 from django.urls import path
+from .views import generate_pdf
 
 
 app_name = 'adminapp'
 
 urlpatterns = [
+    path('your-pdf-generation-url/', generate_pdf, name='generate_pdf'),
 
-    
     path('index',views.index,name="index"),
     path('agent',views.agent,name="agent"),
     path('add-agent',views.add_agent,name="add_agent"),
