@@ -28,33 +28,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
-
-def generate_pdf(request):
-    # Assuming combined_bills, agents, and other necessary variables are available in the context
-    context = {
-        'combined_bills': combined_bills,
-        'agents': agents,
-        # Add other variables as needed
-    }
-
-    # Render the HTML content
-    html_content = render_to_string('adminapp/sales_report_pdf.html', context)
-
-    # Create a WeasyPrint HTML object
-    html = HTML(string=html_content)
-
-    # Generate the PDF
-    pdf = html.write_pdf()
-
-    # Create a Django response with the PDF file
-    response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="sales_report.pdf"'
-
-    return response
 
 
 
