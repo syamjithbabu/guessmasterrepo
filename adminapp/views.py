@@ -25,6 +25,7 @@ from django.contrib.auth.forms import AdminPasswordChangeForm,SetPasswordForm
 from django.contrib.auth.forms import AdminPasswordChangeForm,PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from itertools import chain
 
 
 # Create your views here.
@@ -818,7 +819,7 @@ def add_result(request,id):
                                         first_prize = Winning.objects.create(date=date,time=play_time,agent=game.agent,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="6",prize=prize,commission=commission,total=total)
                     elif game.LSK == 'A' and result.first.startswith(game_number[0]):
                         agent_package = AgentPackage.objects.get(agent=game.agent)
-                        print(date,time,game.agent.user.id,game.id)
+                        
                         matching_bills = Bill.objects.get(date=date,time_id=play_time,user=game.agent.user.id,agent_games__id=game.id)
                         prize = ((agent_package.single1_prize)*(game.count))
                         commission = ((agent_package.single1_dc)*(game.count))
@@ -4154,18 +4155,18 @@ def countwise_report(request):
     times = PlayTime.objects.filter().all().order_by('id')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
-    agent_games = AgentGame.objects.filter(date=current_date).all()
-    dealer_games = DealerGame.objects.filter(date=current_date).all()
-    combined_games = (
-        AgentGame.objects.filter(date=current_date)
-        .values('LSK', 'number')
-        .annotate(total_count=Sum('count'))
-        .union(
-            DealerGame.objects.filter(date=current_date)
-            .values('LSK', 'number')
-            .annotate(total_count=Sum('count'))
-        ).order_by('-total_count')
-    )
+    agent_games = AgentGame.objects.filter(date=current_date).values('LSK', 'number').annotate(total_count=Sum('count'))
+    dealer_games = DealerGame.objects.filter(date=current_date).values('LSK', 'number').annotate(total_count=Sum('count'))
+    combined_games = list(chain(agent_games, dealer_games))
+    result_dict = {}
+    for game in combined_games:
+        key = (game['LSK'], game['number'])
+        if key in result_dict:
+            result_dict[key]['total_count'] += game['total_count']
+        else:
+            result_dict[key] = game
+    combined_result = list(result_dict.values())
+    combined_result.sort(key=lambda x: x['total_count'], reverse=True)
     totals_agent = AgentGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
     totals_dealer = DealerGame.objects.filter(date=current_date).aggregate(total_count=Sum('count'))
     total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
@@ -4191,41 +4192,41 @@ def countwise_report(request):
             lsk_value == ['all']
         if select_time != 'all':
             if lsk != 'all':
-                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).values('LSK', 'number').annotate(total_count=Sum('count'))
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).values('LSK', 'number').annotate(total_count=Sum('count'))
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value).aggregate(total_count=Sum('count'))
-                combined_games = (
-                    AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
-                    .values('LSK', 'number')
-                    .annotate(total_count=Sum('count'))
-                    .union(
-                        DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time,LSK__in=lsk_value)
-                        .values('LSK', 'number')
-                        .annotate(total_count=Sum('count'))
-                    ).order_by('-total_count')
-                )
+                combined_games = list(chain(agent_games, dealer_games))
+                result_dict = {}
+                for game in combined_games:
+                    key = (game['LSK'], game['number'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             else:
-                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time)
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).values('LSK', 'number').annotate(total_count=Sum('count'))
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).values('LSK', 'number').annotate(total_count=Sum('count'))
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'))
-                combined_games = (
-                    AgentGame.objects.filter(date__range=[from_date, to_date],time=select_time)
-                    .values('LSK', 'number')
-                    .annotate(total_count=Sum('count'))
-                    .union(
-                        DealerGame.objects.filter(date__range=[from_date, to_date],time=select_time)
-                        .values('LSK', 'number')
-                        .annotate(total_count=Sum('count'))
-                    ).order_by('-total_count')
-                )
+                combined_games = list(chain(agent_games, dealer_games))
+                result_dict = {}
+                for game in combined_games:
+                    key = (game['LSK'], game['number'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             context = {
                 'agent_games' : agent_games,
                 'dealer_games' : dealer_games,
-                'combined_games' : combined_games,
+                'combined_result' : combined_result,
                 'selected_lsk' : lsk,
                 'selected_from' : from_date,
                 'selected_to' : to_date,
@@ -4237,41 +4238,42 @@ def countwise_report(request):
             return render(request,'adminapp/countwise_report.html',context)
         else:
             if lsk != 'all':
-                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).values('LSK', 'number').annotate(total_count=Sum('count'))
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).values('LSK', 'number').annotate(total_count=Sum('count'))
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value).aggregate(total_count=Sum('count'))
-                combined_games = (
-                    AgentGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
-                    .values('LSK', 'number')
-                    .annotate(total_count=Sum('count'))
-                    .union(
-                        DealerGame.objects.filter(date__range=[from_date, to_date],LSK__in=lsk_value)
-                        .values('LSK', 'number')
-                        .annotate(total_count=Sum('count'))
-                    ).order_by('-total_count')
-                )
+                combined_games = list(chain(agent_games, dealer_games))
+                result_dict = {}
+                for game in combined_games:
+                    key = (game['LSK'], game['number'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
+                total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             else:
-                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date])
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date])
+                agent_games = AgentGame.objects.filter(date__range=[from_date, to_date]).values('LSK', 'number').annotate(total_count=Sum('count'))
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date]).values('LSK', 'number').annotate(total_count=Sum('count'))
                 totals_agent = AgentGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
                 totals_dealer = DealerGame.objects.filter(date__range=[from_date, to_date]).aggregate(total_count=Sum('count'))
-                combined_games = (
-                    AgentGame.objects.filter(date__range=[from_date, to_date])
-                    .values('LSK', 'number')
-                    .annotate(total_count=Sum('count'))
-                    .union(
-                        DealerGame.objects.filter(date__range=[from_date, to_date])
-                        .values('LSK', 'number')
-                        .annotate(total_count=Sum('count'))
-                    ).order_by('-total_count')
-                )
+                combined_games = list(chain(agent_games, dealer_games))
+                result_dict = {}
+                for game in combined_games:
+                    key = (game['LSK'], game['number'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 total_count = {'total_count': (totals_agent['total_count'] or 0) + (totals_dealer['total_count'] or 0)}
             context = {
                 'agent_games' : agent_games,
                 'dealer_games' : dealer_games,
-                'combined_games' : combined_games,
+                'combined_result' : combined_result,
                 'selected_lsk' : lsk,
                 'selected_from' : from_date,
                 'selected_to' : to_date,
@@ -4285,7 +4287,7 @@ def countwise_report(request):
     context = {
         'agent_games' : agent_games,
         'dealer_games' : dealer_games,
-        'combined_games' : combined_games,
+        'combined_result' : combined_result,
         'total_count' : total_count,
         'times' : times,
         'selected_time' : 'all',
@@ -4564,23 +4566,22 @@ def winning_report(request):
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
                 print(winnings)
-                agent_winnings = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
-                dealer_winnings = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time)
-                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission'),
-                    total_prize=Sum('prize'),
-                    total_net=Sum('total'),
-                    position=F('position'),
-                )
-                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission_admin'),
-                    total_prize=Sum('prize_admin'),
-                    total_net=Sum('total_admin'),
-                    position=F('position'),
-                )
-                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_winnings = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date],time=select_time).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission'),total_prize=Sum('prize'),total_net=Sum('total'))
+                dealer_winnings = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_prize=Sum('prize_admin'),total_net=Sum('total_admin'))
+                combined_winnings = list(chain(agent_winnings, dealer_winnings))
+                print(combined_winnings)
+                result_dict = {}
+                for game in combined_winnings:
+                    key = (game['LSK'], game['number'], game['position'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                        result_dict[key]['total_commission'] += game['total_commission']
+                        result_dict[key]['total_prize'] += game['total_prize']
+                        result_dict[key]['total_net'] += game['total_net']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 agent_totals = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
                 dealer_totals = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
                 totals = {
@@ -4594,7 +4595,7 @@ def winning_report(request):
                     'agents' : agents,
                     'winnings' : winnings,
                     'totals' : totals,
-                    'aggr' : aggregated_winnings,
+                    'aggr' : combined_result,
                     'selected_time' : select_time,
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
@@ -4603,24 +4604,22 @@ def winning_report(request):
                 }
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time)
-                print("time only selected")
-                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,agent__isnull=False)
-                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__isnull=False)
-                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission'),
-                    total_prize=Sum('prize'),
-                    total_net=Sum('total'),
-                    position=F('position'),
-                )
-                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission_admin'),
-                    total_prize=Sum('prize_admin'),
-                    total_net=Sum('total_admin'),
-                    position=F('position'),
-                )
-                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,agent__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission'),total_prize=Sum('prize'),total_net=Sum('total'))
+                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_prize=Sum('prize_admin'),total_net=Sum('total_admin'))
+                combined_winnings = list(chain(agent_winnings, dealer_winnings))
+                print(combined_winnings)
+                result_dict = {}
+                for game in combined_winnings:
+                    key = (game['LSK'], game['number'], game['position'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                        result_dict[key]['total_commission'] += game['total_commission']
+                        result_dict[key]['total_prize'] += game['total_prize']
+                        result_dict[key]['total_net'] += game['total_net']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 agent_totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
                 dealer_totals = Winning.objects.filter(date__range=[from_date, to_date],time=select_time,dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
                 print(agent_totals)
@@ -4635,7 +4634,7 @@ def winning_report(request):
                     'agents' : agents,
                     'winnings' : winnings,
                     'totals' : totals,
-                    'aggr' : aggregated_winnings,
+                    'aggr' : combined_result,
                     'selected_time' : select_time,
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
@@ -4648,23 +4647,22 @@ def winning_report(request):
             if select_agent != 'all':
                 winnings = Winning.objects.filter(Q(agent__user=select_agent) | Q(dealer__agent__user=select_agent),date__range=[from_date, to_date])
                 print(winnings)
-                agent_winnings = Winning.objects.filter(date=current_date,agent__isnull=False)
-                dealer_winnings = Winning.objects.filter(date=current_date,dealer__isnull=False)
-                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission'),
-                    total_prize=Sum('prize'),
-                    total_net=Sum('total'),
-                    position=F('position'),
-                )
-                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission_admin'),
-                    total_prize=Sum('prize_admin'),
-                    total_net=Sum('total_admin'),
-                    position=F('position'),
-                )
-                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission'),total_prize=Sum('prize'),total_net=Sum('total'))
+                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_prize=Sum('prize_admin'),total_net=Sum('total_admin'))
+                combined_winnings = list(chain(agent_winnings, dealer_winnings))
+                print(combined_winnings)
+                result_dict = {}
+                for game in combined_winnings:
+                    key = (game['LSK'], game['number'], game['position'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                        result_dict[key]['total_commission'] += game['total_commission']
+                        result_dict[key]['total_prize'] += game['total_prize']
+                        result_dict[key]['total_net'] += game['total_net']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 agent_totals = Winning.objects.filter(Q(agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
                 dealer_totals = Winning.objects.filter(Q(dealer__agent__user=select_agent),date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
                 totals = {
@@ -4678,7 +4676,7 @@ def winning_report(request):
                     'agents' : agents,
                     'winnings' : winnings,
                     'totals' : totals,
-                    'aggr' : aggregated_winnings,
+                    'aggr' : combined_result,
                     'selected_time' : 'all',
                     'selected_agent' : select_agent,
                     'selected_from' : from_date,
@@ -4688,23 +4686,22 @@ def winning_report(request):
             else:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date])
                 print(winnings)
-                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False)
-                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False)
-                agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission'),
-                    total_prize=Sum('prize'),
-                    total_net=Sum('total'),
-                    position=F('position'),
-                )
-                dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
-                    total_count=Sum('count'),
-                    total_commission=Sum('commission_admin'),
-                    total_prize=Sum('prize_admin'),
-                    total_net=Sum('total_admin'),
-                    position=F('position'),
-                )
-                aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+                agent_winnings = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission'),total_prize=Sum('prize'),total_net=Sum('total'))
+                dealer_winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_prize=Sum('prize_admin'),total_net=Sum('total_admin'))
+                combined_winnings = list(chain(agent_winnings, dealer_winnings))
+                print(combined_winnings)
+                result_dict = {}
+                for game in combined_winnings:
+                    key = (game['LSK'], game['number'], game['position'])
+                    if key in result_dict:
+                        result_dict[key]['total_count'] += game['total_count']
+                        result_dict[key]['total_commission'] += game['total_commission']
+                        result_dict[key]['total_prize'] += game['total_prize']
+                        result_dict[key]['total_net'] += game['total_net']
+                    else:
+                        result_dict[key] = game
+                combined_result = list(result_dict.values())
+                combined_result.sort(key=lambda x: x['total_count'], reverse=True)
                 agent_totals = Winning.objects.filter(date__range=[from_date, to_date],agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
                 dealer_totals = Winning.objects.filter(date__range=[from_date, to_date],dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
                 totals = {
@@ -4718,7 +4715,7 @@ def winning_report(request):
                     'agents' : agents,
                     'winnings' : winnings,
                     'totals' : totals,
-                    'aggr' : aggregated_winnings,
+                    'aggr' : combined_result,
                     'selected_time' : 'all',
                     'selected_agent' : 'all',
                     'selected_from' : from_date,
@@ -4730,23 +4727,22 @@ def winning_report(request):
         try:
             agents = Agent.objects.filter().all()
             winnings = Winning.objects.filter(date=current_date)
-            agent_winnings = Winning.objects.filter(date=current_date,agent__isnull=False)
-            dealer_winnings = Winning.objects.filter(date=current_date,dealer__isnull=False)
-            agent_aggregated_winnings = agent_winnings.values('LSK', 'number').annotate(
-                total_count=Sum('count'),
-                total_commission=Sum('commission'),
-                total_prize=Sum('prize'),
-                total_net=Sum('total'),
-                position=F('position'),
-            )
-            dealer_aggregated_winnings = dealer_winnings.values('LSK', 'number').annotate(
-                total_count=Sum('count'),
-                total_commission=Sum('commission_admin'),
-                total_prize=Sum('prize_admin'),
-                total_net=Sum('total_admin'),
-                position=F('position'),
-            )
-            aggregated_winnings = list(agent_aggregated_winnings) + list(dealer_aggregated_winnings)
+            agent_winnings = Winning.objects.filter(date=current_date,agent__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission'),total_prize=Sum('prize'),total_net=Sum('total'))
+            dealer_winnings = Winning.objects.filter(date=current_date,dealer__isnull=False).values('LSK', 'number','position').annotate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_prize=Sum('prize_admin'),total_net=Sum('total_admin'))
+            combined_winnings = list(chain(agent_winnings, dealer_winnings))
+            print(combined_winnings)
+            result_dict = {}
+            for game in combined_winnings:
+                key = (game['LSK'], game['number'], game['position'])
+                if key in result_dict:
+                    result_dict[key]['total_count'] += game['total_count']
+                    result_dict[key]['total_commission'] += game['total_commission']
+                    result_dict[key]['total_prize'] += game['total_prize']
+                    result_dict[key]['total_net'] += game['total_net']
+                else:
+                    result_dict[key] = game
+            combined_result = list(result_dict.values())
+            combined_result.sort(key=lambda x: x['total_count'], reverse=True)
             agent_totals = Winning.objects.filter(date=current_date,agent__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
             dealer_totals = Winning.objects.filter(date=current_date,dealer__isnull=False).aggregate(total_count=Sum('count'),total_commission=Sum('commission_admin'),total_rs=Sum('prize_admin'),total_net=Sum('total_admin'))
             totals = {
@@ -4763,7 +4759,7 @@ def winning_report(request):
             'agents' : agents,
             'winnings' : winnings,
             'totals' : totals,
-            'aggr' : aggregated_winnings,
+            'aggr' : combined_result,
             'selected_time' : 'all',
             'selected_agent' : 'all',
             'selected_game_time' : selected_game_time
