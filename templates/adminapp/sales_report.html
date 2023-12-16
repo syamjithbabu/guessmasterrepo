@@ -361,7 +361,7 @@
                 </thead>
                 <tbody>                      
 
-                    {% for bill in combined_queryset %}
+                    {% for bill in combined_bills %}
                                 <tr class="main-row l-pink" style="text-align: center;">
                                     <td style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                     </td>
