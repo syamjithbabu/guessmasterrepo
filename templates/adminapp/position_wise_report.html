@@ -96,18 +96,7 @@ display: none;
                                                 </select>
                                             </div>
                                         </div>
-                                     <div class="col-md-6 col-6">
-                                        <div class="form-group">
-                                            <div class="mb-3"> 
-                                                <select class="form-control show-tick ms select2" data-placeholder="Select" name="select-agent" id="agent">
-                                                    <option value="all">All Agents</option>
-                                                    {% for agent in agents %}
-                                                    <option value="{{agent.user.id}}">{{agent.user}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
+                                     
                                     
                                     <div class="col-md-6 col-6">
                                         <div class="form-group">                                               
@@ -148,14 +137,30 @@ display: none;
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
-                                                {% for stat in position_stats %}
-                                                    <tr class="l-pink">
-                                                        <td class="td2">{{ stat.position }}</td>
-                                                        <td class="td2">{{ stat.count }}</td>
-                                                        <td class="td2">{{ stat.total }}</td>
-                                                    </tr>
+                                                {% for category_result in position_stats %}
+                                                    {% if category_result %}
+                                                        {% for stat in category_result %}
+                                                            <tr class="l-pink">
+                                                                {% if stat.position == '1' %}
+                                                                    <td class="td2">First ({{stat.category}})</td>
+                                                                {% elif stat.position == '2' %}
+                                                                    <td class="td2">Second ({{stat.category}})</td>
+                                                                {% elif stat.position == '3' %}
+                                                                    <td class="td2">Third ({{stat.category}})</td>
+                                                                {% elif stat.position == '4' %}
+                                                                    <td class="td2">Fourth ({{stat.category}})</td>
+                                                                {% elif stat.position == '5' %}
+                                                                    <td class="td2">Fifth ({{stat.category}})</td>
+                                                                {% elif stat.position == '6' %}
+                                                                    <td class="td2">Sixth ({{stat.category}})</td>
+                                                                {% endif %}
+                                                                <td class="td2">{{ stat.count }}</td>
+                                                                <td class="td2">{{ stat.total }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% endif %}
                                                 {% endfor %}
-                                            </tbody>
+                                            </tbody>    
                                         </table>
                                        
                                     </div>
@@ -168,113 +173,6 @@ display: none;
     </div>
 </div>
 
-<nav class="navbar-bottom" id="btotal">
-    <table> 
-        <thead>
-            <tr>
-                 <th class="th1">COUNT</th>
-                 <th class="th1">TOTAL</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="td1">{{totals.total_count}}</td>
-                <td class="td1">{{totals.total_commission|floatformat:2 }}</td>
-                <td class="td1">{{totals.total_rs|floatformat:2 }}</td>
-                <td class="td1">{{totals.total_net|floatformat:2 }}</td>
-            </tr>
-        </tbody>
-    </table>
-</nav>
-
-
-<div id="pdftab">
-    <h3 style="display: inline-block">Winning Report</h3>
-    <h3 id="demo" style="display: inline-block"></h3>
-    <h3 id="demo1" style="display: inline-block"></h3>
-    <h3 id="demo4" style="display: inline-block;"></h3>
-
-    <h3 id="demo"></h3>
-    <h3 id="demo1"></h3>
-    <h3 id="demo3"></h3>
-    <hr>
-    <div class="body">
-        <div class="table-responsive">
-            <table class="table m-b-0" style="border: 2px; width: 100%;height: 30%;">
-                
-                <thead>
-                    <tr class="l-blue" style="text-align: center;">
-                         <th class="th" style="text-align: center;">B</th>
-                         <th class="th" style="text-align: center;">U</th>
-                         <th class="th" style="text-align: center;">T</th>
-                         <th class="th" style="text-align: center;">PN</th>
-                         <th class="th" style="text-align: center;">C</th>
-                         <th class="th" style="text-align: center;">PP</th>
-                         <th class="th" style="text-align: center;">SU</th>
-                         <th class="th" style="text-align: center;">RS</th>
-                         <th class="th" style="text-align: center;">Net</th>
-                        
-                    </tr>
-                </thead>
-                <tbody class="not-summary">
-                    {% for winning in winnings %}
-                    <tr class="l-pink" style="text-align: center;">
-                        <td class="td2" style="text-align: center;">{{winning.bill}}</td>
-                        {% if winning.agent %}
-                        <td class="td3"  style="text-align: center;">{{winning.agent}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.LSK}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.number}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.count}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.position}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.commission|floatformat:2}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.prize|floatformat:2}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.total|floatformat:2}}</td>  
-                        {% else %}
-                        <td class="td3"  style="text-align: center;">{{winning.dealer}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.LSK}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.number}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.count}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.position}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.commission_admin|floatformat:2}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.prize_admin|floatformat:2}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.total_admin|floatformat:2}}</td>  
-                        {% endif %}                                                
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tbody style="display: none;" class="summary-row">
-                    {% for winning in aggr %}
-                    <tr class="l-turquoise" style="text-align: center;">
-                        <td class="td2" style="text-align: center;">{{winning.bill}}</td>
-                        {% if winning.agent %}
-                        <td class="td3"  style="text-align: center;">$</td>
-                        {% else %}
-                        <td class="td3"  style="text-align: center;">$</td>
-                        {% endif %}
-                        <td class="td2" style="text-align: center;">{{winning.LSK}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.number}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.total_count}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.position}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.total_commission|floatformat:2}}</td>
-                        <td class="td3"  style="text-align: center;">{{winning.total_prize|floatformat:2}}</td>
-                        <td class="td2" style="text-align: center;">{{winning.total_net|floatformat:2}}</td>                                                  
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <hr>
-            <div class="col-md-12 text-right" id="totalcount">
-                <h5>COUNT : {{totals.total_count}}</h5>
-                <h5>COMM: {{totals.total_commission|floatformat:2 }}</h5>
-                <h5>TOTAL: {{totals.total_rs|floatformat:2 }}</h5>
-                <h5>NET: {{totals.total_net|floatformat:2 }}</h5>
-
-            </div>
-        </div>
-       
-    </div>
-
-</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -314,12 +212,7 @@ display: none;
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Get the select element by its ID
-        var selectDealer = document.getElementById("agent");
         var selectTime = document.getElementById("time");
-
-        console.log("{{selected_agent}}")
-        selectDealer.value = "{{ selected_agent }}";
         selectTime.value = "{{ selected_time }}";
 
     });
