@@ -647,24 +647,27 @@ def daily_report(request):
                             bill.total_d_amount = total_winning - bill.total_c_amount
                         else:
                             bill.total_d_amount = total_winning - bill.total_c_amount
-                    for b in bills:
-                        user = b.user
-                        winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date],time=select_time)
-                        if user.is_agent:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                            print(b.win_amount,"agent")
-                        else:
-                            total_winning = sum(winning.total_admin for winning in winnings)
-                            b.win_amount = total_winning
-                            print(b.win_amount,"dealer")
-                        if winnings != 0 and user.is_agent:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        elif winnings != 0 and user.is_dealer:
-                            b.total_d_amount = b.total_c_amount_admin - total_winning
-                        else:
-                            b.total_d_amount = total_winning - b.total_c_amount
-                        total_winning = sum(b.win_amount for b in bills)
+                    if bills:
+                        for b in bills:
+                            user = b.user
+                            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date],time=select_time)
+                            if user.is_agent:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                                print(b.win_amount,"agent")
+                            else:
+                                total_winning = sum(winning.total_admin for winning in winnings)
+                                b.win_amount = total_winning
+                                print(b.win_amount,"dealer")
+                            if winnings != 0 and user.is_agent:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            elif winnings != 0 and user.is_dealer:
+                                b.total_d_amount = b.total_c_amount_admin - total_winning
+                            else:
+                                b.total_d_amount = total_winning - b.total_c_amount
+                            total_winning = sum(b.win_amount for b in bills)
+                    else:
+                        total_winning = 0
                     total_c_amount = Bill.objects.filter(Q(user=agent_obj.user.id),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('agent_games__c_amount'))['total_c_amount'] or 0
                     total_balance = float(total_winning) - float(total_c_amount)
                     context = {
@@ -701,24 +704,28 @@ def daily_report(request):
                             bill.total_d_amount = bill.total_c_amount - total_winning
                         else:
                             bill.total_d_amount = total_winning - bill.total_c_amount
-                    for b in bills:
-                        user = b.user
-                        winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=b.id,date__range=[from_date, to_date],time=select_time)
-                        if user.is_agent:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                        else:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                        if winnings != 0 and user.is_agent:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        elif winnings != 0 and user.is_dealer:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        else:
-                            b.total_d_amount = total_winning - b.total_c_amount
-                        total_winning = sum(b.win_amount for b in bills)
+                    if bills:
+                        for b in bills:
+                            user = b.user
+                            winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=b.id,date__range=[from_date, to_date],time=select_time)
+                            if user.is_agent:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                            else:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                            if winnings != 0 and user.is_agent:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            elif winnings != 0 and user.is_dealer:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            else:
+                                b.total_d_amount = total_winning - b.total_c_amount
+                            total_winning = sum(b.win_amount for b in bills)
+                    else:
+                        total_winning = 0
                     total_c_amount = Bill.objects.filter(Q(user=select_dealer),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('dealer_games__c_amount'))['total_c_amount'] or 0
                     total_balance = float(total_c_amount) - float(total_winning)
+                    for_agent = 'yes'
                     context = {
                         'dealers' : dealers,
                         'times' : times,
@@ -731,7 +738,7 @@ def daily_report(request):
                         'selected_from' : from_date,
                         'selected_to' : to_date,
                         'selected_game_time' : selected_game_time,
-
+                        'for_agent' : for_agent,
                     }
                     return render(request,'agent/daily_report.html',context)
             else:
@@ -756,24 +763,27 @@ def daily_report(request):
                             bill.total_d_amount = bill.total_c_amount - total_winning
                         else:
                             bill.total_d_amount = total_winning - bill.total_c_amount
-                    for b in bills:
-                        user = b.user
-                        winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date])
-                        if user.is_agent:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                            print(b.win_amount,"agent")
-                        else:
-                            total_winning = sum(winning.total_admin for winning in winnings)
-                            b.win_amount = total_winning
-                            print(b.win_amount,"dealer")
-                        if winnings != 0 and user.is_agent:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        elif winnings != 0 and user.is_dealer:
-                            b.total_d_amount = b.total_c_amount_admin - total_winning
-                        else:
-                            b.total_d_amount = total_winning - b.total_c_amount
-                        total_winning = sum(b.win_amount for b in bills)
+                    if bills:
+                        for b in bills:
+                            user = b.user
+                            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date])
+                            if user.is_agent:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                                print(b.win_amount,"agent")
+                            else:
+                                total_winning = sum(winning.total_admin for winning in winnings)
+                                b.win_amount = total_winning
+                                print(b.win_amount,"dealer")
+                            if winnings != 0 and user.is_agent:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            elif winnings != 0 and user.is_dealer:
+                                b.total_d_amount = b.total_c_amount_admin - total_winning
+                            else:
+                                b.total_d_amount = total_winning - b.total_c_amount
+                            total_winning = sum(b.win_amount for b in bills)
+                    else:
+                        total_winning = 0
                     total_c_amount = Bill.objects.filter(Q(user=agent_obj.user.id),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('agent_games__c_amount'))['total_c_amount'] or 0
                     total_balance = float(total_c_amount) - float(total_winning)
                     context = {
@@ -811,24 +821,28 @@ def daily_report(request):
                             bill.total_d_amount = bill.total_c_amount - total_winning
                         else:
                             bill.total_d_amount = total_winning - bill.total_c_amount
-                    for b in bills:
-                        user = b.user
-                        winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=b.id,date__range=[from_date, to_date])
-                        if user.is_agent:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                        else:
-                            total_winning = sum(winning.total for winning in winnings)
-                            b.win_amount = total_winning
-                        if winnings != 0 and user.is_agent:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        elif winnings != 0 and user.is_dealer:
-                            b.total_d_amount = b.total_c_amount - total_winning
-                        else:
-                            b.total_d_amount = total_winning - b.total_c_amount
-                        total_winning = sum(b.win_amount for b in bills)
+                    if bills:
+                        for b in bills:
+                            user = b.user
+                            winnings = Winning.objects.filter(Q(dealer__user=select_dealer),bill=b.id,date__range=[from_date, to_date])
+                            if user.is_agent:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                            else:
+                                total_winning = sum(winning.total for winning in winnings)
+                                b.win_amount = total_winning
+                            if winnings != 0 and user.is_agent:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            elif winnings != 0 and user.is_dealer:
+                                b.total_d_amount = b.total_c_amount - total_winning
+                            else:
+                                b.total_d_amount = total_winning - b.total_c_amount
+                            total_winning = sum(b.win_amount for b in bills)
+                    else:
+                        total_winning = 0
                     total_c_amount = Bill.objects.filter(Q(user=select_dealer),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('dealer_games__c_amount'))['total_c_amount'] or 0
                     total_balance = float(total_c_amount) - float(total_winning)
+                    for_agent = 'yes'
                     context = {
                         'dealers' : dealers,
                         'times' : times,
@@ -841,6 +855,7 @@ def daily_report(request):
                         'selected_from' : from_date,
                         'selected_to' : to_date,
                         'selected_game_time' : selected_game_time,
+                        'for_agent' : for_agent
                     }
                     return render(request,'agent/daily_report.html',context)
         else:
@@ -856,7 +871,6 @@ def daily_report(request):
                 except EmptyPage:
                     combined_bills = paginator.page(paginator.num_pages)
                 print(bills)
-                for_agent = 'yes'
                 for bill in combined_bills:
                     user = bill.user
                     winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date__range=[from_date, to_date],time=select_time)
@@ -876,27 +890,29 @@ def daily_report(request):
                     elif winnings != 0 and user.is_dealer:
                         bill.total_d_amount = bill.total_c_amount_admin - total_winning
                         print(bill.total_d_amount)
-                for b in bills:
-                    user = b.user
-                    winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date],time=select_time)
-                    if user.is_agent:
-                        total_winning = sum(winning.total for winning in winnings)
-                        b.win_amount = total_winning
-                    else:
-                        total_winning = sum(winning.total for winning in winnings)
-                        b.win_amount = total_winning
-                    if winnings != 0 and user.is_agent:
-                        b.total_d_amount = b.total_c_amount - total_winning
-                    elif winnings != 0 and user.is_dealer:
-                        b.total_d_amount = b.total_c_amount - total_winning
-                    else:
-                        b.total_d_amount = total_winning - b.total_c_amount
-                    total_winning = sum(b.win_amount for b in bills)
+                if bills:
+                    for b in bills:
+                        user = b.user
+                        winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date],time=select_time)
+                        if user.is_agent:
+                            total_winning = sum(winning.total for winning in winnings)
+                            b.win_amount = total_winning
+                        else:
+                            total_winning = sum(winning.total for winning in winnings)
+                            b.win_amount = total_winning
+                        if winnings != 0 and user.is_agent:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        elif winnings != 0 and user.is_dealer:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        total_winning = sum(b.win_amount for b in bills)
+                else:
+                    total_winning = 0
                 agent_total_c_amount = Bill.objects.filter(Q(user=agent_obj.user),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('agent_games__c_amount'))['total_c_amount'] or 0
-                dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('dealer_games__c_amount'))['total_c_amount'] or 0
+                dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date],time_id=select_time).aggregate(total_c_amount=Sum('dealer_games__c_amount_admin'))['total_c_amount'] or 0
                 total_c_amount = agent_total_c_amount + dealer_total_c_amount
-                total_balance = float(total_c_amount) - float(total_winning)
-                for_agent = 'yes'
+                total_balance = float(total_winning) - float(total_c_amount)
                 context = {
                         'dealers' : dealers,
                         'times' : times,
@@ -909,7 +925,6 @@ def daily_report(request):
                         'selected_from' : from_date,
                         'selected_to' : to_date,
                         'selected_game_time' : selected_game_time,
-                        'for_agent' : for_agent,
                     }
                 return render(request,'agent/daily_report.html',context)
             else:
@@ -927,30 +942,34 @@ def daily_report(request):
                     total_winning = sum(winning.total for winning in winnings)
                     bill.win_amount = total_winning
                     print(bill.win_amount,"*")
-                    if winnings != 0:
-                        bill.total_d_amount = bill.total_c_amount - total_winning
-                    else:
-                        bill.total_d_amount = total_winning - bill.total_c_amount
-                for b in bills:
-                    user = b.user
-                    winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date])
-                    if user.is_agent:
-                        total_winning = sum(winning.total for winning in winnings)
-                        b.win_amount = total_winning
-                    else:
-                        total_winning = sum(winning.total for winning in winnings)
-                        b.win_amount = total_winning
+                    user = bill.user
                     if winnings != 0 and user.is_agent:
-                        b.total_d_amount = b.total_c_amount - total_winning
-                    elif winnings != 0 and user.is_dealer:
-                        b.total_d_amount = b.total_c_amount - total_winning
+                        bill.total_d_amount = total_winning - bill.total_c_amount
                     else:
-                        b.total_d_amount = total_winning - b.total_c_amount
-                    total_winning = sum(b.win_amount for b in bills)
+                        bill.total_d_amount = bill.total_c_amount_admin - total_winning
+                if bills:
+                    for b in bills:
+                        user = b.user
+                        winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=b.id,date__range=[from_date, to_date])
+                        if user.is_agent:
+                            total_winning = sum(winning.total for winning in winnings)
+                            b.win_amount = total_winning
+                        else:
+                            total_winning = sum(winning.total for winning in winnings)
+                            b.win_amount = total_winning
+                        if winnings != 0 and user.is_agent:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        elif winnings != 0 and user.is_dealer:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        total_winning = sum(b.win_amount for b in bills)
+                else:
+                    total_winning = 0
                 agent_total_c_amount = Bill.objects.filter(Q(user=agent_obj.user),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('agent_games__c_amount'))['total_c_amount'] or 0
-                dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('dealer_games__c_amount'))['total_c_amount'] or 0
+                dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date__range=[from_date, to_date]).aggregate(total_c_amount=Sum('dealer_games__c_amount_admin'))['total_c_amount'] or 0
                 total_c_amount = agent_total_c_amount + dealer_total_c_amount
-                total_balance = float(total_c_amount) - float(total_winning)
+                total_balance = float(total_winning) - float(total_c_amount)
                 select_dealer = 'all'
                 select_time = 'all'
                 context = {
@@ -977,11 +996,9 @@ def daily_report(request):
             combined_bills = paginator.page(1)
         except EmptyPage:
             combined_bills = paginator.page(paginator.num_pages)
-        print(bills)
         for bill in combined_bills:
             user = bill.user
             winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
-            print(winnings)
             total_winning = sum(winning.total for winning in winnings)
             bill.win_amount = total_winning
             if user.is_agent:
@@ -998,26 +1015,30 @@ def daily_report(request):
                 print(bill.total_d_amount)
             else:
                 bill.total_d_amount = total_winning - bill.total_c_amount
-        for b in bills:
-            user = b.user
-            winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
-            if user.is_agent:
-                total_winning = sum(winning.total for winning in winnings)
-                b.win_amount = total_winning
-            else:
-                total_winning = sum(winning.total for winning in winnings)
-                b.win_amount = total_winning
-            if winnings != 0 and user.is_agent:
-                b.total_d_amount = b.total_c_amount - total_winning
-            elif winnings != 0 and user.is_dealer:
-                b.total_d_amount = b.total_c_amount - total_winning
-            else:
-                b.total_d_amount = total_winning - b.total_c_amount
-            total_winning = sum(b.win_amount for b in bills)
+        if bills:
+            for b in bills:
+                user = b.user
+                winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
+                if user.is_agent:
+                    total_winning = sum(winning.total for winning in winnings)
+                    b.win_amount = total_winning
+                else:
+                    total_winning = sum(winning.total  for winning in winnings)
+                    b.win_amount = total_winning
+                if winnings != 0 and user.is_agent:
+                    b.total_d_amount = b.total_c_amount - total_winning
+                elif winnings != 0 and user.is_dealer:
+                    b.total_d_amount = b.total_c_amount - total_winning
+                else:
+                    b.total_d_amount = total_winning - b.total_c_amount
+                total_winning = sum(b.win_amount for b in bills)
+        else:
+            total_winning = 0
+        print(total_winning,"win")
         agent_total_c_amount = Bill.objects.filter(Q(user=agent_obj.user),date=current_date).aggregate(total_c_amount=Sum('agent_games__c_amount'))['total_c_amount'] or 0
-        dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date).aggregate(total_c_amount=Sum('dealer_games__c_amount'))['total_c_amount'] or 0
+        dealer_total_c_amount = Bill.objects.filter(Q(user__dealer__agent=agent_obj),date=current_date).aggregate(total_c_amount=Sum('dealer_games__c_amount_admin'))['total_c_amount'] or 0
         total_c_amount = agent_total_c_amount + dealer_total_c_amount
-        total_balance = float(total_c_amount) - float(total_winning)
+        total_balance = float(total_winning) - float(total_c_amount)
         select_dealer = 'all'
         select_time = 'all'
         selected_game_time = 'all times'
