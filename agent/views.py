@@ -997,33 +997,24 @@ def daily_report(request):
         except EmptyPage:
             combined_bills = paginator.page(paginator.num_pages)
         for bill in combined_bills:
-            user = bill.user
             winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
             total_winning = sum(winning.total for winning in winnings)
             bill.win_amount = total_winning
-            if user.is_agent:
-                total_winning = sum(winning.total for winning in winnings)
-                bill.win_amount = total_winning
-            else:
-                total_winning = sum(winning.total_admin for winning in winnings)
-                bill.win_amount = total_winning
+            print(bill.win_amount,"*")
+            user = bill.user
             if winnings != 0 and user.is_agent:
                 bill.total_d_amount = total_winning - bill.total_c_amount
-                print(bill.total_d_amount)
-            elif winnings != 0 and user.is_dealer:
-                bill.total_d_amount = bill.total_c_amount_admin - total_winning
-                print(bill.total_d_amount)
             else:
-                bill.total_d_amount = total_winning - bill.total_c_amount
+                bill.total_d_amount = bill.total_c_amount_admin - total_winning
         if bills:
             for b in bills:
                 user = b.user
-                winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=bill.id,date=current_date)
+                winnings = Winning.objects.filter(Q(agent__user=agent_obj.user.id) | Q(dealer__agent__user=agent_obj.user.id),bill=b.id,date=current_date)
                 if user.is_agent:
                     total_winning = sum(winning.total for winning in winnings)
                     b.win_amount = total_winning
                 else:
-                    total_winning = sum(winning.total  for winning in winnings)
+                    total_winning = sum(winning.total for winning in winnings)
                     b.win_amount = total_winning
                 if winnings != 0 and user.is_agent:
                     b.total_d_amount = b.total_c_amount - total_winning
@@ -1042,7 +1033,6 @@ def daily_report(request):
         select_dealer = 'all'
         select_time = 'all'
         selected_game_time = 'all times'
-        for_agent = 'yes'
         context = {
             'dealers' : dealers,
             'times' : times,
@@ -1053,7 +1043,6 @@ def daily_report(request):
             'selected_dealer' : select_dealer,
             'selected_time' : select_time,
             'selected_game_time' : selected_game_time,
-            'for_agent' : for_agent,
         }
         return render(request,'agent/daily_report.html',context)
 

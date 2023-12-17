@@ -5853,5 +5853,25 @@ def tickets_report(request):
     }
     return render(request, 'adminapp/tickets_report.html',context)
 
+def position_wise_report(request):
+    ist = pytz_timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    agents = Agent.objects.filter().all()
+    times = PlayTime.objects.filter().all()
+    winnings = Winning.objects.filter(date=current_date)
+    agent_stats = Winning.objects.filter(date=current_date,agent=True).values('position').annotate(count=Sum('count'), total=Sum('total'))
+    dealer_stats = Winning.objects.filter(date=current_date,dealer=True).values('position').annotate(count=Sum('count'), total=Sum('total_admin'))
+    position_stats = agent_stats | dealer_stats
+    selected_agent = 'all'
+    selected_time = 'all'
+    context = {
+        'agents' : agents,
+        'times' : times,
+        'selected_agent' : selected_agent,
+        'selected_time' : selected_time,
+        'position_stats': position_stats
+    }
+    return render(request, 'adminapp/position_wise_report.html',context)
+
 
 
