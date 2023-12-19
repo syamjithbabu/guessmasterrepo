@@ -2569,7 +2569,41 @@ async function processQueue() {
 </script>
 
 
+<script>
+    // Get all elements with the class 'nav-link'
+    var navLinks = document.getElementsByClassName('nav-link');
 
+    // Iterate through each 'nav-link' element and add a click event listener
+    for (var i = 0; i < navLinks.length; i++) {
+        navLinks[i].addEventListener('click', function (event) {
+            // Prevent the default link behavior
+            event.preventDefault();
+
+            var isRChecked = document.getElementById("R").checked;
+
+            if (isRChecked) {
+
+                var inputElement = document.getElementById("start");
+                
+                if (inputElement) {
+                    inputElement.focus();
+                }
+
+            }
+
+
+            else{
+
+                var inputElement = document.getElementById("numberInput");
+                
+                if (inputElement) {
+                    inputElement.focus();
+                }
+            }
+    
+        });
+    }
+</script>
 
 
 {% endblock %}

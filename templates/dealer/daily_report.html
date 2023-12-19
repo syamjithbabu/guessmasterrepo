@@ -125,7 +125,7 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()" type="submit">Download</button>
+                                        <button class="btn btn-primary" id="pdfButton" name="pdfButton" type="submit">Download</button>
 
                                     </div>
                                 </div>
@@ -213,56 +213,13 @@
         </thead>
         <tbody>
             <tr>
-                <td class="td">{{total_c_amount.total_c_amount|floatformat:2}}</td>
+                <td class="td">{{total_c_amount|floatformat:2}}</td>
                 <td class="td">{{total_winning|floatformat:2 }}</td>
                 <td class="td">{{total_balance|floatformat:2 }}</td>
             </tr>
         </tbody>
     </table>
 </nav>
-
-<div id="pdftab">
-    <h3 style="display: inline-block">Daily Report</h3>
-    <h3 id="demo" style="display: inline-block"></h3>
-    <h3 id="demo1" style="display: inline-block"></h3>
-    <h3 id="demo4" style="display: inline-block;"></h3>
-    <h3 id="demo"></h3>
-    <h3 id="demo1"></h3>
-    <h3 id="demo3"></h3>
-    <hr>
-    <div class="body">
-        <table class="table m-b-0" style="width: 100%;">
-            <thead>
-                <tr>
-                    <th style="text-align: center;">Date</th>
-                    <th style="text-align: center;">Dealer</th>
-                    <th style="text-align: center;">T.Sale</th>
-                    <th style="text-align: center;">T.W.Amount</th>
-                    <th style="text-align: center;">Balance</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for bill in dealer_bills %}
-                <tr style="text-align: center;">
-                    <td  style="text-align: center;"> {{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
-                    </td>
-                    <td style="text-align: center;">{{ bill.user }}</td>
-                    <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
-                    <td style="text-align: center;">{{ bill.win_amount|floatformat:2 }}</td>
-                    <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <hr>
-        <div class="col-md-12 text-right" id="totalcount">
-            <h6>Sales Amount :{{total_c_amount.total_c_amount|floatformat:2}}</h6>
-            <h6>Win Amount : {{total_winning|floatformat:2 }}</h6>
-            <h6>Balance : {{total_balance|floatformat:2 }}</h6>
-        </div>
-    </div>
-
-</div>
 
 
 
@@ -379,112 +336,6 @@
 </script>
 
 <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
-
-<script>
-    function generateAndOpenPDF() {
-        var dateFrom = document.getElementById('from-date').value;
-        var dateTo = document.getElementById('to-date').value;
-        // Disable the button to prevent multiple clicks
-        var pdfButton = document.getElementById("pdfButton");
-        if (pdfButton) {
-            pdfButton.disabled = true;
-        }
-
-        var pdftab = document.getElementById("pdftab");
-
-        // Show the pdftab div when generateAndOpenPDF function is called
-        if (pdftab) {
-            pdftab.style.display = "block"; // or "inline" or "inline-block" depending on your layout
-        }
-
-        var element = document.getElementById('pdftab');
-        if (!element) {
-            console.error("Element with ID 'pdftab' not found.");
-
-            // Re-enable the button in case of an error
-            if (pdfButton) {
-                pdfButton.disabled = false;
-            }
-
-            return;
-        }
-
-        var rowsPerPage = 10; // Number of rows to display per page
-
-        // Configuration options for html2pdf
-        var options = {
-            margin: 10,
-            filename: 'Daily Report -' + dateFrom + ' to ' + dateTo + ' - ' + formatTime(selectedGameTime),
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
-        };
-
-        // Call html2pdf with the specified options
-        html2pdf(element, options)
-            .then(function (pdf) {
-                var totalPages = pdf.internal.getNumberOfPages();
-
-                for (var i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(150);
-
-                    // Calculate the range of rows to display on this page
-                    var startRow = (i - 1) * rowsPerPage;
-                    var endRow = Math.min(i * rowsPerPage, element.rows.length);
-
-                    // Loop through the rows and display only the selected range
-                    for (var j = startRow; j < endRow; j++) {
-                        var row = element.rows[j];
-                        var cells = row.getElementsByTagName('td');
-
-                        for (var k = 0; k < cells.length; k++) {
-                            pdf.text(cells[k].innerText, 20 + k * 30, 15 + (j % rowsPerPage) * 10);
-                        }
-                    }
-
-                    pdf.text('Footer content', 20, pdf.internal.pageSize.height - 40);
-                }
-
-                // Get the PDF data as a Blob
-                var pdfBlob = pdf.output('blob');
-
-                // Create a link to the Blob data with the Google Drive viewer link
-                var driveViewerLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(URL.createObjectURL(pdfBlob));
-
-                // Open the link in a new tab
-                window.open(driveViewerLink, '_blank');
-
-                // Hide the pdftab div after generating and opening the PDF
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button after generating and opening the PDF
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-
-                console.log("PDF generated and opened successfully:", pdf);
-            })
-            .catch(function (error) {
-                console.error("Error generating PDF:", error);
-
-                // Restore the display property of the pdftab div in case of an error
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button in case of an error
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-            });
-    }
-
-</script>
-
 
 
 {% endblock %}

@@ -174,10 +174,8 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()"
+                                        <button class="btn btn-primary" id="pdfButton" name="pdfButton"
                                             type="submit">Download</button>
-                                           
-
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
@@ -335,111 +333,6 @@
             </tbody>
         </table>
     </nav>
-
-    <div id="pdftab">
-        <h3 style="display: inline-block">Sales Report</h3>
-        <h3 id="demo" style="display: inline-block"></h3>
-        <h3 id="demo1" style="display: inline-block"></h3>
-        <h3 id="demo4" style="display: inline-block;"></h3>
-
-        <h3 id="demo"></h3>
-        <h3 id="demo1"></h3>
-        <h3 id="demo3"></h3>
-        <hr>
-        <div class="body">
-            <table class="table m-b-0">
-
-                <thead>
-                    <tr class="l-blue">
-                        <th>Date</th>
-                        <th>Agent</th>
-                        <th>Bill</th>
-                        <th>Count</th>
-                        <th>S.Amt</th>
-                        <th>C.Amt</th>
-                    </tr>
-                </thead>
-                <tbody>                      
-
-                    {% for bill in combined_bills %}
-                                <tr class="main-row l-pink" style="text-align: center;">
-                                    <td style="text-align: center;">{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
-                                    </td>
-                                    {% if bill.user.agent.user %}
-                                    <td style="text-align: center;">{{ bill.user.agent.user }}</td>
-                                    <td style="text-align: center;">{{ bill.id }}</td>
-                                    <td style="text-align: center;">{{ bill.total_count }}</td>
-                                    <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
-                                    <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
-                                    {% elif bill.user.dealer.agent.user %}
-                                    <td style="text-align: center;">{{ bill.user.dealer.agent.user }}</td>
-                                    <td style="text-align: center;">{{ bill.id }}</td>
-                                    <td style="text-align: center;">{{ bill.total_count }}</td>
-                                    <td style="text-align: center;">{{ bill.total_d_amount_admin|floatformat:2 }}</td>
-                                    <td style="text-align: center;">{{ bill.total_c_amount_admin|floatformat:2 }}</td>
-                                    {% endif %}
-                                </tr>
-
-                                {% regroup bill.agent_games.all|dictsort:"id" by id as games_by_id %}
-                                {% for group in games_by_id %}
-                                    {% for game in group.list %}
-                                    {% if game in agent_games %}
-                                    <tr>
-                                        <td style="text-align: center;">#</td>
-                                        <td style="text-align: center;">{{ game.LSK }}</td>
-                                        <td style="text-align: center;">{{ game.number }}</td>
-                                        <td style="text-align: center;">{{ game.count }}</td>
-                                        <td style="text-align: center;">{{ game.d_amount|floatformat:2 }}</td>
-                                        <td style="text-align: center;">{{ game.c_amount|floatformat:2 }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
-                                {% endfor %}
-
-                                {% regroup bill.dealer_games.all|dictsort:"id" by id as games_by_id %}
-                                {% for group in games_by_id %}
-                                    {% for game in group.list %}
-                                    {% if game in dealer_games %}
-                                    <tr>
-                                        <td style="text-align: center;">#</td>
-                                        <td style="text-align: center;">{{ game.LSK }}</td>
-                                        <td style="text-align: center;">{{ game.number }}</td>
-                                        <td style="text-align: center;">{{ game.count }}</td>
-                                        <td style="text-align: center;">{{ game.d_amount_admin|floatformat:2 }}</td>
-                                        <td style="text-align: center;">{{ game.c_amount_admin|floatformat:2 }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
-                                {% endfor %}
-
-                                {% regroup bill.dealer_only_games.all|dictsort:"id" by id as games_by_id %}
-                                {% for group in games_by_id %}
-                                    {% for game in group.list %}
-                                    {% if game in dealer_only_games %}
-                                    <tr>
-                                        <td style="text-align: center;">#</td>
-                                        <td style="text-align: center;">{{ game.LSK }}</td>
-                                        <td style="text-align: center;">{{ game.number }}</td>
-                                        <td style="text-align: center;">{{ game.count }}</td>
-                                        <td style="text-align: center;">{{ game.d_amount_admin|floatformat:2 }}</td>
-                                        <td style="text-align: center;">{{ game.c_amount_admin|floatformat:2 }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
-                                {% endfor %}
-                                {% endfor %}
-                </tbody>
-            </table>
-            <hr>
-            <div class="col-md-12 text-right" id="totalcount">
-                <h5>Total Count:{{totals.total_count}}</h5>
-                <h5>A.Amount: {{totals.total_d_amount|floatformat:2 }}</h5>
-                <h5>C.Amount: {{totals.total_c_amount|floatformat:2 }}</h5>
-            </div>
-
-        </div>
-
-    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
@@ -604,83 +497,6 @@
     <!-- Include html2pdf.js from CDN -->
 <script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
 
-    <script>
-        function generateAndOpenPDF() {
-            var dateFrom = document.getElementById('from-date').value;
-            var dateTo = document.getElementById('to-date').value;
-            // Disable the button to prevent multiple clicks
-            var pdfButton = document.getElementById("pdfButton");
-            if (pdfButton) {
-                pdfButton.disabled = true;
-            }
-    
-            var pdftab = document.getElementById("pdftab");
-    
-            // Show the pdftab div when generateAndOpenPDF function is called
-            if (pdftab) {
-                pdftab.style.display = "block"; // or "inline" or "inline-block" depending on your layout
-            }
-    
-            var element = document.getElementById('pdftab');
-            if (!element) {
-                console.error("Element with ID 'pdftab' not found.");
-    
-                // Re-enable the button in case of an error
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-    
-                return;
-            }
-    
-            // Configuration options for html2pdf
-            var options = {
-                margin: 10,
-                filename: 'Sales Report -' + dateFrom + ' to ' + dateTo + ' - ' + formatTime(selectedGameTime),
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
-            };
-    
-            // Call html2pdf with the specified options
-            html2pdf(element, options)
-                .then(function (pdf) {
-                    // Get the PDF data as a Blob
-                    var pdfBlob = pdf.output('blob');
-    
-                    // Create a link to the Blob data with the Google Drive viewer link
-                    var driveViewerLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(URL.createObjectURL(pdfBlob));
-    
-                    // Open the link in a new tab
-                    window.open(driveViewerLink, '_blank');
-    
-                    // Hide the pdftab div after generating and opening the PDF
-                    if (pdftab) {
-                        pdftab.style.display = "none";
-                    }
-    
-                    // Re-enable the button after generating and opening the PDF
-                    if (pdfButton) {
-                        pdfButton.disabled = false;
-                    }
-    
-                    console.log("PDF generated and opened successfully:", pdf);
-                })
-                .catch(function (error) {
-                    console.error("Error generating PDF:", error);
-    
-                    // Restore the display property of the pdftab div in case of an error
-                    if (pdftab) {
-                        pdftab.style.display = "none";
-                    }
-    
-                    // Re-enable the button in case of an error
-                    if (pdfButton) {
-                        pdfButton.disabled = false;
-                    }
-                });
-        }
-    </script>
     
     
-    {% endblock %}
+    {% endblock %}  

@@ -18,6 +18,15 @@ from django.db.models import Q
 from django.db.models import F
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from django.http import HttpResponse
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Paragraph, Spacer
+
 
 
 # Create your views here.
@@ -395,6 +404,7 @@ def daily_report(request):
         total_winning = []
         total_balance = []
         if select_time != 'all':
+            selected_time = selected_game_time.game_time.strftime("%I:%M %p")
             dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).all()
             dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
             paginator = Paginator(dealer_bills, 15)
@@ -405,17 +415,107 @@ def daily_report(request):
                 combined_bills = paginator.page(1)
             except EmptyPage:
                 combined_bills = paginator.page(paginator.num_pages)
-            for bill in dealer_bills:
+            for bill in combined_bills:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
                 total_winning = sum(winning.total for winning in winnings)
                 bill.win_amount = total_winning
                 if winnings != 0:
-                    bill.total_d_amount = bill.total_c_amount - total_winning
-                else:
                     bill.total_d_amount = total_winning - bill.total_c_amount
-                total_winning = sum(bill.win_amount for bill in dealer_bills)
-                total_balance = sum(bill.total_d_amount for bill in dealer_bills)
-            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))
+                else:
+                    bill.total_d_amount = bill.total_c_amount - total_winning
+            if dealer_bills:
+                for b in dealer_bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id,time=select_time)
+                    winning = sum(winning.total for winning in winnings)
+                    b.win_amount = winning
+                    if winnings != 0:
+                        b.total_d_amount = b.total_c_amount - total_winning
+                    else:
+                        b.total_d_amount = total_winning - b.total_c_amount
+                    print(b.total_d_amount)
+                    total_winning = sum(b.win_amount for b in dealer_bills)
+                print("Total Winning:", total_winning)
+            else:
+                total_winning = 0
+                print("Total Winning:", total_winning)
+            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            total_balance = float(total_winning) - float(total_c_amount)
+            if 'pdfButton' in request.POST:
+                print("pdf working")
+                pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + " - " + selected_time + ".pdf"
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                story = []
+
+                title_style = ParagraphStyle(
+                    'Title',
+                    parent=ParagraphStyle('Normal'),
+                    fontSize=12,
+                    textColor=colors.black,
+                    spaceAfter=16,
+                )
+                title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                title_paragraph = Paragraph(title_text, title_style)
+                story.append(title_paragraph)
+
+                    # Add a line break after the title
+                story.append(Spacer(1, 12))
+
+                    # Add table headers
+                headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                data = [headers]
+
+                    # Fetch bills within the date range
+                bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
+
+                    # Populate data for each bill
+                for bill in bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
+                    total_win = sum(winning.total for winning in winnings)
+                    print(total_win,"#")
+                    balance = total_win - bill.total_c_amount
+
+                    display_user = bill.user.username
+
+                    display_sale = bill.total_c_amount
+
+                    formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                    data.append([
+                        formatted_date_time,
+                        display_user,
+                        f"{display_sale:.2f}",
+                        f"{total_win:.2f}",
+                        f"{balance:.2f}",
+                    ])
+
+                # Create the table and apply styles
+                table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+
+                story.append(table)
+
+                story.append(Spacer(1, 12))
+                    
+                total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                story.append(total_paragraph)
+
+                pdf.build(story)
+                return response
             context = {
                 'times': times,
                 'combined_bills' : combined_bills,
@@ -441,18 +541,108 @@ def daily_report(request):
             except EmptyPage:
                 combined_bills = paginator.page(paginator.num_pages)
             winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
-            for bill in dealer_bills:
+            for bill in combined_bills:
                 winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
                 total_winning = sum(winning.total for winning in winnings)
                 bill.win_amount = total_winning
                 if winnings != 0:
-                    bill.total_d_amount = bill.total_c_amount - total_winning
-                else:
                     bill.total_d_amount = total_winning - bill.total_c_amount
-                total_winning = sum(bill.win_amount for bill in dealer_bills)
-                total_balance = sum(bill.total_d_amount for bill in dealer_bills)
-            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))
+                else:
+                    bill.total_d_amount = bill.total_c_amount - total_winning
+            if dealer_bills:
+                for b in dealer_bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id)
+                    winning = sum(winning.total for winning in winnings)
+                    b.win_amount = winning
+                    if winnings != 0:
+                        b.total_d_amount = b.total_c_amount - total_winning
+                    else:
+                        b.total_d_amount = total_winning - b.total_c_amount
+                    print(b.total_d_amount)
+                    total_winning = sum(b.win_amount for b in dealer_bills)
+                print("Total Winning:", total_winning)
+            else:
+                total_winning = 0
+                print("Total Winning:", total_winning)
+            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+            total_balance = float(total_winning) - float(total_c_amount)
             print(total_c_amount)
+            if 'pdfButton' in request.POST:
+                print("pdf working")
+                pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                story = []
+
+                title_style = ParagraphStyle(
+                    'Title',
+                    parent=ParagraphStyle('Normal'),
+                    fontSize=12,
+                    textColor=colors.black,
+                    spaceAfter=16,
+                )
+                title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                title_paragraph = Paragraph(title_text, title_style)
+                story.append(title_paragraph)
+
+                    # Add a line break after the title
+                story.append(Spacer(1, 12))
+
+                    # Add table headers
+                headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                data = [headers]
+
+                    # Fetch bills within the date range
+                bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).all()
+
+                    # Populate data for each bill
+                for bill in bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
+                    total_win = sum(winning.total for winning in winnings)
+                    print(total_win,"#")
+                    balance = total_win - bill.total_c_amount
+
+                    display_user = bill.user.username
+
+                    display_sale = bill.total_c_amount
+
+                    formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                    data.append([
+                        formatted_date_time,
+                        display_user,
+                        f"{display_sale:.2f}",
+                        f"{total_win:.2f}",
+                        f"{balance:.2f}",
+                    ])
+
+                # Create the table and apply styles
+                table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+
+                story.append(table)
+
+                story.append(Spacer(1, 12))
+                    
+                total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                story.append(total_paragraph)
+
+                pdf.build(story)
+                return response
             context = {
                 'times': times,
                 'combined_bills' : combined_bills,
@@ -478,18 +668,31 @@ def daily_report(request):
             combined_bills = paginator.page(1)
         except EmptyPage:
             combined_bills = paginator.page(paginator.num_pages)
-        for bill in dealer_bills:
+        for bill in combined_bills:
             winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=bill.id)
             total_winning = sum(winning.total for winning in winnings)
             bill.win_amount = total_winning
             if winnings != 0:
-                bill.total_d_amount = bill.total_c_amount - total_winning
-            else:
                 bill.total_d_amount = total_winning - bill.total_c_amount
-            total_winning = sum(bill.win_amount for bill in dealer_bills)
-            total_balance = sum(bill.total_d_amount for bill in dealer_bills)
-        total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))
-        print(total_c_amount)
+            else:
+                bill.total_d_amount = bill.total_c_amount - total_winning
+        if dealer_bills:
+            for b in dealer_bills:
+                winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj,bill=b.id)
+                winning = sum(winning.total for winning in winnings)
+                b.win_amount = winning
+                if winnings != 0:
+                    b.total_d_amount = b.total_c_amount - total_winning
+                else:
+                    b.total_d_amount = total_winning - b.total_c_amount
+                print(b.total_d_amount)
+                total_winning = sum(b.win_amount for b in dealer_bills)
+            print("Total Winning:", total_winning)
+        else:
+            total_winning = 0
+            print("Total Winning:", total_winning)
+        total_c_amount = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+        total_balance = float(total_winning) - float(total_c_amount)
         select_time = 'all'
         selected_game_time = 'all times'
         context = {
