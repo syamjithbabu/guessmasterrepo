@@ -853,6 +853,7 @@ def count_salereport(request):
         to_date = request.POST.get('to-date')
              
         if select_time != 'all':
+                    selected_time = selected_game_time.game_time.strftime("%I:%M %p")
                     agent_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
                     agent_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
                     agent_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
@@ -877,6 +878,86 @@ def count_salereport(request):
                         'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
                         'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
                     }
+                    if 'pdfButton' in request.POST:
+                        print("pdf working")
+                        pdf_filename = "Sales_Count_Report" + "-" + from_date + "-" + to_date + " - " + selected_time +".pdf"
+                        response = HttpResponse(content_type='application/pdf')
+                        response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                        pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                        story = []
+
+                        title_style = ParagraphStyle(
+                            'Title',
+                            parent=ParagraphStyle('Normal'),
+                            fontSize=12,
+                            textColor=colors.black,
+                            spaceAfter=16,
+                        )
+                        title_text = "Sales Count Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                        title_paragraph = Paragraph(title_text, title_style)
+                        story.append(title_paragraph)
+
+                        # Add a line break after the title
+                        story.append(Spacer(1, 12))
+
+                        # Add table headers
+                        headers = ["Postion", "Count", "Amount"]
+                        data = [headers]
+
+                        # Populate data for each bill
+                        agent_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+
+                        data.append([
+                            "Super",
+                            agent_super['total_count'],
+                            agent_super['total_amount']
+                        ])
+
+                        data.append([
+                            "Box",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+
+                        data.append([
+                            "Single",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+                        data.append([
+                            "Double",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+
+                        # Create the table and apply styles
+                        table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                        table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                        ]))
+
+                        story.append(table)
+
+                        story.append(Spacer(1, 12))
+                        
+                        total_sale_text = f"Total Sale: {totals['net_count']:.2f}"
+                        total_win_text = f"Total Win Amount: {totals['net_amount']:.2f}"
+
+                        total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}", title_style)
+                        story.append(total_paragraph)
+
+                        pdf.build(story)
+                        return response
                     context = {
                         'times' : times,
                         'dealers' : dealer_obj,
@@ -885,6 +966,8 @@ def count_salereport(request):
                         'double_totals': double_totals,
                         'single_totals' : single_totals,
                         'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
                         'totals' : totals,
                         'selected_game_time' : selected_game_time,
                     }
@@ -914,6 +997,84 @@ def count_salereport(request):
                         'net_count': (super_totals['total_count'] or 0) + (box_totals['total_count'] or 0) + (single_totals['total_count'] or 0) + (double_totals['total_count'] or 0),
                         'net_amount': (super_totals['total_amount'] or 0) + (box_totals['total_amount'] or 0) + (single_totals['total_amount'] or 0) + (double_totals['total_amount'] or 0)
                     }
+                    if 'pdfButton' in request.POST:
+                        print("pdf working")
+                        pdf_filename = "Sales_Count_Report" + "-" + from_date + "-" + to_date + " - " + "All Times.pdf"
+                        response = HttpResponse(content_type='application/pdf')
+                        response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                        pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                        story = []
+
+                        title_style = ParagraphStyle(
+                            'Title',
+                            parent=ParagraphStyle('Normal'),
+                            fontSize=12,
+                            textColor=colors.black,
+                            spaceAfter=16,
+                        )
+                        title_text = "Sales Count Report" + "( " + from_date + " - " + to_date + " )" + "All Times"
+                        title_paragraph = Paragraph(title_text, title_style)
+                        story.append(title_paragraph)
+
+                        # Add a line break after the title
+                        story.append(Spacer(1, 12))
+
+                        # Add table headers
+                        headers = ["LSK", "Count", "Amount"]
+                        data = [headers]
+
+                        agent_super = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK='Super').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_box = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj, LSK='Box').aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_single = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj, LSK__in=lsk_value1).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+                        agent_double = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj, LSK__in=lsk_value2).aggregate(total_count=Sum('count'),total_amount=Sum('c_amount'))
+
+                        print(agent_super['total_amount'])
+
+                        data.append([
+                            "Super",
+                            agent_super['total_count'],
+                            agent_super['total_amount']
+                        ])
+                        data.append([
+                            "Box",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+                        data.append([
+                            "Single",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+                        data.append([
+                            "Double",
+                            agent_box['total_count'],
+                            agent_box['total_amount']
+                        ])
+
+                        table = Table(data, colWidths=[120, 100, 80, 80, 80])
+                        table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                        ]))
+
+                        story.append(table)
+
+                        story.append(Spacer(1, 12))
+                        
+                        total_sale_text = f"Total Sale: {totals['net_count']:.2f}"
+                        total_win_text = f"Total Win Amount: {totals['net_amount']:.2f}"
+
+                        total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}", title_style)
+                        story.append(total_paragraph)
+
+                        pdf.build(story)
+                        return response
                     context = {
                         'times' : times,
                         'dealers' : dealer_obj,
@@ -923,6 +1084,8 @@ def count_salereport(request):
                         'single_totals' : single_totals,
                         'selected_time' : 'all',
                         'selected_game_time' : selected_game_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
                         'totals' : totals
                     }
      
@@ -941,6 +1104,7 @@ def count_salereport(request):
                     }
      
     return render(request,'dealer/count_salereport.html',context) 
+
  
 @dealer_required
 @login_required

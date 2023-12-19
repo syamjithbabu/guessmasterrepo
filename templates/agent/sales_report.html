@@ -101,6 +101,9 @@
                                                 name="select-dealer" id="agent">
                                                 <option value="all">All</option>
                                                 <option value="{{ request.user }}">Myself</option>
+                                                {% for customer in customers %}
+                                                <option value="{{ request.user }}">{{customer}}</option>
+                                                {% endfor %}
                                                 {% for dealer in dealers %}
                                                 <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
                                                 {% endfor %}
