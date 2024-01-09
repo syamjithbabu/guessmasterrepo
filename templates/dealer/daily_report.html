@@ -120,6 +120,20 @@
 
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
+                                        <div class="mb-3">
+                                            <select class="form-control show-tick ms select2" data-placeholder="Select"
+                                                name="select-customer" id="select-customer">
+                                                <option value="all">All Customers</option>
+                                                {% for customer in customers %}
+                                                <option value="{{customer}}">{{customer}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6 col-6">
+                                    <div class="form-group">
                                         <button type="submit" class="btn btn-primary">Search</button>
                                     </div>
                                 </div>
@@ -257,6 +271,13 @@
         document.getElementById('from-date').value = getCurrentDate();
         document.getElementById('to-date').value = getCurrentDate();
     }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var customerList = document.getElementById("select-customer")
+        customerList.value = "{{selected_customer}}";
+    })
 </script>
 
 

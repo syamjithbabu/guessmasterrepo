@@ -60,6 +60,5 @@ urlpatterns = [
     path('lsk-limit/<int:id>',views.lsk_limit,name="lsk_limit"), 
     path('total-balance',views.total_balance,name="total_balance"),
     path('tickets-report',views.tickets_report,name="tickets_report"),
-    path('position-wise-report',views.position_wise_report,name="position_wise_report")
-
+    path('position-wise-report',views.position_wise_report,name="position_wise_report"),
 ]

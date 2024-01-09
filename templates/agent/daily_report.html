@@ -111,6 +111,9 @@
                                             {% for dealer in dealers %}
                                             <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
                                             {% endfor %}
+                                            {% for customer in customers %}
+                                            <option value="{{ customer }}">{{customer}}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
@@ -168,7 +171,7 @@
                                         <tr>
                                             <td>{{ bill.created_at|date:"N j, Y" }}<br>{{ bill.created_at|time:"H:i" }}
                                             </td>
-                                            {% if bill.customer != '' %}
+                                            {% if bill.customer != '' and bill.user.is_agent %}
                                             <td>{{ bill.customer }}</td>
                                             {% else %}
                                             <td>{{ bill.user }}</td>

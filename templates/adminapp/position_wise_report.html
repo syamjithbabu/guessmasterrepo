@@ -105,7 +105,7 @@ display: none;
                                         </div>
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">                                               
-                                                <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()" type="submit">Download</button>
+                                                <button class="btn btn-primary" id="pdfButton" name="pdfButton" type="submit">Download</button>
 
                                                 </div>
                                             </div>
@@ -137,29 +137,26 @@ display: none;
                                                 </tr>
                                             </thead>
                                             <tbody class="not-summary">
-                                                {% for category_result in position_stats %}
-                                                    {% if category_result %}
-                                                        {% for stat in category_result %}
-                                                            <tr class="l-pink">
-                                                                {% if stat.position == '1' %}
-                                                                    <td class="td2">First ({{stat.category}})</td>
-                                                                {% elif stat.position == '2' %}
-                                                                    <td class="td2">Second ({{stat.category}})</td>
-                                                                {% elif stat.position == '3' %}
-                                                                    <td class="td2">Third ({{stat.category}})</td>
-                                                                {% elif stat.position == '4' %}
-                                                                    <td class="td2">Fourth ({{stat.category}})</td>
-                                                                {% elif stat.position == '5' %}
-                                                                    <td class="td2">Fifth ({{stat.category}})</td>
-                                                                {% elif stat.position == '6' %}
-                                                                    <td class="td2">Sixth ({{stat.category}})</td>
-                                                                {% endif %}
-                                                                <td class="td2">{{ stat.count }}</td>
-                                                                <td class="td2">{{ stat.total }}</td>
-                                                            </tr>
-                                                        {% endfor %}
+                                                {% for combined_result in combined_stats_list %}
+                                                <tr class="l-pink">
+                                                    {% if combined_result.position == '1' %}
+                                                        <td class="td2">First ({{ combined_result.category }})</td>
+                                                    {% elif combined_result.position == '2' %}
+                                                        <td class="td2">Second ({{ combined_result.category }})</td>
+                                                    {% elif combined_result.position == '3' %}
+                                                        <td class="td2">Third ({{ combined_result.category }})</td>
+                                                    {% elif combined_result.position == '4' %}
+                                                        <td class="td2">Fourth ({{ combined_result.category }})</td>
+                                                    {% elif combined_result.position == '5' %}
+                                                        <td class="td2">Fifth ({{ combined_result.category }})</td>
+                                                    {% elif combined_result.position == '6' %}
+                                                        <td class="td2">Sixth ({{ combined_result.category }})</td>
                                                     {% endif %}
-                                                {% endfor %}
+                                                    <td class="td2">{{ combined_result.count }}</td>
+                                                    <td class="td2">{{ combined_result.total }}</td>
+                                                </tr>
+                                            {% endfor %}
+
                                             </tbody>    
                                         </table>
                                        

@@ -108,7 +108,7 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">
-                                        <input type="text" class="form-control" id="search" placeholder="Search" name="serch">
+                                        <input type="number" class="form-control" id="search" placeholder="Search" name="serch">
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-6 col-3">
@@ -126,15 +126,9 @@
                                     <span>Hide Zero Count</span>
                                 </label>
                                 <label class="control-inline fancy-checkbox ml-auto">
-                                    <input type="checkbox" name="sort" id="sort" onchange="toggleSorting()">
+                                    <input type="checkbox" name="sort" id="sort">
                                     <span>Sort Customer</span>
                                 </label>
-                                
-                                
-                                
-
-                                
-                                
                             </ul>
                         </form>
                     </div>
@@ -159,7 +153,7 @@
                                             <th>#</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="main-row">
                                     {% for game in monitor_games %}
                                         <tr class="main-row l-pink" >
                                             {% if not game.combined %}
@@ -178,26 +172,28 @@
                                             {% endif %}
                                         </tr>
                                     {% endfor %}
-                                    {% for game in agent_games %}
-                                    <tr class="sorted-row  l-turquoise" style="display: none;">
-                                        <td>{{game.agent.user}}</td>
-                                        <td>{{game.LSK}}</td>
-                                        <td>{{game.number}}</td>
-                                        <td>{{game.count}}</td>
-                                        <td>0</td>
-                                        <td>#</td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% for game in dealer_games %}
-                                    <tr class="sorted-row l-parpl" style="display: none;">
-                                        <td>{{game.dealer.user}}</td>
-                                        <td>{{game.LSK}}</td>
-                                        <td>{{game.number}}</td>
-                                        <td>{{game.count}}</td>
-                                        <td>0</td>
-                                        <td>#</td>
-                                    </tr>
-                                    {% endfor %}
+                                    </tbody>
+                                    <tbody id="sorted-rows-container">
+                                        {% for game in agent_games %}
+                                        <tr class="sorted-row  l-turquoise" style="display: none;">
+                                            <td>{{game.agent.user}}</td>
+                                            <td>{{game.LSK}}</td>
+                                            <td>{{game.number}}</td>
+                                            <td>{{game.count}}</td>
+                                            <td>0</td>
+                                            <td>#</td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% for game in dealer_games %}
+                                        <tr class="sorted-row l-parpl" style="display: none;">
+                                            <td>{{game.dealer.user}}</td>
+                                            <td>{{game.LSK}}</td>
+                                            <td>{{game.number}}</td>
+                                            <td>{{game.count}}</td>
+                                            <td>0</td>
+                                            <td>#</td>
+                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -211,37 +207,7 @@
     </div>
 
 
-
-    <script>
-        function printcontent() {
-
-            var divToPrint = document.getElementById("printcontent");
-            newWin = window.open("");
-            newWin.document.write(divToPrint.outerHTML);
-            newWin.document.close();
-            newWin.print();
-            //newWin.close();
-        }
-
-        document.querySelector("#button").addEventListener("click", function () {
-            printcontent();
-        });
-
-    </script>
-
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $("#expand-button").change(function() {
-            if (this.checked) {
-                $(".expand-row").show(); // Show the row when the checkbox is checked
-            } else {
-                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
-            }
-        });
-    });
-</script>
 
 <script>
     // Get the radio buttons
@@ -293,14 +259,11 @@
 
     // Check if selected_from and selected_to are defined
     var selectedFrom = "{{selected_from}}";
-    var selectedTo = "{{selected_to}}";
 
-    if (selectedFrom && selectedTo) {
+    if (selectedFrom) {
         document.getElementById('from-date').value = selectedFrom;
-        document.getElementById('to-date').value = selectedTo;
     } else {
         document.getElementById('from-date').value = getCurrentDate();
-        document.getElementById('to-date').value = getCurrentDate();
     }
 </script>
 
@@ -317,6 +280,7 @@
         console.log("the time id");
 
         selectTime.value = "{{ selected_time }}";
+
         selected_lsk = "{{ selected_lsk }}";
         for (var i = 0; i < radioInputs.length; i++) {
             if (radioInputs[i].value === selected_lsk) {
@@ -350,28 +314,6 @@
         }
     }
 </script>
-
-<script>
-    function toggleSorting() {
-        // Get the "Sort Customer" checkbox element
-        var sortCheckbox = document.getElementById('sort');
-        
-        // Get all the main-row and sorted-row elements
-        var mainRows = document.querySelectorAll('.main-row');
-        var sortedRows = document.querySelectorAll('.sorted-row');
-    
-        // Check the checkbox status and show/hide rows accordingly
-        for (var i = 0; i < mainRows.length; i++) {
-            if (sortCheckbox.checked) {
-                mainRows[i].style.display = 'none'; // Hide main rows
-                sortedRows[i].style.display = ''; // Show sorted rows
-            } else {
-                mainRows[i].style.display = ''; // Show main rows
-                sortedRows[i].style.display = 'none'; // Hide sorted rows
-            }
-        }
-    }
-    </script>
 
 
     {% endblock %}

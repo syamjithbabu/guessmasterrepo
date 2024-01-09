@@ -63,8 +63,10 @@
                         <div class="row clearfix" style="padding: 5px;">
 
                             <div class="hidden-print col-md-12 text-right">
-
-                                <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()">Download</button>
+                                <form method = 'POST'>
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary" id="pdfButton" name="pdfButton">Download</button>
+                                </form>
                             </div>
                         </div>
 
@@ -124,80 +126,6 @@
 </nav>
 
 
-
-
-<div id="pdftab">
-
-    <h3 style="display: inline-block">Total Balance</h3>
-        <h3 id="demo" style="display: inline-block"></h3>
-        <h3 id="demo1" style="display: inline-block"></h3>
-        <h3 id="demo4" style="display: inline-block;"></h3>
-
-        <h3 id="demo"></h3>
-        <h3 id="demo1"></h3>
-        <h3 id="demo3"></h3>
-        <hr>
-
-    <div class="body">
-        <div class="table-responsive">
-            <table class="table" style="text-align: center;">
-                <thead>
-                    <tr class="l-blue">
-                    
-                        <th> Agents</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in report_data %}
-                    <tr>
-                        <td>{{data.agent}}</td>
-                        {% if data.sale_amount|default:0|add:0 >= 0 %}
-                        <td style="color: rgb(0, 192, 0);">{{data.sale_amount|floatformat:2}}</td>
-                        {% else %}
-                        <td style="color: red;">{{data.sale_amount|floatformat:2}}</td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            
-
-            <div class="row clearfix text-right" style="padding: 5px;">
-
-                <div class="hidden-print col-md-12 text-right">
-                    <table>
-                        <thead>
-                            <tr>
-                                {% if total_balance|default:0|add:0 >= 0 %}
-                                <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
-                                {% else %}
-                                <th class="th1" style="color: red;">Balance</th>
-                                {% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                {% if total_balance|default:0|add:0 >= 0 %}
-                                <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
-                                {% else %}
-                                <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
-                                {% endif %}
-                            </tr>
-                        </tbody>
-                    </table>
-            </div>
-            <div  style="padding-top: 50px;"></div>
-         
-        </div>
-       
-    </div>
-
-</div>
-</div>
-
-
 <script>
     //   pdftab hide
 
@@ -213,117 +141,6 @@
 </script>
 
 <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
-
-<script>
-    function generateAndOpenPDF() {
-        var pdfButton = document.getElementById("pdfButton");
-        if (pdfButton) {
-            pdfButton.disabled = true;
-        }
-
-        var pdftab = document.getElementById("pdftab");
-
-        // Show the pdftab div when generateAndOpenPDF function is called
-        if (pdftab) {
-            pdftab.style.display = "block"; // or "inline" or "inline-block" depending on your layout
-        }
-
-        var element = document.getElementById('pdftab');
-        if (!element) {
-            console.error("Element with ID 'pdftab' not found.");
-
-            // Re-enable the button in case of an error
-            if (pdfButton) {
-                pdfButton.disabled = false;
-            }
-
-            return;
-        }
-
-        var rowsPerPage = 10; // Number of rows to display per page
-
-        var currentDate = new Date();
-        var formattedDate = currentDate.toISOString().slice(0,10);
-
-        // Configuration options for html2pdf
-        var options = {
-            margin: 10,
-            filename: 'TOTAL BALANCE' + ' Till ' + formattedDate,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
-        };
-
-        // Call html2pdf with the specified options
-        html2pdf(element, options)
-            .then(function (pdf) {
-                var totalPages = pdf.internal.getNumberOfPages();
-
-                for (var i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(150);
-
-                    // Calculate the range of rows to display on this page
-                    var startRow = (i - 1) * rowsPerPage;
-                    var endRow = Math.min(i * rowsPerPage, element.rows.length);
-
-                    // Loop through the rows and display only the selected range
-                    for (var j = startRow; j < endRow; j++) {
-                        var row = element.rows[j];
-                        var cells = row.getElementsByTagName('td');
-
-                        for (var k = 0; k < cells.length; k++) {
-                            pdf.text(cells[k].innerText, 20 + k * 30, 15 + (j % rowsPerPage) * 10);
-                        }
-                    }
-
-                    pdf.text('Footer content', 20, pdf.internal.pageSize.height - 40);
-                }
-
-                // Get the PDF data as a Blob
-                var pdfBlob = pdf.output('blob');
-
-                // Create a link to the Blob data with the Google Drive viewer link
-                var driveViewerLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(URL.createObjectURL(pdfBlob));
-
-                // Open the link in a new tab
-                window.open(driveViewerLink, '_blank');
-
-                // Hide the pdftab div after generating and opening the PDF
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button after generating and opening the PDF
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-
-                console.log("PDF generated and opened successfully:", pdf);
-            })
-            .catch(function (error) {
-                console.error("Error generating PDF:", error);
-
-                // Restore the display property of the pdftab div in case of an error
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button in case of an error
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-            });
-    }
-
-</script>
-
-
-
-
-
-
 
 
 {% endblock %}

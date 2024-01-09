@@ -233,7 +233,6 @@ def dealer_game_test_update(request,id):
 @dealer_required
 @login_required
 def sales_report(request):
-    print("Daily report function")
     dealer_bills={}
     totals={}
     select_time={}
@@ -250,6 +249,7 @@ def sales_report(request):
         lsk = request.POST.get('select-lsk')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        select_customer = request.POST.get('select-customer', 'all')
         try:
             selected_game_time = PlayTime.objects.get(id=select_time)
         except:
@@ -268,93 +268,909 @@ def sales_report(request):
         else:
             lsk_value == ['all']
         print(lsk_value,"##################")
-        if select_time != 'all':
-            if lsk != 'all':
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value).order_by('id')
-                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
-                combined_queryset = dealer_bills
-                paginator = Paginator(combined_queryset, 15)
-                page = request.POST.get('page', 1)
-                try:
-                    combined_bills = paginator.page(page)
-                except PageNotAnInteger:
-                    combined_bills = paginator.page(1)
-                except EmptyPage:
-                    combined_bills = paginator.page(paginator.num_pages)
-                totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                for bill in dealer_bills:
-                    for game in bill.dealer_games.filter(LSK__in=lsk_value):
-                        print("Game Count of",bill.id," is" , game.count)
-                        print("Game D Amount of",bill.id," is" , game.d_amount)
-                        print("Game C Amount of",bill.id," is" , game.c_amount)
-                    bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                    bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                    bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+        if select_customer == 'all':
+            if select_time != 'all':
+                selected_time = selected_game_time.game_time.strftime("%I:%M %p")
+                if lsk != 'all':
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct().order_by('-id')
+                    combined_queryset = dealer_bills
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    for bill in dealer_bills:
+                        for game in bill.dealer_games.filter(LSK__in=lsk_value):
+                            print("Game Count of",bill.id," is" , game.count)
+                            print("Game D Amount of",bill.id," is" , game.d_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                        bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + " - " + selected_time +  ".pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.user.username
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : 'all'
+                    }
+                    return render(request,'dealer/sales_report.html',context)
+                else:
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).distinct().order_by('-id')
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + " - " + selected_time +  ".pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.user.username
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : 'all'
+                    }
+                    return render(request,'dealer/sales_report.html',context)
             else:
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).order_by('id')
-                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).distinct()
-                combined_queryset = dealer_bills
-                paginator = Paginator(combined_queryset, 15)
-                page = request.POST.get('page', 1)
-                try:
-                    combined_bills = paginator.page(page)
-                except PageNotAnInteger:
-                    combined_bills = paginator.page(1)
-                except EmptyPage:
-                    combined_bills = paginator.page(paginator.num_pages)
-                totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                if lsk != 'all':
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct().order_by('-id')
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    for bill in dealer_bills:
+                        for game in bill.dealer_games.filter(LSK__in=lsk_value):
+                            print("Game Count of",bill.id," is" , game.count)
+                            print("Game D Amount of",bill.id," is" , game.d_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                        bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.user.username
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : 'all'
+                    }
+                    return render(request,'dealer/sales_report.html',context)
+                else:
+                        dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).order_by('id')
+                        dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct().order_by('-id')
+                        totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                        customers_list = []
+                        customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).exclude(customer='').order_by('-id')
+                        for cust in customers:
+                            if cust.customer not in customers_list:
+                                customers_list.append(cust.customer)
+                        combined_queryset = dealer_bills
+                        paginator = Paginator(combined_queryset, 100)
+                        page = request.POST.get('page', 1)
+                        try:
+                            combined_bills = paginator.page(page)
+                        except PageNotAnInteger:
+                            combined_bills = paginator.page(1)
+                        except EmptyPage:
+                            combined_bills = paginator.page(paginator.num_pages)
+                        if 'pdfButton' in request.POST:
+                                pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                                response = HttpResponse(content_type='application/pdf')
+                                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                                story = []
+
+                                title_style = ParagraphStyle(
+                                    'Title',
+                                    parent=ParagraphStyle('Normal'),
+                                    fontSize=12,
+                                    textColor=colors.black,
+                                    spaceAfter=16,
+                                )
+                                title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                                title_paragraph = Paragraph(title_text, title_style)
+                                story.append(title_paragraph)
+
+                                # Add a line break after the title
+                                story.append(Spacer(1, 12))
+
+                                # Add table headers
+                                headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                                data = [headers]
+
+                                for bill in combined_queryset:
+                                    user = bill.user
+
+                                    display_user = bill.user.username
+
+                                    display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                    display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                    formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                    # Add bill information to the table data
+                                    data.append([
+                                        formatted_date_time,
+                                        display_user,
+                                        f"{bill.id}",
+                                        f"{bill.total_count}",
+                                        f"{display_d_amount:.2f}",
+                                        f"{display_c_amount:.2f}",
+                                    ])
+
+                                    for dealer_game in bill.dealer_games.all():
+                                        # Add dealer game information to the table data
+                                        data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                                # Create the table and apply styles
+                                table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                                table.setStyle(TableStyle([
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                                ]))
+
+                                story.append(table)
+
+                                total_count_text = f"Total Count: {totals['total_count']}"
+                                total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                                total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                                total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                                story.append(total_paragraph)
+
+                                pdf.build(story)
+                                return response
+                context = {
+                    'times': times,
+                    'combined_bills' : combined_bills,
+                    'dealer_games' : dealer_games,
+                    'totals' : totals,
+                    'selected_time' : select_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'selected_lsk' : lsk,
+                    'selected_game_time' : selected_game_time,
+                    'customers' : customers_list,
+                    'selected_customer' : 'all'
+                }
+                return render(request,'dealer/sales_report.html',context)
         else:
-            if lsk != 'all':
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).order_by('id')
-                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).distinct()
-                totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                combined_queryset = dealer_bills
-                paginator = Paginator(combined_queryset, 15)
-                page = request.POST.get('page', 1)
-                try:
-                    combined_bills = paginator.page(page)
-                except PageNotAnInteger:
-                    combined_bills = paginator.page(1)
-                except EmptyPage:
-                    combined_bills = paginator.page(paginator.num_pages)
-                for bill in dealer_bills:
-                    for game in bill.dealer_games.filter(LSK__in=lsk_value):
-                        print("Game Count of",bill.id," is" , game.count)
-                        print("Game D Amount of",bill.id," is" , game.d_amount)
-                        print("Game C Amount of",bill.id," is" , game.c_amount)
-                    bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
-                    bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
-                    bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+            if select_time != 'all':
+                selected_time = selected_game_time.game_time.strftime("%I:%M %p")
+                if lsk != 'all':
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,LSK__in=lsk_value,customer=select_customer).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value,customer=select_customer).distinct().order_by('-id')
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,time=select_time,customer=select_customer).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    for bill in dealer_bills:
+                        for game in bill.dealer_games.filter(LSK__in=lsk_value):
+                            print("Game Count of",bill.id," is" , game.count)
+                            print("Game D Amount of",bill.id," is" , game.d_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                        bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + " - " + selected_time +  ".pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.customer
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : select_customer
+                    }
+                    return render(request,'dealer/sales_report.html',context)
+                else:
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,customer=select_customer).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time,customer=select_customer).distinct().order_by('-id')
+                    combined_queryset = dealer_bills
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,customer=select_customer).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + " - " + selected_time +  ".pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.customer
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : select_customer
+                    }
+                    return render(request,'dealer/sales_report.html',context)
             else:
-                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).order_by('id')
-                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
-                totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
-                combined_queryset = dealer_bills
-                paginator = Paginator(combined_queryset, 15)
-                page = request.POST.get('page', 1)
-                try:
-                    combined_bills = paginator.page(page)
-                except PageNotAnInteger:
-                    combined_bills = paginator.page(1)
-                except EmptyPage:
-                    combined_bills = paginator.page(paginator.num_pages)
-        context = {
-            'times': times,
-            'combined_bills' : combined_bills,
-            'dealer_games' : dealer_games,
-            'totals' : totals,
-            'selected_time' : select_time,
-            'selected_from' : from_date,
-            'selected_to' : to_date,
-            'selected_lsk' : lsk,
-            'selected_game_time' : selected_game_time,
-        }
+                if lsk != 'all':
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,customer=select_customer).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value,customer=select_customer).distinct().order_by('-id')
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,LSK__in=lsk_value,customer=select_customer).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,dealer_games__LSK__in=lsk_value).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    for bill in dealer_bills:
+                        for game in bill.dealer_games.filter(LSK__in=lsk_value):
+                            print("Game Count of",bill.id," is" , game.count)
+                            print("Game D Amount of",bill.id," is" , game.d_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                        bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.customer
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : select_customer
+                    }
+                    return render(request,'dealer/sales_report.html',context)
+                else:
+                    dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,customer=select_customer).order_by('id')
+                    dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,customer=select_customer).distinct().order_by('-id')
+                    totals = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,customer=select_customer).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
+                    customers_list = []
+                    customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).exclude(customer='').order_by('-id')
+                    for cust in customers:
+                        if cust.customer not in customers_list:
+                            customers_list.append(cust.customer)
+                    combined_queryset = dealer_bills
+                    paginator = Paginator(combined_queryset, 100)
+                    page = request.POST.get('page', 1)
+                    try:
+                        combined_bills = paginator.page(page)
+                    except PageNotAnInteger:
+                        combined_bills = paginator.page(1)
+                    except EmptyPage:
+                        combined_bills = paginator.page(paginator.num_pages)
+                    for bill in dealer_bills:
+                        for game in bill.dealer_games.filter(LSK__in=lsk_value):
+                            print("Game Count of",bill.id," is" , game.count)
+                            print("Game D Amount of",bill.id," is" , game.d_amount)
+                            print("Game C Amount of",bill.id," is" , game.c_amount)
+                        bill.total_count = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_count=Sum('count'))['total_count']
+                        bill.total_d_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_d_amount=Sum('d_amount'))['total_d_amount']
+                        bill.total_c_amount = bill.dealer_games.filter(LSK__in=lsk_value).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount']
+                    if 'pdfButton' in request.POST:
+                            pdf_filename = "Sales_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                            response = HttpResponse(content_type='application/pdf')
+                            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                            pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                            story = []
+
+                            title_style = ParagraphStyle(
+                                'Title',
+                                parent=ParagraphStyle('Normal'),
+                                fontSize=12,
+                                textColor=colors.black,
+                                spaceAfter=16,
+                            )
+                            title_text = "Sales Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                            title_paragraph = Paragraph(title_text, title_style)
+                            story.append(title_paragraph)
+
+                            # Add a line break after the title
+                            story.append(Spacer(1, 12))
+
+                            # Add table headers
+                            headers = ["Date", "Dealer", "Bill", "Count", "S.Amt", "C.Amt"]
+                            data = [headers]
+
+                            for bill in combined_queryset:
+                                user = bill.user
+
+                                display_user = bill.customer
+
+                                display_d_amount = bill.total_d_amount if user.is_agent else bill.total_d_amount
+
+                                display_c_amount = bill.total_c_amount if user.is_agent else bill.total_c_amount
+
+                                formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                                # Add bill information to the table data
+                                data.append([
+                                    formatted_date_time,
+                                    display_user,
+                                    f"{bill.id}",
+                                    f"{bill.total_count}",
+                                    f"{display_d_amount:.2f}",
+                                    f"{display_c_amount:.2f}",
+                                ])
+
+                                for dealer_game in bill.dealer_games.all():
+                                    # Add dealer game information to the table data
+                                    data.append(["#",f"{dealer_game.LSK}", dealer_game.number, dealer_game.count, dealer_game.d_amount, dealer_game.c_amount])
+
+                            # Create the table and apply styles
+                            table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                            table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            ]))
+
+                            story.append(table)
+
+                            total_count_text = f"Total Count: {totals['total_count']}"
+                            total_d_amount_text = f"A.Amount: {totals['total_d_amount']:.2f}"
+                            total_s_amount_text = f"C.Amount: {totals['total_c_amount']:.2f}"
+
+                            total_paragraph = Paragraph(f"{total_count_text}<br/>{total_d_amount_text}<br/>{total_s_amount_text}", title_style)
+                            story.append(total_paragraph)
+
+                            pdf.build(story)
+                            return response
+                    context = {
+                        'times': times,
+                        'combined_bills' : combined_bills,
+                        'dealer_games' : dealer_games,
+                        'totals' : totals,
+                        'selected_time' : select_time,
+                        'selected_from' : from_date,
+                        'selected_to' : to_date,
+                        'selected_lsk' : lsk,
+                        'selected_game_time' : selected_game_time,
+                        'customers' : customers_list,
+                        'selected_customer' : select_customer
+                    }
+                    return render(request,'dealer/sales_report.html',context)
     else:
+        customers_list = []
         dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all().order_by('id')
-        dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
+        dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all().order_by('-id')
         totals = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_c_amount=Sum('c_amount'),total_d_amount=Sum('d_amount'))
         combined_queryset = dealer_bills
-        paginator = Paginator(combined_queryset, 15)
+        paginator = Paginator(combined_queryset, 100)
         page = request.POST.get('page', 1)
         try:
             combined_bills = paginator.page(page)
@@ -364,6 +1180,10 @@ def sales_report(request):
             combined_bills = paginator.page(paginator.num_pages)
         select_time = 'all'
         selected_game_time = 'all times'
+        customers = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).exclude(customer='')
+        for cust in customers:
+            if cust.customer not in customers_list:
+                customers_list.append(cust.customer)
         context = {
             'times': times,
             'combined_bills' : combined_bills,
@@ -372,6 +1192,8 @@ def sales_report(request):
             'selected_time' : select_time,
             'dealer_games' : dealer_games,
             'selected_game_time' : selected_game_time,
+            'customers' : customers_list,
+            'selected_customer' : 'all'
         }
     return render(request,'dealer/sales_report.html',context)
 
@@ -396,6 +1218,7 @@ def daily_report(request):
         select_time = request.POST.get('select-time')
         from_date = request.POST.get('from-date')
         to_date = request.POST.get('to-date')
+        select_customer = request.POST.get('select-customer','all')
         try:
             selected_game_time = PlayTime.objects.get(id=select_time)
         except:
@@ -403,263 +1226,564 @@ def daily_report(request):
         dealer_bills = []
         total_winning = []
         total_balance = []
-        if select_time != 'all':
-            selected_time = selected_game_time.game_time.strftime("%I:%M %p")
-            dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).all()
-            dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
-            paginator = Paginator(dealer_bills, 15)
-            page = request.POST.get('page', 1)
-            try:
-                combined_bills = paginator.page(page)
-            except PageNotAnInteger:
-                combined_bills = paginator.page(1)
-            except EmptyPage:
-                combined_bills = paginator.page(paginator.num_pages)
-            for bill in combined_bills:
-                winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
-                total_winning = sum(winning.total for winning in winnings)
-                bill.win_amount = total_winning
-                if winnings != 0:
-                    bill.total_d_amount = total_winning - bill.total_c_amount
-                else:
-                    bill.total_d_amount = bill.total_c_amount - total_winning
-            if dealer_bills:
-                for b in dealer_bills:
-                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id,time=select_time)
-                    winning = sum(winning.total for winning in winnings)
-                    b.win_amount = winning
-                    if winnings != 0:
-                        b.total_d_amount = b.total_c_amount - total_winning
-                    else:
-                        b.total_d_amount = total_winning - b.total_c_amount
-                    print(b.total_d_amount)
-                    total_winning = sum(b.win_amount for b in dealer_bills)
-                print("Total Winning:", total_winning)
-            else:
-                total_winning = 0
-                print("Total Winning:", total_winning)
-            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-            total_balance = float(total_winning) - float(total_c_amount)
-            if 'pdfButton' in request.POST:
-                print("pdf working")
-                pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + " - " + selected_time + ".pdf"
-                response = HttpResponse(content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
-
-                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
-                story = []
-
-                title_style = ParagraphStyle(
-                    'Title',
-                    parent=ParagraphStyle('Normal'),
-                    fontSize=12,
-                    textColor=colors.black,
-                    spaceAfter=16,
-                )
-                title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + selected_time
-                title_paragraph = Paragraph(title_text, title_style)
-                story.append(title_paragraph)
-
-                    # Add a line break after the title
-                story.append(Spacer(1, 12))
-
-                    # Add table headers
-                headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
-                data = [headers]
-
-                    # Fetch bills within the date range
-                bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
-
-                    # Populate data for each bill
-                for bill in bills:
+        if select_customer == 'all':
+            if select_time != 'all':
+                selected_time = selected_game_time.game_time.strftime("%I:%M %p")
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).all()
+                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
+                customers_list = []
+                customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).exclude(customer='')
+                for cust in customers:
+                    if cust.customer not in customers_list:
+                        customers_list.append(cust.customer)
+                paginator = Paginator(dealer_bills, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
+                for bill in combined_bills:
                     winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
-                    total_win = sum(winning.total for winning in winnings)
-                    print(total_win,"#")
-                    balance = total_win - bill.total_c_amount
-
-                    display_user = bill.user.username
-
-                    display_sale = bill.total_c_amount
-
-                    formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
-
-                    data.append([
-                        formatted_date_time,
-                        display_user,
-                        f"{display_sale:.2f}",
-                        f"{total_win:.2f}",
-                        f"{balance:.2f}",
-                    ])
-
-                # Create the table and apply styles
-                table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
-                table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ]))
-
-                story.append(table)
-
-                story.append(Spacer(1, 12))
-                    
-                total_sale_text = f"Total Sale: {total_c_amount:.2f}"
-                total_win_text = f"Total Win Amount: {total_winning:.2f}"
-                total_balance_text = f"Total Balance: {total_balance:.2f}"
-
-                total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
-                story.append(total_paragraph)
-
-                pdf.build(story)
-                return response
-            context = {
-                'times': times,
-                'combined_bills' : combined_bills,
-                'dealer_games' : dealer_games,
-                'total_c_amount' : total_c_amount,
-                'total_winning' : total_winning,
-                'total_balance' : total_balance,
-                'selected_time' : select_time,
-                'selected_game_time' : selected_game_time,
-                'selected_from' : from_date,
-                'selected_to' : to_date,
-            }
-            return render(request,'dealer/daily_report.html',context)
-        else:
-            dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj)
-            dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
-            paginator = Paginator(dealer_bills, 15)
-            page = request.POST.get('page', 1)
-            try:
-                combined_bills = paginator.page(page)
-            except PageNotAnInteger:
-                combined_bills = paginator.page(1)
-            except EmptyPage:
-                combined_bills = paginator.page(paginator.num_pages)
-            winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
-            for bill in combined_bills:
-                winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
-                total_winning = sum(winning.total for winning in winnings)
-                bill.win_amount = total_winning
-                if winnings != 0:
-                    bill.total_d_amount = total_winning - bill.total_c_amount
-                else:
-                    bill.total_d_amount = bill.total_c_amount - total_winning
-            if dealer_bills:
-                for b in dealer_bills:
-                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id)
-                    winning = sum(winning.total for winning in winnings)
-                    b.win_amount = winning
+                    total_winning = sum(winning.total for winning in winnings)
+                    bill.win_amount = total_winning
                     if winnings != 0:
-                        b.total_d_amount = b.total_c_amount - total_winning
+                        bill.total_d_amount = total_winning - bill.total_c_amount
                     else:
-                        b.total_d_amount = total_winning - b.total_c_amount
-                    print(b.total_d_amount)
-                    total_winning = sum(b.win_amount for b in dealer_bills)
-                print("Total Winning:", total_winning)
+                        bill.total_d_amount = bill.total_c_amount - total_winning
+                if dealer_bills:
+                    for b in dealer_bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id,time=select_time)
+                        winning = sum(winning.total for winning in winnings)
+                        b.win_amount = winning
+                        if winnings != 0:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        print(b.total_d_amount)
+                        total_winning = sum(b.win_amount for b in dealer_bills)
+                    print("Total Winning:", total_winning)
+                else:
+                    total_winning = 0
+                    print("Total Winning:", total_winning)
+                total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                total_balance = float(total_winning) - float(total_c_amount)
+                if 'pdfButton' in request.POST:
+                    print("pdf working")
+                    pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + " - " + selected_time + ".pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
+
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
+
+                        # Add a line break after the title
+                    story.append(Spacer(1, 12))
+
+                        # Add table headers
+                    headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                    data = [headers]
+
+                        # Fetch bills within the date range
+                    bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
+
+                        # Populate data for each bill
+                    for bill in bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
+                        total_win = sum(winning.total for winning in winnings)
+                        print(total_win,"#")
+                        balance = total_win - bill.total_c_amount
+
+                        if bill.customer == '':
+                            display_user = bill.user.username
+                        else:
+                            display_user = bill.customer
+
+                        display_sale = bill.total_c_amount
+
+                        formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                        data.append([
+                            formatted_date_time,
+                            display_user,
+                            f"{display_sale:.2f}",
+                            f"{total_win:.2f}",
+                            f"{balance:.2f}",
+                        ])
+
+                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    story.append(Spacer(1, 12))
+                        
+                    total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                    total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                    total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
+                context = {
+                    'times': times,
+                    'combined_bills' : combined_bills,
+                    'dealer_games' : dealer_games,
+                    'total_c_amount' : total_c_amount,
+                    'total_winning' : total_winning,
+                    'total_balance' : total_balance,
+                    'selected_time' : select_time,
+                    'selected_game_time' : selected_game_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'customers' : customers_list,
+                    'selected_customer' : 'all'
+                }
+                return render(request,'dealer/daily_report.html',context)
             else:
-                total_winning = 0
-                print("Total Winning:", total_winning)
-            total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-            total_balance = float(total_winning) - float(total_c_amount)
-            print(total_c_amount)
-            if 'pdfButton' in request.POST:
-                print("pdf working")
-                pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
-                response = HttpResponse(content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
-
-                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
-                story = []
-
-                title_style = ParagraphStyle(
-                    'Title',
-                    parent=ParagraphStyle('Normal'),
-                    fontSize=12,
-                    textColor=colors.black,
-                    spaceAfter=16,
-                )
-                title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
-                title_paragraph = Paragraph(title_text, title_style)
-                story.append(title_paragraph)
-
-                    # Add a line break after the title
-                story.append(Spacer(1, 12))
-
-                    # Add table headers
-                headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
-                data = [headers]
-
-                    # Fetch bills within the date range
-                bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).all()
-
-                    # Populate data for each bill
-                for bill in bills:
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj)
+                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).distinct()
+                customers_list = []
+                customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).exclude(customer='')
+                for cust in customers:
+                    if cust.customer not in customers_list:
+                        customers_list.append(cust.customer)
+                paginator = Paginator(dealer_bills, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
+                winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
+                for bill in combined_bills:
                     winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
-                    total_win = sum(winning.total for winning in winnings)
-                    print(total_win,"#")
-                    balance = total_win - bill.total_c_amount
+                    total_winning = sum(winning.total for winning in winnings)
+                    bill.win_amount = total_winning
+                    if winnings != 0:
+                        bill.total_d_amount = total_winning - bill.total_c_amount
+                    else:
+                        bill.total_d_amount = bill.total_c_amount - total_winning
+                if dealer_bills:
+                    for b in dealer_bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id)
+                        winning = sum(winning.total for winning in winnings)
+                        b.win_amount = winning
+                        if winnings != 0:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        print(b.total_d_amount)
+                        total_winning = sum(b.win_amount for b in dealer_bills)
+                    print("Total Winning:", total_winning)
+                else:
+                    total_winning = 0
+                    print("Total Winning:", total_winning)
+                total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                total_balance = float(total_winning) - float(total_c_amount)
+                print(total_c_amount)
+                if 'pdfButton' in request.POST:
+                    print("pdf working")
+                    pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
 
-                    display_user = bill.user.username
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
 
-                    display_sale = bill.total_c_amount
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
 
-                    formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+                        # Add a line break after the title
+                    story.append(Spacer(1, 12))
 
-                    data.append([
-                        formatted_date_time,
-                        display_user,
-                        f"{display_sale:.2f}",
-                        f"{total_win:.2f}",
-                        f"{balance:.2f}",
-                    ])
+                        # Add table headers
+                    headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                    data = [headers]
 
-                # Create the table and apply styles
-                table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
-                table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ]))
+                        # Fetch bills within the date range
+                    bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).all()
 
-                story.append(table)
+                        # Populate data for each bill
+                    for bill in bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
+                        total_win = sum(winning.total for winning in winnings)
+                        print(total_win,"#")
+                        balance = total_win - bill.total_c_amount
 
-                story.append(Spacer(1, 12))
-                    
-                total_sale_text = f"Total Sale: {total_c_amount:.2f}"
-                total_win_text = f"Total Win Amount: {total_winning:.2f}"
-                total_balance_text = f"Total Balance: {total_balance:.2f}"
+                        if bill.customer == '':
+                            display_user = bill.user.username
+                        else:
+                            display_user = bill.customer
 
-                total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
-                story.append(total_paragraph)
+                        display_sale = bill.total_c_amount
 
-                pdf.build(story)
-                return response
-            context = {
-                'times': times,
-                'combined_bills' : combined_bills,
-                'dealer_games' : dealer_games,
-                'winnings' : winning_for_bills,
-                'total_c_amount' : total_c_amount,
-                'total_winning' : total_winning,
-                'total_balance' : total_balance,
-                'selected_time' : 'all',
-                'selected_game_time' : selected_game_time,
-                'selected_from' : from_date,
-                'selected_to' : to_date,
-            }
-            return render(request,'dealer/daily_report.html',context)
+                        formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                        data.append([
+                            formatted_date_time,
+                            display_user,
+                            f"{display_sale:.2f}",
+                            f"{total_win:.2f}",
+                            f"{balance:.2f}",
+                        ])
+
+                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    story.append(Spacer(1, 12))
+                        
+                    total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                    total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                    total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
+                context = {
+                    'times': times,
+                    'combined_bills' : combined_bills,
+                    'dealer_games' : dealer_games,
+                    'winnings' : winning_for_bills,
+                    'total_c_amount' : total_c_amount,
+                    'total_winning' : total_winning,
+                    'total_balance' : total_balance,
+                    'selected_time' : 'all',
+                    'selected_game_time' : selected_game_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'customers' : customers_list,
+                    'selected_customer' : 'all'
+                }
+                return render(request,'dealer/daily_report.html',context)
+        else:
+            if select_time != 'all':
+                selected_time = selected_game_time.game_time.strftime("%I:%M %p")
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,customer=select_customer).all()
+                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time,customer=select_customer).all()
+                customers_list = []
+                customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).exclude(customer='')
+                for cust in customers:
+                    if cust.customer not in customers_list:
+                        customers_list.append(cust.customer)
+                paginator = Paginator(dealer_bills, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
+                for bill in combined_bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
+                    total_winning = sum(winning.total for winning in winnings)
+                    bill.win_amount = total_winning
+                    if winnings != 0:
+                        bill.total_d_amount = total_winning - bill.total_c_amount
+                    else:
+                        bill.total_d_amount = bill.total_c_amount - total_winning
+                if dealer_bills:
+                    for b in dealer_bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id,time=select_time)
+                        winning = sum(winning.total for winning in winnings)
+                        b.win_amount = winning
+                        if winnings != 0:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        print(b.total_d_amount)
+                        total_winning = sum(b.win_amount for b in dealer_bills)
+                    print("Total Winning:", total_winning)
+                else:
+                    total_winning = 0
+                    print("Total Winning:", total_winning)
+                total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,time=select_time,customer=select_customer).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                total_balance = float(total_winning) - float(total_c_amount)
+                if 'pdfButton' in request.POST:
+                    print("pdf working")
+                    pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + " - " + selected_time + ".pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
+
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
+
+                        # Add a line break after the title
+                    story.append(Spacer(1, 12))
+
+                        # Add table headers
+                    headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                    data = [headers]
+
+                        # Fetch bills within the date range
+                    bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,time_id=select_time).all()
+
+                        # Populate data for each bill
+                    for bill in bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id,time=select_time)
+                        total_win = sum(winning.total for winning in winnings)
+                        print(total_win,"#")
+                        balance = total_win - bill.total_c_amount
+
+                        if bill.customer == '':
+                            display_user = bill.user.username
+                        else:
+                            display_user = bill.customer
+
+                        display_sale = bill.total_c_amount
+
+                        formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                        data.append([
+                            formatted_date_time,
+                            display_user,
+                            f"{display_sale:.2f}",
+                            f"{total_win:.2f}",
+                            f"{balance:.2f}",
+                        ])
+
+                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    story.append(Spacer(1, 12))
+                        
+                    total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                    total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                    total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
+                context = {
+                    'times': times,
+                    'combined_bills' : combined_bills,
+                    'dealer_games' : dealer_games,
+                    'total_c_amount' : total_c_amount,
+                    'total_winning' : total_winning,
+                    'total_balance' : total_balance,
+                    'selected_time' : select_time,
+                    'selected_game_time' : selected_game_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'customers' : customers_list,
+                    'selected_customer' : select_customer
+                }
+                return render(request,'dealer/daily_report.html',context)
+            else:
+                dealer_games = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,customer=select_customer)
+                dealer_bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,customer=select_customer).distinct()
+                customers_list = []
+                customers = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id).exclude(customer='')
+                for cust in customers:
+                    if cust.customer not in customers_list:
+                        customers_list.append(cust.customer)
+                paginator = Paginator(dealer_bills, 15)
+                page = request.POST.get('page', 1)
+                try:
+                    combined_bills = paginator.page(page)
+                except PageNotAnInteger:
+                    combined_bills = paginator.page(1)
+                except EmptyPage:
+                    combined_bills = paginator.page(paginator.num_pages)
+                winning_for_bills = Winning.objects.filter(bill__in=dealer_bills)
+                for bill in combined_bills:
+                    winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
+                    total_winning = sum(winning.total for winning in winnings)
+                    bill.win_amount = total_winning
+                    if winnings != 0:
+                        bill.total_d_amount = total_winning - bill.total_c_amount
+                    else:
+                        bill.total_d_amount = bill.total_c_amount - total_winning
+                if dealer_bills:
+                    for b in dealer_bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=b.id)
+                        winning = sum(winning.total for winning in winnings)
+                        b.win_amount = winning
+                        if winnings != 0:
+                            b.total_d_amount = b.total_c_amount - total_winning
+                        else:
+                            b.total_d_amount = total_winning - b.total_c_amount
+                        print(b.total_d_amount)
+                        total_winning = sum(b.win_amount for b in dealer_bills)
+                    print("Total Winning:", total_winning)
+                else:
+                    total_winning = 0
+                    print("Total Winning:", total_winning)
+                total_c_amount = DealerGame.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,customer=select_customer).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
+                total_balance = float(total_winning) - float(total_c_amount)
+                print(total_c_amount)
+                if 'pdfButton' in request.POST:
+                    print("pdf working")
+                    pdf_filename = "Daily_Report" + "-" + from_date + "-" + to_date + "- All Times.pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
+
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Daily Report" + "( " + from_date + " - " + to_date + " )" + " - All Times"
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
+
+                        # Add a line break after the title
+                    story.append(Spacer(1, 12))
+
+                        # Add table headers
+                    headers = ["Date", "Agent", "T.Sale", "T.W.Amount", "Balance"]
+                    data = [headers]
+
+                        # Fetch bills within the date range
+                    bills = Bill.objects.filter(date__range=[from_date, to_date],user=dealer_obj.user.id,customer=select_customer).all()
+
+                        # Populate data for each bill
+                    for bill in bills:
+                        winnings = Winning.objects.filter(date__range=[from_date, to_date],dealer=dealer_obj,bill=bill.id)
+                        total_win = sum(winning.total for winning in winnings)
+                        print(total_win,"#")
+                        balance = total_win - bill.total_c_amount
+
+                        if bill.customer == '':
+                            display_user = bill.user.username
+                        else:
+                            display_user = bill.customer
+
+                        display_sale = bill.total_c_amount
+
+                        formatted_date_time = bill.created_at.astimezone(timezone.get_current_timezone()).strftime("%b. %d, %Y %H:%M")
+
+                        data.append([
+                            formatted_date_time,
+                            display_user,
+                            f"{display_sale:.2f}",
+                            f"{total_win:.2f}",
+                            f"{balance:.2f}",
+                        ])
+
+                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    story.append(Spacer(1, 12))
+                        
+                    total_sale_text = f"Total Sale: {total_c_amount:.2f}"
+                    total_win_text = f"Total Win Amount: {total_winning:.2f}"
+                    total_balance_text = f"Total Balance: {total_balance:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_sale_text}<br/>{total_win_text}<br/>{total_balance_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
+                context = {
+                    'times': times,
+                    'combined_bills' : combined_bills,
+                    'dealer_games' : dealer_games,
+                    'winnings' : winning_for_bills,
+                    'total_c_amount' : total_c_amount,
+                    'total_winning' : total_winning,
+                    'total_balance' : total_balance,
+                    'selected_time' : 'all',
+                    'selected_game_time' : selected_game_time,
+                    'selected_from' : from_date,
+                    'selected_to' : to_date,
+                    'customers' : customers_list,
+                    'selected_customer' : select_customer
+                }
+                return render(request,'dealer/daily_report.html',context)
     else:
+        customers_list = []
         dealer_games = DealerGame.objects.filter(date=current_date,dealer=dealer_obj).all()
         dealer_bills = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).all()
+        customers = Bill.objects.filter(date=current_date,user=dealer_obj.user.id).exclude(customer='')
+        for cust in customers:
+            if cust.customer not in customers_list:
+                customers_list.append(cust.customer)
         paginator = Paginator(dealer_bills, 15)
         page = request.GET.get('page', 1)
         try:
@@ -705,6 +1829,8 @@ def daily_report(request):
             'selected_time' : select_time,
             'dealer_games' : dealer_games,
             'selected_game_time' : selected_game_time,
+            'customers' : customers_list,
+            'selected_customer' : 'all'
         }
     return render(request,'dealer/daily_report.html',context)
 
@@ -730,7 +1856,10 @@ def winning_report(request):
         except:
             selected_game_time = 'all times'
         if select_time != 'all':
+            selected_time = selected_game_time.game_time.strftime("%I:%M %p")
             winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date],time=select_time)
+            for winning in winnings:
+                winning.bill = Bill.objects.get(pk=winning.bill)
             print(winnings)
             aggregated_winnings = winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
@@ -741,6 +1870,80 @@ def winning_report(request):
                 position=F('position'),
             )
             totals = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            if 'pdfButton' in request.POST:
+                pdf_filename = "Winning Report" + "-" + from_date + "-" + to_date + "- " + selected_time +".pdf"
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                story = []
+
+                title_style = ParagraphStyle(
+                    'Title',
+                    parent=ParagraphStyle('Normal'),
+                    fontSize=12,
+                    textColor=colors.black,
+                    spaceAfter=16,
+                )
+                title_text = "Winning Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                title_paragraph = Paragraph(title_text, title_style)
+                story.append(title_paragraph)
+
+                    # Add a line break after the title
+                story.append(Spacer(1, 12))
+
+                    # Add table headers
+                headers = ["Bill", "User", "T", "PN", "C", "PP", "SU", "RS", "Net"]
+                data = [headers]
+
+                winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date],time=select_time)
+
+                # Populate data for each bill
+                for win in winnings:
+                    bill_instance = Bill.objects.get(pk=win.bill)
+                    if bill_instance.customer == '':
+                        agent_dealer = bill_instance.user
+                    else:
+                        agent_dealer = bill_instance.customer
+
+                    data.append([
+                        win.bill,
+                        agent_dealer,
+                        win.LSK,
+                        win.number,
+                        win.count,
+                        win.position,
+                        win.commission,
+                        win.prize,
+                        win.total,
+                    ])
+
+                # Create the table and apply styles
+                table = Table(data, colWidths=[60, 60, 60, 60, 60])  # Adjust colWidths as needed
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+
+                story.append(table)
+
+                story.append(Spacer(1, 12))
+                    
+                total_count_text = f"Count: {totals['total_count']:.2f}"
+                total_comm_text = f"Comm: {totals['total_commission']:.2f}"
+                total_win_text = f"Total: {totals['total_rs']:.2f}"
+                total_net_text = f"Net: {totals['total_net']:.2f}"
+
+                total_paragraph = Paragraph(f"{total_count_text}<br/>{total_comm_text}<br/>{total_win_text}<br/>{total_net_text}", title_style)
+                story.append(total_paragraph)
+
+                pdf.build(story)
+                return response
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -750,11 +1953,14 @@ def winning_report(request):
                 'selected_from' : from_date,
                 'selected_to' : to_date,
                 'selected_game_time' : selected_game_time,
+                'bill' : winning.bill
             }
             return render(request,'dealer/winning_report.html',context)
         else:
             winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date])
             print(winnings)
+            for winning in winnings:
+                winning.bill = Bill.objects.get(pk=winning.bill)
             aggregated_winnings = winnings.values('LSK', 'number').annotate(
                 total_count=Sum('count'),
                 total_commission=Sum('commission'),
@@ -764,6 +1970,80 @@ def winning_report(request):
                 position=F('position'),
             )
             totals = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_commission=Sum('commission'),total_rs=Sum('prize'),total_net=Sum('total'))
+            if 'pdfButton' in request.POST:
+                pdf_filename = "Winning Report" + "-" + from_date + "-" + to_date + "- " + "All Times.pdf"
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                story = []
+
+                title_style = ParagraphStyle(
+                    'Title',
+                    parent=ParagraphStyle('Normal'),
+                    fontSize=12,
+                    textColor=colors.black,
+                    spaceAfter=16,
+                )
+                title_text = "Winning Report" + "( " + from_date + " - " + to_date + " )" + "All Times"
+                title_paragraph = Paragraph(title_text, title_style)
+                story.append(title_paragraph)
+
+                    # Add a line break after the title
+                story.append(Spacer(1, 12))
+
+                    # Add table headers
+                headers = ["Bill", "User", "T", "PN", "C", "PP", "SU", "RS", "Net"]
+                data = [headers]
+
+                winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id,date__range=[from_date, to_date])
+
+                # Populate data for each bill
+                for win in winnings:
+                    bill_instance = Bill.objects.get(pk=win.bill)
+                    if bill_instance.customer == '':
+                        agent_dealer = bill_instance.user
+                    else:
+                        agent_dealer = bill_instance.customer
+
+                    data.append([
+                        win.bill,
+                        agent_dealer,
+                        win.LSK,
+                        win.number,
+                        win.count,
+                        win.position,
+                        win.commission,
+                        win.prize,
+                        win.total,
+                    ])
+
+                # Create the table and apply styles
+                table = Table(data, colWidths=[60, 60, 60, 60, 60])  # Adjust colWidths as needed
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+
+                story.append(table)
+
+                story.append(Spacer(1, 12))
+                    
+                total_count_text = f"Count: {totals['total_count']:.2f}"
+                total_comm_text = f"Comm: {totals['total_commission']:.2f}"
+                total_win_text = f"Total: {totals['total_rs']:.2f}"
+                total_net_text = f"Net: {totals['total_net']:.2f}"
+
+                total_paragraph = Paragraph(f"{total_count_text}<br/>{total_comm_text}<br/>{total_win_text}<br/>{total_net_text}", title_style)
+                story.append(total_paragraph)
+
+                pdf.build(story)
+                return response
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -773,40 +2053,39 @@ def winning_report(request):
                 'selected_from' : from_date,
                 'selected_to' : to_date,
                 'selected_game_time' : selected_game_time,
+                'bill' : winning.bill
             }
             return render(request,'dealer/winning_report.html',context)
     else:
+        winnings = []  # Initialize winnings with an empty list or queryset
         try:
-            matching_play_times = Winning.objects.filter().last()
-            if matching_play_times:
-                winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date, time=matching_play_times.time)
-                aggregated_winnings = winnings.values('LSK', 'number').annotate(
+            winnings = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date)
+            for winning in winnings:
+                winning.bill = Bill.objects.get(pk=winning.bill)
+            aggregated_winnings = winnings.values('LSK', 'number').annotate(
                     total_count=Sum('count'),
                     total_commission=Sum('commission'),
                     total_prize=Sum('prize'),
                     total_net=Sum('total'),
                     dealer=F('dealer__dealer_name'),
                     position=F('position'),
-                )
-                totals = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date, time=matching_play_times.time).aggregate(total_count=Sum('count'), total_commission=Sum('commission'), total_rs=Sum('prize'), total_net=Sum('total'))
-            else:
-                winnings = []
-                aggregated_winnings = []
-                totals = {}
+            )
+            totals = Winning.objects.filter(dealer__user=dealer_obj.user.id, date=current_date).aggregate(total_count=Sum('count'), total_commission=Sum('commission'), total_rs=Sum('prize'), total_net=Sum('total'))
+        
         except:
-            winnings = []
-            aggregated_winnings = []
-            totals = {}
+            pass
         selected_game_time = 'all times'
         context = {
             'times' : times,
             'winnings' : winnings,
             'totals' : totals,
             'aggr' : aggregated_winnings,
-            'selected_time' : matching_play_times.time.id if matching_play_times else None,
-            'selected_game_time' : selected_game_time
+            'selected_time' : 'all',
+            'selected_game_time' : selected_game_time,
+            'bill' : winning.bill if 'winning' in locals() else None
         }
-        return render(request,'dealer/winning_report.html',context) 
+        return render(request,'dealer/winning_report.html',context)
+ 
 
 @dealer_required
 @login_required
@@ -1114,8 +2393,9 @@ def winning_countreport(request):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
-    winnings = Winning.objects.filter(date=current_date).all()
-    totals = Winning.objects.filter(date=current_date).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
+    winnings = Winning.objects.filter(date=current_date,dealer=dealer_obj).all()
+    totals = Winning.objects.filter(date=current_date,dealer=dealer_obj).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
+    print(totals)
     if request.method == 'POST':
         select_time = request.POST.get('time')
         from_date = request.POST.get('from-date')
@@ -1125,8 +2405,72 @@ def winning_countreport(request):
         except:
             selected_game_time = 'all times'
         if select_time != 'all':
+            selected_time = selected_game_time.game_time.strftime("%I:%M %p")
             winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time)
             totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
+            if 'pdfButton' in request.POST:
+                    pdf_filename = "Winning Count Report" + "-" + from_date + "-" + to_date + " - " + selected_time + ".pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
+
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Winning Count Report" + "( " + from_date + " - " + to_date + " )" + selected_time
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
+
+                                    # Add a line break after the title
+                    story.append(Spacer(1, 12))
+
+                                    # Add table headers
+                    headers = ["Particular", "Number", "Count"]
+                    data = [headers]
+
+                    winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date],time=select_time)
+
+                    for win in winnings:
+
+                        if win.agent:
+                            amount = win.total
+                        else:
+                            amount = win.total
+                                        # Add bill information to the table data
+                        data.append([
+                            win.position,
+                            win.count,
+                            amount
+                        ])
+
+                                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    total_count_text = f"Total Count: {totals['total_count']:.2f}"
+                    total_amount_text = f"Total Amount: {totals['total_prize']:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_count_text}<br/>{total_amount_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -1140,6 +2484,69 @@ def winning_countreport(request):
         else:
             winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date])
             totals = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date]).aggregate(total_count=Sum('count'),total_prize=Sum('total'))
+            if 'pdfButton' in request.POST:
+                    pdf_filename = "Winning Count Report" + "-" + from_date + "-" + to_date + " - " + "All Times.pdf"
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                    pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                    story = []
+
+                    title_style = ParagraphStyle(
+                        'Title',
+                        parent=ParagraphStyle('Normal'),
+                        fontSize=12,
+                        textColor=colors.black,
+                        spaceAfter=16,
+                    )
+                    title_text = "Winning Count Report" + "( " + from_date + " - " + to_date + " )" + "All Times"
+                    title_paragraph = Paragraph(title_text, title_style)
+                    story.append(title_paragraph)
+
+                                    # Add a line break after the title
+                    story.append(Spacer(1, 12))
+
+                                    # Add table headers
+                    headers = ["Particular", "Number", "Count"]
+                    data = [headers]
+
+                    winnings = Winning.objects.filter(dealer=dealer_obj,date__range=[from_date, to_date])
+
+                    for win in winnings:
+
+                        if win.agent:
+                            amount = win.total
+                        else:
+                            amount = win.total
+                                        # Add bill information to the table data
+                        data.append([
+                            win.position,
+                            win.count,
+                            amount
+                        ])
+
+                                    # Create the table and apply styles
+                    table = Table(data, colWidths=[120, 100, 80, 80, 80])  # Adjust colWidths as needed
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+
+                    story.append(table)
+
+                    total_count_text = f"Total Count: {totals['total_count']:.2f}"
+                    total_amount_text = f"Total Amount: {totals['total_prize']:.2f}"
+
+                    total_paragraph = Paragraph(f"{total_count_text}<br/>{total_amount_text}", title_style)
+                    story.append(total_paragraph)
+
+                    pdf.build(story)
+                    return response
             context = {
                 'times' : times,
                 'winnings' : winnings,
@@ -1194,6 +2601,65 @@ def balance_report(request):
                 'win_amount' : win_amount
             })
         total_balance = sum(entry['balance'] for entry in report_data)
+        print(report_data)
+        if 'pdfButton' in request.POST:
+                pdf_filename = "Balance Report" + "-" + from_date + "-" + to_date + ".pdf"
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+                pdf = SimpleDocTemplate(response, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+                story = []
+
+                title_style = ParagraphStyle(
+                    'Title',
+                    parent=ParagraphStyle('Normal'),
+                    fontSize=12,
+                    textColor=colors.black,
+                    spaceAfter=16,
+                )
+                title_text = "Balance Report" + "( " + from_date + " - " + to_date + " )"
+                title_paragraph = Paragraph(title_text, title_style)
+                story.append(title_paragraph)
+
+                                # Add a line break after the title
+                story.append(Spacer(1, 12))
+
+                                # Add table headers
+                headers = ["Date","Dealer", "Sales Amount", "Win Amount", "Collection Amount", "Balance"]
+                data = [headers]
+
+                print(report_data)
+
+                for datas in report_data:
+                    data.append([
+                        datas['date'],
+                        dealer_obj,
+                        f"{float(datas['total_d_amount'] or 0):.2f}",
+                        f"{float(datas['win_amount'] or 0):.2f}",
+                        f"{float(datas['from_or_to'] or 0):.2f}",
+                        f"{float(datas['balance'] or 0):.2f}"
+                    ])
+                table = Table(data, colWidths=[80, 80, 80, 80,100,80])  # Adjust colWidths as needed
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+
+                story.append(table)
+
+                total_balance_text = f"Balance: {total_balance:.2f}"
+
+                total_paragraph = Paragraph(f"{total_balance_text}", title_style)
+                story.append(total_paragraph)
+
+                pdf.build(story)
+                return response
+        print(from_date, to_date,"checking")
         context = {
             'selected_agent' : 'all',
             'report_data': report_data,
@@ -1201,35 +2667,35 @@ def balance_report(request):
             'selected_from' : from_date,
             'selected_to' : to_date
         }
+        return render(request, 'dealer/balance_report.html',context)
     else:
-        pass
-    dealer_games = DealerGame.objects.filter(date=current_date, dealer=dealer_obj)
-    print(dealer_games)
-    collection = DealerCollectionReport.objects.filter(date=current_date, dealer=dealer_obj)
-    print(collection)
-    winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
-    dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
-    from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
-    to_agent = collection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
-    total_collection_amount = from_agent - to_agent
-    total_d_amount = dealer_total_d_amount
-    win_amount = float(winning)
-    balance = float(winning) - float(total_d_amount) + float(total_collection_amount)
-    if total_d_amount:
-        report_data.append({
-            'date' : current_date,
-            'total_d_amount': total_d_amount,
-            'from_or_to' : total_collection_amount,
-            'balance' : balance,
-            'win_amount' : win_amount
-        })
-    total_balance = sum(entry['balance'] for entry in report_data)
-    context = {
-        'selected_agent' : 'all',
-        'report_data': report_data,
-        'total_balance' : total_balance
-    }
-    return render(request, 'dealer/balance_report.html',context)
+        dealer_games = DealerGame.objects.filter(date=current_date, dealer=dealer_obj)
+        print(dealer_games)
+        collection = DealerCollectionReport.objects.filter(date=current_date, dealer=dealer_obj)
+        print(collection)
+        winning = Winning.objects.filter(dealer=dealer_obj,date=current_date).aggregate(total_winning=Sum('total'))['total_winning'] or 0
+        dealer_total_d_amount = dealer_games.aggregate(dealer_total_d_amount=Sum('c_amount'))['dealer_total_d_amount'] or 0
+        from_agent = collection.filter(from_or_to='received').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        to_agent = collection.filter(from_or_to='paid').aggregate(collection_amount=Sum('amount'))['collection_amount'] or 0
+        total_collection_amount = from_agent - to_agent
+        total_d_amount = dealer_total_d_amount
+        win_amount = float(winning)
+        balance = float(winning) - float(total_d_amount) + float(total_collection_amount)
+        if total_d_amount:
+            report_data.append({
+                'date' : current_date,
+                'total_d_amount': total_d_amount,
+                'from_or_to' : total_collection_amount,
+                'balance' : balance,
+                'win_amount' : win_amount
+            })
+        total_balance = sum(entry['balance'] for entry in report_data)
+        context = {
+            'selected_agent' : 'all',
+            'report_data': report_data,
+            'total_balance' : total_balance
+        }
+        return render(request, 'dealer/balance_report.html',context)
 
 @dealer_required
 @login_required
@@ -1339,12 +2805,13 @@ def check_limit(request):
 
         try:
             agent_test_total_c_amount = AgentGameTest.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-            dealer_test_total_c_amount = DealerGameTest.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
+            dealer_test_total_c_amount = DealerGameTest.objects.filter(agent=agent_obj,dealer=dealer_obj,date=current_date).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
             agent_total_c_amount = AgentGame.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount'))['total_c_amount'] or 0
-            dealer_total_c_amount = DealerGame.objects.filter(agent=agent_obj, date=current_date).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
+            dealer_total_c_amount = DealerGame.objects.filter(agent=agent_obj,dealer=dealer_obj,date=current_date).aggregate(total_c_amount=Sum('c_amount_admin'))['total_c_amount'] or 0
             limit = DealerLimit.objects.get(dealer=dealer_obj)
             agent_limit = Limit.objects.get(agent=agent_obj)
-            add = float(value4) + float(agent_total_c_amount) + float(agent_test_total_c_amount) + float(dealer_test_total_c_amount) + float(dealer_total_c_amount)
+            add_agent = float(value4) + float(agent_total_c_amount) + float(agent_test_total_c_amount) + float(dealer_test_total_c_amount) + float(dealer_total_c_amount)
+            add_dealer = float(value4) + float(dealer_test_total_c_amount) + float(dealer_total_c_amount)
             try:
                 blocked_numbers = BlockedNumber.objects.filter(Q(from_date__lte=current_date) & Q(to_date__gte=current_date),time=time, LSK=link_text, number=value1)
                 if blocked_numbers:
@@ -1374,10 +2841,10 @@ def check_limit(request):
                     'B' : game_limit.b,
                     'C' : game_limit.c,
                     }
-                agent_games = AgentGame.objects.filter(date=current_date, time=time, LSK=link_text)
-                agent_games_test = AgentGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
-                dealer_games = DealerGame.objects.filter(date=current_date, time=time, LSK=link_text)
-                dealer_games_test = DealerGameTest.objects.filter(date=current_date, time=time, LSK=link_text)
+                agent_games = AgentGame.objects.filter(date=current_date, time=time, LSK=link_text,number=value1)
+                agent_games_test = AgentGameTest.objects.filter(date=current_date, time=time, LSK=link_text,number=value1)
+                dealer_games = DealerGame.objects.filter(date=current_date, time=time, LSK=link_text,number=value1)
+                dealer_games_test = DealerGameTest.objects.filter(date=current_date, time=time, LSK=link_text,number=value1)
                 total_counts = {
                     'agent_game_count': agent_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
                     'dealer_game_count': dealer_games.aggregate(total_count=Sum('count'))['total_count'] or 0,
@@ -1394,14 +2861,14 @@ def check_limit(request):
                 if total_count_key is not None:
                     print("limit checking")
                     total = games_total + int(value2)
-                    if total > getattr(game_limit, link_text.lower()):
+                    if total > getattr(game_limit, link_text.lower(),value1):
                         return JsonResponse({'message': 'LSK blocked'})
             except:
                 pass
 
-            if add > limit.daily_limit:
+            if add_dealer > limit.daily_limit:
                 return JsonResponse({'message': 'Limit exceeded'})
-            elif add > agent_limit.daily_limit:
+            elif add_agent > agent_limit.daily_limit:
                 return JsonResponse({'message': 'Limit exceeded'})
             else:
                 dealer_game_test = DealerGameTest.objects.create(
@@ -1412,8 +2879,8 @@ def check_limit(request):
                     LSK=link_text,
                     number=value1,
                     count=value2,
-                    c_amount=value3,
-                    d_amount=value4,
+                    d_amount=value3,
+                    c_amount=value4,
                     d_amount_admin=value3_admin,
                     c_amount_admin=value4_admin,
                 )

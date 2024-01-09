@@ -57,8 +57,10 @@
                         <div class="row clearfix" style="padding: 5px;">
 
                             <div class="hidden-print col-md-12 text-right">
-
-                                <button class="btn btn-primary" id="pdfButton" onclick="generateAndOpenPDF()">Download</button>
+                                <form method = 'POST'>
+                                    {% csrf_token %}
+                                <button class="btn btn-primary" id="pdfButton" name="pdfButton">Download</button>
+                                </form>
                             </div>
                         </div>
 
@@ -121,77 +123,6 @@
         </tbody>
     </table>
 </nav>
-
-
-<div id="pdftab">
-    <h3 style="display: inline-block">Total Balance</h3>
-        <h3 id="demo" style="display: inline-block"></h3>
-        <h3 id="demo1" style="display: inline-block"></h3>
-        <h3 id="demo4" style="display: inline-block;"></h3>
-
-        <h3 id="demo"></h3>
-        <h3 id="demo1"></h3>
-        <h3 id="demo3"></h3>
-        <hr>
-    <div class="body">
-        <div class="table-responsive">
-            <table class="table" style="text-align: center;">
-                <thead>
-                    <tr class="l-blue">
-
-                        <th> Dealers</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in report_data %}
-                    <tr class="l-blue">
-                        <td>{{data.dealer}}</td>
-                        {% if data.sale_amount|default:0|add:0 >= 0 %}
-                        <td style="color: rgb(0, 192, 0);">{{data.sale_amount|floatformat:2}}</td>
-                        {% else %}
-                        <td style="color: red;">{{data.sale_amount|floatformat:2}}</td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-
-            </table>
-            
-
-            <div class="row clearfix text-right" style="padding: 5px;">
-
-                <div class="hidden-print col-md-12 text-right">
-                 <table  class="text-right">
-                    <thead class="text-right">
-                        <tr>
-                            {% if total_balance|default:0|add:0 >= 0 %}
-                            <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
-                            {% else %}
-                            <th class="th1" style="color: red;">Balance</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody class="text-right">
-                        <tr>
-                            {% if total_balance|default:0|add:0 >= 0 %}
-                            <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
-                            {% else %}
-                            <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
-                            {% endif %}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div  style="padding-top: 50px;"></div>
-         
-        </div>
-       
-    </div>
-
-</div>
-</div>
-
 
 
 

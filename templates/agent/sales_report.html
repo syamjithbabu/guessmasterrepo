@@ -101,11 +101,11 @@
                                                 name="select-dealer" id="agent">
                                                 <option value="all">All</option>
                                                 <option value="{{ request.user }}">Myself</option>
-                                                {% for customer in customers %}
-                                                <option value="{{ request.user }}">{{customer}}</option>
-                                                {% endfor %}
                                                 {% for dealer in dealers %}
                                                 <option value="{{ dealer.user.id }}">{{dealer.user}}</option>
+                                                {% endfor %}
+                                                {% for customer in customers %}
+                                                <option value="{{ customer }}" name="customer">{{customer}}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -219,7 +219,6 @@
                                             {% if for_agent %}
                                             <td style="text-align: center;">{{ bill.total_d_amount_admin|floatformat:2 }}</td>
                                             <td style="text-align: center;">{{ bill.total_c_amount_admin|floatformat:2 }}</td>
-                                            
                                             {% else %}
                                             <td style="text-align: center;">{{ bill.total_d_amount|floatformat:2 }}</td>
                                             <td style="text-align: center;">{{ bill.total_c_amount|floatformat:2 }}</td>
@@ -252,8 +251,13 @@
                                                 <td style="text-align: center;">{{ game.LSK }}</td>
                                                 <td style="text-align: center;">{{ game.number }}</td>
                                                 <td style="text-align: center;">{{ game.count }}</td>
+                                                {% if for_agent %}
                                                 <td style="text-align: center;">{{ game.d_amount_admin|floatformat:2 }}</td>
                                                 <td style="text-align: center;">{{ game.c_amount_admin|floatformat:2 }}</td>
+                                                {% else %}
+                                                <td style="text-align: center;">{{ game.d_amount|floatformat:2 }}</td>
+                                                <td style="text-align: center;">{{ game.c_amount|floatformat:2 }}</td>
+                                                {% endif %}
                                             </tr>
                                             {% endif %}
                                             {% endfor %}

@@ -2759,7 +2759,7 @@ html.fullscreen-bg #wrapper {
     color: #777;
     border: 1px solid #eee;
     border-radius: 30px;
-    padding: 7px 23px;
+    padding: 3px 15px;
     background-color: transparent
 }
 
@@ -6521,7 +6521,7 @@ ul.choose-skin li span,
 .card .header .header-dropdown,
 .card .header h2,
 .navbar-nav,
-.nav-tabs-new>li>a,
+
 .sidebar-nav ul,
 .block-header .breadcrumb,
 .media .media-body .media-heading,
@@ -6547,6 +6547,9 @@ ul.choose-skin li span,
 .fc .fc-toolbar,
 .fc .fc-toolbar h2 {
     margin: 0 !important
+}
+.nav-tabs-new>li>a{
+    margin: 10 
 }
 
 .p-l-0,
