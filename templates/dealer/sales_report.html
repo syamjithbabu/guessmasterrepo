@@ -84,8 +84,6 @@
                         
                             <ul class="nav nav-tabs-new2">
 
-                                {% if customers %}
-
                                 <div class="col-6">
                                     <div class="form-group">
                                         <label for="tax-id" class="control-label">Select Time</label>
@@ -108,6 +106,7 @@
                                             <select class="form-control show-tick ms select2" data-placeholder="Select"
                                                 name="select-customer" id="select-customer">
                                                 <option value="all">All Customers</option>
+                                                <option value="{{request.user}}">Myself</option>
                                                 {% for customer in customers %}
                                                 <option value="{{customer}}">{{customer}}</option>
                                                 {% endfor %}
@@ -115,26 +114,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                {% else %}
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label for="tax-id" class="control-label">Select Time</label>
-                                        <div class="mb-3">
-                                            <select class="form-control show-tick ms select2" data-placeholder="Select"
-                                                name="select-time" id="time">
-                                                <option value="all">All Times</option>
-                                                {% for time in times %}
-                                                <option value="{{time.id}}">{{time.game_time}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {% endif %}
-
 
                                 <div class="col-lg-2 col-md-6 col-6">
                                     <div class="form-group">

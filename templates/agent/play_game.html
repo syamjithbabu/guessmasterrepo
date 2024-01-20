@@ -356,7 +356,7 @@
                                 </div>
                                 <div class="form-group col-lg-3 col-6">
                                     <input type="number" class="form-control" id="countInput" placeholder="Count"
-                                        required autofocus  oninput="validateCountInput(this)" autocomplete="off">
+                                        required autofocus autocomplete="off">
                                 </div>
                             </div>
 
@@ -639,25 +639,98 @@
 
     var maxDigits = 3;
 
+    var maxCount = 2;
+
+    countInput.addEventListener("input", function () {
+            if (countInput.value.length > maxCount) {
+                countInput.value = countInput.value.slice(0, maxCount);
+            }
+    });
+
+    countInput2.addEventListener("input", function () {
+            if (countInput2.value.length > maxCount) {
+                countInput2.value = countInput2.value.slice(0, maxCount);
+            }
+    });
+
     button1.addEventListener("click", function () {
         maxDigits = 1;
+        maxCount = 3;
+        maxValue = 500;
         numberInput.value = "";
         numberInput.maxLength = maxDigits;
         numberInput.focus();
+        countInput.value = "";
+        countInput2.value = "";
+        endInput.value = "";
+        stepInput.value = "";
+        countInput.addEventListener("input", function () {
+            if (countInput.value.length > maxCount) {
+                countInput.value = countInput.value.slice(0, maxCount);
+            }
+            if (parseInt(countInput.value) > maxValue) {
+                countInput.value = maxValue.toString();
+            }
+        });
+        countInput2.addEventListener("input", function () {
+            if (countInput2.value.length > maxCount) {
+                countInput2.value = countInput2.value.slice(0, maxCount);
+            }
+            if (parseInt(countInput2.value) > maxValue) {
+                countInput2.value = maxValue.toString();
+            }
+    });
     });
 
     button2.addEventListener("click", function () {
         maxDigits = 2;
+        maxCount = 3;
+        maxValue = 500;
         numberInput.value = "";
         numberInput.maxLength = maxDigits;
         numberInput.focus();
+        countInput.value = "";
+        countInput2.value = "";
+        endInput.value = "";
+        stepInput.value = "";
+        countInput.addEventListener("input", function () {
+            if (countInput.value.length > maxCount) {
+                countInput.value = countInput.value.slice(0, maxCount);
+            }
+            if (parseInt(countInput.value) > maxValue) {
+                countInput.value = maxValue.toString();
+            }
+        });
+        countInput2.addEventListener("input", function () {
+            if (countInput2.value.length > maxCount) {
+                countInput2.value = countInput2.value.slice(0, maxCount);
+            }
+            if (parseInt(countInput2.value) > maxValue) {
+                countInput2.value = maxValue.toString();
+            }
+    });
     });
 
     button3.addEventListener("click", function () {
         maxDigits = 3;
+        maxCount = 2;
         numberInput.value = "";
         numberInput.maxLength = maxDigits;
         numberInput.focus();
+        countInput.value = "";
+        countInput2.value = "";
+        endInput.value = "";
+        stepInput.value = "";
+        countInput.addEventListener("input", function () {
+            if (countInput.value.length > maxCount) {
+                countInput.value = countInput.value.slice(0, maxCount);
+            }
+        });
+        countInput2.addEventListener("input", function () {
+            if (countInput2.value.length > maxCount) {
+                countInput2.value = countInput2.value.slice(0, maxCount);
+            }
+    });
     });
 
     button1.addEventListener("click", function () {
@@ -2846,9 +2919,9 @@ async function processQueue() {
 
 <script>
     function validateCountInput(input) {
-        input.value = input.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        input.value = input.value.replace(/[^0-9]/g, '');
         if (input.value.length > 2) {
-            input.value = input.value.slice(0, 3); // Limit to 2 digits
+            input.value = input.value.slice(0, 3);
         }
     }
 </script>

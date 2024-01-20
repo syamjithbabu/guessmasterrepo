@@ -82,18 +82,30 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <select class="form-control show-tick ms select2"
+                                                        data-placeholder="Select" name="select-dealer" id="customer">
+                                                        <option value="all">All Customers</option>
+                                                        <option value="{{ request.user }}">Myself</option>
+                                                        {% for cust in customers %}
+                                                        <option value="{{cust}}">{{cust}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-6">
                                                 <label class="control-inline fancy-checkbox ml-auto">
                                                     <input type="checkbox" name="checkbox2" id="summary-button">
                                                     <span>Summary</span>
                                                 </label>
                                             </div>
-                                            <div class="col-md-6 col-6">
+                                            <div class="col-md-3 col-3">
                                                 <div class="form-group">
                                                     <button type="submit" class="btn btn-primary">Search</button>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-6 col-6">
+                                            <div class="col-md-3 col-3">
                                                 <div class="form-group">
                                                     <button class="btn btn-primary" id="pdfButton" name="pdfButton" type="submit">Download</button>
 
@@ -248,10 +260,11 @@
     document.addEventListener("DOMContentLoaded", function () {
         // Get the select element by its ID
         var selectTime = document.getElementById("time");
-
-        console.log("{{selected_time}}")
+        var selectCustomer = document.getElementById("customer");
 
         selectTime.value = "{{ selected_time }}";
+
+        selectCustomer.value = "{{ selected_dealer }}";
 
     });
 

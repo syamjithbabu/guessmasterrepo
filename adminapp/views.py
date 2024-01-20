@@ -36,6 +36,9 @@ from django.http import HttpResponse
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
+import json
 
 # Create your views here.
 
@@ -486,15 +489,12 @@ def add_result(request,id):
 
         already_result_check = Result.objects.filter(date=date,time=play_time)
         if already_result_check:
-            messages.info(request, "Result already published on this date and time!")
-            context = {
-                'timings' : timings
-            }
-            return render(request,'adminapp/add_result.html',context)
+            message = "Result already published!"
+            context = {'timings': timings, 'error' : message}
+            return render(request, 'adminapp/add_result.html', context)
         else:
             result = Result.objects.create(date=date,time=play_time,first=first,second=second,third=third,fourth=fourth,fifth=fifth,field1=field1,field2=field2,field3=field3,field4=field4,field5=field5,field6=field6,field7=field7,field8=field8,field9=field9,field10=field10,field11=field11,field12=field12,field13=field13,field14=field14,field15=field15,field16=field16,field17=field17,field18=field18,field19=field19,field20=field20,field21=field21,field22=field22,field23=field23,field24=field24,field25=field25,field26=field26,field27=field27,field28=field28,field29=field29,field30=field30)
             result.save()
-            messages.info(request, "Result published!")
             agent_games = AgentGame.objects.filter(date=date,time=play_time).all()
             print(agent_games,"agent games")
             dealer_games = DealerGame.objects.filter(date=date,time=play_time).all()
@@ -1409,6 +1409,9 @@ def add_result(request,id):
                         commission_admin = ((agent_package.double2_dc)*(game.count))
                         total_admin = ((prize_admin)+(commission_admin))
                         single_prize = Winning.objects.create(date=date,time=play_time,dealer=game.dealer,bill=matching_bills.id,number=game.number,LSK=game.LSK,count=game.count,position="1",prize=prize,commission=commission,total=total,prize_admin=prize_admin,commission_admin=commission_admin,total_admin=total_admin)
+            message = "Result already published!"
+            context = {'timings': timings, 'success' : message}
+            return render(request, 'adminapp/add_result.html', context)
     context = {
         'timings' : timings
     }
@@ -3266,19 +3269,18 @@ def monitor(request,id):
     ist = pytz.timezone('Asia/Kolkata')
     current_date = timezone.now().astimezone(ist).date()
     current_time = timezone.now().astimezone(ist).time()
-    print(current_date)
     times = PlayTime.objects.all().order_by('id')
     matching_play_times = []
     try:
         time = PlayTime.objects.get(id=id)
-        print(time.id, "the time id")
     except:
         pass
     if time:
         agent_games = AgentGame.objects.filter(date=current_date,time=time)
         dealer_games = DealerGame.objects.filter(date=current_date,time=time)
-        monitor_game = CombinedGame.objects.filter(date=current_date,time=time).all()
+        monitor_games = CombinedGame.objects.filter(date=current_date,time=time).all()
         set_monitor_limit = Monitor.objects.get(time=time)
+        
     else:
         return render(request,'adminapp/monitor.html')
     try:
@@ -3308,14 +3310,10 @@ def monitor(request,id):
                 existing_combined_game = existing_combined_games_dict[key]
                 if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
                     existing_combined_game.count += agent_game.count
-                    print(existing_combined_game.count)
                     if agent_game.LSK in limits:
                         limit = limits[agent_game.LSK]
                         existing_combined_game.remaining_limit = (existing_combined_game.count - existing_combined_game.cleared) - limit
-                        print(existing_combined_game.remaining_limit,"remain")
                     existing_combined_game.combined = True
-                    print(existing_combined_game.count)
-                    print(agent_game.count)
                     existing_combined_game.save()
                     agent_game.combined = True
                     agent_game.save()
@@ -3323,7 +3321,6 @@ def monitor(request,id):
                 combined_games[key]['count'] += agent_game.count
                 combined_games[key]['combined'] = True
             else:
-                print("working this")
                 combined_games[key] = {
                     'LSK': agent_game.LSK,
                     'number': agent_game.number,
@@ -3339,7 +3336,7 @@ def monitor(request,id):
             key = (dealer_game.LSK, dealer_game.number)
             if key in existing_combined_games_dict:
                 existing_combined_game = existing_combined_games_dict[key]
-                if hasattr(agent_game, 'count') and isinstance(agent_game.count, int):
+                if hasattr(dealer_game, 'count') and isinstance(dealer_game.count, int):
                     existing_combined_game.count += dealer_game.count
                     if dealer_game.LSK in limits:
                         limit = limits[dealer_game.LSK]
@@ -3365,13 +3362,11 @@ def monitor(request,id):
     total_count = 0
 
     for key, game_info in combined_games.items():
-        print("555555555555555")
         LSK, number = key
         count = game_info['count']
         user = game_info['user']
         is_combined = game_info['combined']
         total_count += count
-        print(total_count,"Total count")
         combined_game = CombinedGame(
             date=current_date,
             time=time,
@@ -3389,40 +3384,22 @@ def monitor(request,id):
                 remaining_limit = 0
             combined_game.remaining_limit = remaining_limit
         combined_game.save()
-    print(agent_games)
-    print(dealer_games)
-    for agent_game in agent_games:
-        print(agent_game.number)
-    for dealer_game in dealer_games:
-        print(dealer_game.number)
     
     if request.method == 'POST':
-        print("filtering")
         checkboxes = request.POST.getlist('checkbox2')
-        print(checkboxes)
         from_date = request.POST.get('from-date')
         sort = request.POST.get('sort')
         hide_zero = request.POST.get('hide-zero')
         search = request.POST.get('serch')
         selected_time = request.POST.get('time')
-        print(selected_time,"time")
-        print(search)
-        print(hide_zero)
         filter_query = Q()
-        if checkboxes:
-            filter_query |= Q(LSK__in=checkboxes)
-        if from_date:
-            filter_query &= Q(date=from_date)
-        if selected_time != 'all':
-            selected_time_obj = PlayTime.objects.get(id=selected_time)
-            filter_query &= Q(time=selected_time_obj)
-        if search:
-            search_query = Q(LSK__icontains=search) | Q(number__icontains=search)
-            combined_games = CombinedGame.objects.filter(search_query,date=from_date,time=selected_time_obj)
-            agent_games = AgentGame.objects.filter(filter_query,search_query,date=from_date,time=selected_time_obj)
-            dealer_games = DealerGame.objects.filter(filter_query,search_query,date=from_date,time=selected_time_obj)
+        searched = 'yes'
+        if request.method == 'POST' and 'load_full' in request.POST:
+            agent_games = AgentGame.objects.filter(date=current_date, time=time)
+            dealer_games = DealerGame.objects.filter(date=current_date, time=time)
+            monitor_games = CombinedGame.objects.filter(date=current_date, time=time).all()
             context = {
-                'monitor_games' : combined_games,
+                'monitor_games' : monitor_games,
                 'agent_games' : agent_games,
                 'dealer_games' : dealer_games,
                 'times' : times,
@@ -3431,29 +3408,101 @@ def monitor(request,id):
                 'id' : id
             }
             return render(request,'adminapp/monitor.html',context)
-
-        print("Filter Query:", filter_query)
-        combined_games = CombinedGame.objects.filter(filter_query)
-        print("Combined Games:", combined_games)
+        if checkboxes:
+            filter_query |= Q(LSK__in=checkboxes)
+        if from_date:
+            filter_query &= Q(date=from_date)
+        if selected_time != 'all':
+            selected_time_obj = PlayTime.objects.get(id=selected_time)
+            filter_query &= Q(time=selected_time_obj)
+        if search:
+            search_query = Q(LSK=search) | Q(number=search)
+            monitor_games = CombinedGame.objects.filter(search_query, date=from_date, time=selected_time_obj)
+            agent_games = AgentGame.objects.filter(filter_query, search_query, date=from_date, time=selected_time_obj)
+            dealer_games = DealerGame.objects.filter(filter_query, search_query, date=from_date, time=selected_time_obj)
+            context = {
+                'monitor_games' : monitor_games,
+                'agent_games' : agent_games,
+                'dealer_games' : dealer_games,
+                'times' : times,
+                'selected_time' : selected_time,
+                'selected_from' : from_date,
+                'id' : id,
+                'searched' : searched
+            }
+            return render(request,'adminapp/monitor.html',context)
+        monitor_games = CombinedGame.objects.filter(filter_query)
         context = {
-            'monitor_games' : combined_games,
+            'monitor_games' : monitor_games,
             'agent_games' : agent_games,
             'dealer_games' : dealer_games,
             'times' : times,
             'id' : id,
             'selected_time' : selected_time,
             'selected_from' : from_date,
+            'searched' : searched
         }
         return render(request,'adminapp/monitor.html',context)
+    monitor_games_page = request.GET.get('agent_page', 1)
+    monitor_games_paginator = Paginator(monitor_games, 50)
+    agent_games_page = request.GET.get('agent_page', 1)
+    agent_games_paginator = Paginator(agent_games, 50)
+    try:
+        agent_games = agent_games_paginator.page(agent_games_page)
+    except PageNotAnInteger:
+        agent_games = agent_games_paginator.page(1)
+    except EmptyPage:
+        agent_games = agent_games_paginator.page(agent_games_paginator.num_pages)
+    dealer_games_page = request.GET.get('dealer_page', 1)
+    dealer_games_paginator = Paginator(dealer_games, 25)  # 10 items per page
+    try:
+        dealer_games = dealer_games_paginator.page(dealer_games_page)
+    except PageNotAnInteger:
+        dealer_games = dealer_games_paginator.page(1)
+    except EmptyPage:
+        dealer_games = dealer_games_paginator.page(dealer_games_paginator.num_pages)
+    monitor_games_page = request.GET.get('monitor_page', 1)
+    monitor_games_paginator = Paginator(monitor_games, 25)  # 10 items per page
+    try:
+        monitor_games = monitor_games_paginator.page(monitor_games_page)
+    except PageNotAnInteger:
+        monitor_games = monitor_games_paginator.page(1)
+    except EmptyPage:
+        monitor_games = monitor_games_paginator.page(monitor_games_paginator.num_pages)
     context = {
+        'monitor_games' : monitor_games,
         'agent_games' : agent_games,
         'dealer_games' : dealer_games,
-        'monitor_games' : monitor_game,
         'times' : times,
         'id' : id,
         'selected_time' : id,
     }
     return render(request,'adminapp/monitor.html',context)
+
+def fetch_sorted_data(request, id):
+    print("worked")
+    ist = pytz.timezone('Asia/Kolkata')
+    current_date = timezone.now().astimezone(ist).date()
+    current_time = timezone.now().astimezone(ist).time()
+    
+    time = PlayTime.objects.get(id=id)
+    agent_games = AgentGame.objects.filter(date=current_date, time=time).values()
+    dealer_games = DealerGame.objects.filter(date=current_date, time=time).values()
+
+    # Convert QuerySets to lists of dictionaries
+    agent_games_list = list(agent_games)
+    dealer_games_list = list(dealer_games)
+
+    # Prepare the data to be sent as JSON
+    data = {
+        'agent_games': agent_games_list,
+        'dealer_games': dealer_games_list,
+    }
+
+    # Serialize the data using DjangoJSONEncoder to handle date and time serialization
+    json_data = json.dumps(data, cls=DjangoJSONEncoder)
+
+    return JsonResponse(json_data, safe=False)
 
 @login_required
 @admin_required
@@ -7601,7 +7650,7 @@ def edit_bill(request,id):
         search_dealer = request.POST.get('agent-select')
         print(search_dealer,"the user id")
         if search_dealer == 'all':
-            bills = Bill.objects.filter(time_id=time,date=current_date).all()
+            bills = Bill.objects.filter(time_id=time,date=current_date).all().order_by('-id')
             # Your existing code for calculating totals
             agent_totals = Bill.objects.filter(user__is_agent=True, date=current_date, time_id=time).aggregate(
                 total_count_agent=Sum('total_count'),
@@ -7643,7 +7692,7 @@ def edit_bill(request,id):
         else:
             agent_instance = Agent.objects.get(id=search_dealer)
         try:
-            bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).all()
+            bills = Bill.objects.filter(Q(user__agent=agent_instance) | Q(user__dealer__agent=agent_instance),time_id=time,date=current_date).all().order_by('-id')
             print(bills)
             agent_totals = Bill.objects.filter(Q(user__agent=agent_instance), date=current_date, time_id=time).aggregate(
                 total_count_agent=Sum('total_count'),
@@ -7696,7 +7745,7 @@ def edit_bill(request,id):
             return render(request,'adminapp/edit_bill.html',context)
     else:
         try:
-            bills = Bill.objects.filter(date=current_date, time_id=time).all()
+            bills = Bill.objects.filter(date=current_date, time_id=time).all().order_by('-id')
             # Your existing code for calculating totals
             agent_totals = Bill.objects.filter(user__is_agent=True, date=current_date, time_id=time).aggregate(
                 total_count_agent=Sum('total_count'),

@@ -48,6 +48,9 @@
             </div>
         </div>
 
+        <form method="POST">
+            {% csrf_token %}
+
         <div class="row clearfix">
             <a href="{% url 'adminapp:set_monitor' id %}" class="btn btn-primary mt-3 mr-2" style="position: absolute; top: 0; right: 0;">Set Monitor</a>
             <div class="col-md-12">
@@ -55,8 +58,7 @@
 
                     <div class="body">
                         
-                        <form method="POST">
-                            {% csrf_token %}
+                        
                             <ul class="nav nav-tabs-new2">
 
                                 <div class="col-12">
@@ -130,7 +132,7 @@
                                     <span>Sort Customer</span>
                                 </label>
                             </ul>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -141,7 +143,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="body">
-                            <div class="table-responsive">
+                            <div class="table-responsive" id="main-row">
                                 <table class="table m-b-0">
                                     <thead>
                                         <tr>
@@ -153,7 +155,7 @@
                                             <th>#</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="main-row">
+                                    <tbody>
                                     {% for game in monitor_games %}
                                         <tr class="main-row l-pink" >
                                             {% if not game.combined %}
@@ -173,9 +175,23 @@
                                         </tr>
                                     {% endfor %}
                                     </tbody>
-                                    <tbody id="sorted-rows-container">
+                                </table>
+                            </div>
+                            <div class="table-responsive" id="sorted-rows-container" style="display: none;">
+                                <table class="table m-b-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Customer</th>
+                                            <th>LSK</th>
+                                            <th>No</th>
+                                            <th>Count</th>
+                                            <th>Limit</th>
+                                            <th>#</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         {% for game in agent_games %}
-                                        <tr class="sorted-row  l-turquoise" style="display: none;">
+                                        <tr class="sorted-row  l-turquoise">
                                             <td>{{game.agent.user}}</td>
                                             <td>{{game.LSK}}</td>
                                             <td>{{game.number}}</td>
@@ -185,8 +201,8 @@
                                         </tr>
                                         {% endfor %}
                                         {% for game in dealer_games %}
-                                        <tr class="sorted-row l-parpl" style="display: none;">
-                                            <td>{{game.dealer.user}}</td>
+                                        <tr class="sorted-row l-parpl">
+                                            <td>{{game.agent.user}}({{game.dealer.user}})</td>
                                             <td>{{game.LSK}}</td>
                                             <td>{{game.number}}</td>
                                             <td>{{game.count}}</td>
@@ -194,9 +210,13 @@
                                             <td>#</td>
                                         </tr>
                                         {% endfor %}
-                                    </tbody>
                                 </table>
+                                
                             </div>
+                            {% if searched %}
+                            {% else %}
+                            <button type="submit" class="btn btn-primary" name="load_full" value="true">Load Full</button>
+                            {% endif %}
                             <div  style="padding-top: 50px;"></div>
                         </div>
                     </div>
@@ -204,17 +224,31 @@
             </div>
 
         </div>
+
+        </form>
     </div>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+
     // Get the radio buttons
+    var inputSearch = document.getElementById("search");
     var allRadio = document.getElementById("all");
     var oneRadio = document.getElementById("one");
     var twoRadio = document.getElementById("two");
     var threeRadio = document.getElementById("three");
+
+    var maxDigits = 3;
+    inputSearch.maxLength = maxDigits;
+
+    // Add event listener to the input for limiting length
+    inputSearch.addEventListener("input", function () {
+        if (inputSearch.value.length > maxDigits) {
+            inputSearch.value = inputSearch.value.slice(0, maxDigits);
+        }
+    });
 
     // Get the div elements
     var forOneDiv = document.getElementById("for-one");
@@ -226,24 +260,74 @@
         forOneDiv.style.display = "none";
         forTwoDiv.style.display = "none";
         forThreeDiv.style.display = "none";
+
+        var maxDigits = 3;
+        inputSearch.maxLength = maxDigits;
+
+        // Add event listener to the input for limiting length
+        inputSearch.addEventListener("input", function () {
+            if (inputSearch.value.length > maxDigits) {
+                inputSearch.value = inputSearch.value.slice(0, maxDigits);
+            }
+        });
+
     });
 
     oneRadio.addEventListener("change", function () {
         forOneDiv.style.display = "block";
         forTwoDiv.style.display = "none";
         forThreeDiv.style.display = "none";
+
+        inputSearch.value = '';
+
+        var maxDigits = 1;
+        inputSearch.maxLength = maxDigits;
+
+        // Add event listener to the input for limiting length
+        inputSearch.addEventListener("input", function () {
+            if (inputSearch.value.length > maxDigits) {
+                inputSearch.value = inputSearch.value.slice(0, maxDigits);
+            }
+        });
+
     });
 
     twoRadio.addEventListener("change", function () {
         forOneDiv.style.display = "none";
         forTwoDiv.style.display = "block";
         forThreeDiv.style.display = "none";
+
+        inputSearch.value = '';
+
+        var maxDigits = 2;
+        inputSearch.maxLength = maxDigits;
+
+        // Add event listener to the input for limiting length
+        inputSearch.addEventListener("input", function () {
+            if (inputSearch.value.length > maxDigits) {
+                inputSearch.value = inputSearch.value.slice(0, maxDigits);
+            }
+        });
+
     });
 
     threeRadio.addEventListener("change", function () {
         forOneDiv.style.display = "none";
         forTwoDiv.style.display = "none";
         forThreeDiv.style.display = "block";
+
+        inputSearch.value = '';
+
+        var maxDigits = 3;
+        inputSearch.maxLength = maxDigits;
+
+        // Add event listener to the input for limiting length
+        inputSearch.addEventListener("input", function () {
+            if (inputSearch.value.length > maxDigits) {
+                inputSearch.value = inputSearch.value.slice(0, maxDigits);
+            }
+        });
+
     });
 </script>
 
@@ -313,6 +397,29 @@
             }
         }
     }
+</script>
+
+<script>
+    function toggleSorting() {
+        // Get the "Sort Customer" checkbox element
+        var sortCheckbox = document.getElementById('sort');
+
+        var mainRows = document.getElementById('main-row');
+        var sortedRows = document.getElementById('sorted-rows-container');
+
+
+        // Check the checkbox status and show/hide containers accordingly
+        if (sortCheckbox.checked) {
+            mainRows.style.display = 'none'; // Hide main rows
+            sortedRows.style.display = '';    // Show sorted rows
+
+        } else {
+            mainRows.style.display = '';       // Show main rows
+            sortedRows.style.display = 'none'; // Hide sorted rows
+        }
+    }
+
+    document.getElementById('sort').addEventListener('click', toggleSorting);
 </script>
 
 

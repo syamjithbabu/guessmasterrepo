@@ -111,7 +111,16 @@
                                                     </label>
                                                 </div>
                                             </div>
-                                            
+                                            {% if dealer_only %}
+                                            <div class="col-lg-2 col-md-6 col-6">
+                                                <div class="form-group">
+                                                    <label class="control-inline fancy-checkbox ml-auto">
+                                                        <input type="checkbox" name="checkbox3" id="date-wise">
+                                                        <span>Date Wise</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                         </div>
 
                                     </div>
@@ -144,6 +153,18 @@
             </thead>
             <tbody class="not-summary l-blush normal-row">
                 {% for data in report_data %}
+                <tr style="text-align: center;">
+                    <td class="td2">{{data.date}}</td>
+                    <td class="td3">{{data.dealer.user}}</td>
+                    <td class="td2">{{data.total_d_amount|floatformat:2}}</td>
+                    <td class="td3">{{data.win_amount|floatformat:2}}</td>
+                    <td class="td3">{{data.from_or_to|floatformat:2}}</td>
+                    <td class="td2">{{data.balance|floatformat:2}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody class="not-summary l-blush date-row" style="display: none;">
+                {% for data in date_wise_data %}
                 <tr style="text-align: center;">
                     <td class="td2">{{data.date}}</td>
                     <td class="td3">{{data.dealer.user}}</td>
@@ -202,7 +223,7 @@
     </table>
 </nav>
 
-<nav class="navbar-bottom l-turquoise expand-row"style="display: none;">
+<nav class="navbar-bottom expand-row"style="display: none;">
     <table>
         <thead>
             <tr>
@@ -225,59 +246,28 @@
     </table>
 </nav>
 
-
-<div id="pdftab" >
-    <h3 style="display: inline-block">Balance Report</h3>
-    <h3 id="demo" style="display: inline-block"></h3>
-    <h3 id="demo1" style="display: inline-block"></h3>
-
-    <h3 id="demo"></h3>
-    <h3 id="demo1"></h3>
-    <h3 id="demo3"></h3>
-    <div class="body">
-
-
-        <div class="table-responsive">
-            <table class="table m-b-0"  style=" width: 100%; height: 30%;">
-
-                <thead>
-                    <tr>
-                        <th class="th" style="text-align: center;">Date</th>
-                        <th class="th"style="text-align: center;">Dealer</th>
-                        <th class="th"style="text-align: center;">Daily<br>Sales</th>
-                        <th class="th"style="text-align: center;">Collection<br>Amount</th>
-                        <th class="th"style="text-align: center;">Balance</th>
-
-                    </tr>
-                </thead>
-                <tbody class="not-summary">
-                    {% for data in report_data %}
-                    <tr style="text-align: center;">
-                        <td class="td2"style="text-align: center;">{{data.date}}</td>
-                        <td class="td3"style="text-align: center;">{{data.dealer.user}}</td>
-                        <td class="td2"style="text-align: center;">{{data.total_d_amount|floatformat:2}}</td>
-                        <td class="td3"style="text-align: center;">{{data.from_or_to|floatformat:2}}</td>
-                        <td class="td2"style="text-align: center;">{{data.balance|floatformat:2}}</td>
-                    </tr>
-                    {% endfor %}
-                    <hr>
-                </tbody>
-            </table>
-            <hr>
-            
-            <!-- <div class="text-right" style="padding-top: 50px;"> <button class="btn btn-primary" id="printbutton" onclick="makeprint()"
-                type="submit">Print </button></div> -->
-            <div class="col-md-12 text-right" id="total">
-                <h5>Balance:{{total_balance|floatformat:2}}</h5>
-
-            </div>
-        </div>
-
-
-    </div>
-
-</div>
-
+<nav class="navbar-bottom date-row"style="display: none;">
+    <table>
+        <thead>
+            <tr>
+                {% if total_balance_admin|default:0|add:0 >= 0 %}
+                <th class="th1" style="color: rgb(0, 192, 0);">Balance</th>
+                {% else %}
+                <th class="th1" style="color: red;">Balance</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% if total_balance|default:0|add:0 >= 0 %}
+                <td class="td1" style="color: rgb(0, 192, 0);">{{total_balance|floatformat:2}}</td>
+                {% else %}
+                <td class="td1" style="color: red;">{{total_balance|floatformat:2}}</td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+</nav>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -288,6 +278,20 @@
                 $(".normal-row").hide();
             } else {
                 $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
+                $(".normal-row").show();
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $("#date-wise").change(function () {
+            if (this.checked) {
+                $(".date-row").show(); // Show the row when the checkbox is checked
+                $(".normal-row").hide();
+            } else {
+                $(".date-row").hide(); // Hide the row when the checkbox is unchecked
                 $(".normal-row").show();
             }
         });
@@ -351,145 +355,5 @@
 
 
 </script>
-
-
-
-<script>
-    //   pdftab hide
-
-    document.addEventListener("DOMContentLoaded", function () {
-        // Hide the pdftab div when the page loads
-        var pdftab = document.getElementById("pdftab");
-        if (pdftab) {
-            pdftab.style.display = "none";
-        }
-    });
-</script>
-
-<script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
-
-<script>
-    function generateAndOpenPDF() {
-        var dateFrom = document.getElementById('from-date').value;
-        var dateTo = document.getElementById('to-date').value;
-        // Disable the button to prevent multiple clicks
-        var pdfButton = document.getElementById("pdfButton");
-        if (pdfButton) {
-            pdfButton.disabled = true;
-        }
-
-        var pdftab = document.getElementById("pdftab");
-
-        // Show the pdftab div when generateAndOpenPDF function is called
-        if (pdftab) {
-            pdftab.style.display = "block"; // or "inline" or "inline-block" depending on your layout
-        }
-
-        var element = document.getElementById('pdftab');
-        if (!element) {
-            console.error("Element with ID 'pdftab' not found.");
-
-            // Re-enable the button in case of an error
-            if (pdfButton) {
-                pdfButton.disabled = false;
-            }
-
-            return;
-        }
-
-        var rowsPerPage = 10; // Number of rows to display per page
-
-        // Configuration options for html2pdf
-        var options = {
-            margin: 10,
-            filename: 'Balance Report -' + dateFrom + ' to ' + dateTo,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
-        };
-
-        // Call html2pdf with the specified options
-        html2pdf(element, options)
-            .then(function (pdf) {
-                var totalPages = pdf.internal.getNumberOfPages();
-
-                for (var i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(150);
-
-                    // Calculate the range of rows to display on this page
-                    var startRow = (i - 1) * rowsPerPage;
-                    var endRow = Math.min(i * rowsPerPage, element.rows.length);
-
-                    // Loop through the rows and display only the selected range
-                    for (var j = startRow; j < endRow; j++) {
-                        var row = element.rows[j];
-                        var cells = row.getElementsByTagName('td');
-
-                        for (var k = 0; k < cells.length; k++) {
-                            pdf.text(cells[k].innerText, 20 + k * 30, 15 + (j % rowsPerPage) * 10);
-                        }
-                    }
-
-                    pdf.text('Footer content', 20, pdf.internal.pageSize.height - 40);
-                }
-
-                // Get the PDF data as a Blob
-                var pdfBlob = pdf.output('blob');
-
-                // Create a link to the Blob data with the Google Drive viewer link
-                var driveViewerLink = 'https://drive.google.com/viewerng/viewer?embedded=true&url=' + encodeURIComponent(URL.createObjectURL(pdfBlob));
-
-                // Open the link in a new tab
-                window.open(driveViewerLink, '_blank');
-
-                // Hide the pdftab div after generating and opening the PDF
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button after generating and opening the PDF
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-
-                console.log("PDF generated and opened successfully:", pdf);
-            })
-            .catch(function (error) {
-                console.error("Error generating PDF:", error);
-
-                // Restore the display property of the pdftab div in case of an error
-                if (pdftab) {
-                    pdftab.style.display = "none";
-                }
-
-                // Re-enable the button in case of an error
-                if (pdfButton) {
-                    pdfButton.disabled = false;
-                }
-            });
-    }
-
-</script>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $("#expand-button").change(function () {
-            if (this.checked) {
-                $(".expand-row").show(); // Show the row when the checkbox is checked
-            } else {
-                $(".expand-row").hide(); // Hide the row when the checkbox is unchecked
-     
-            }
-        });
-    });
-</script>
-
-
-
-
-
 
 {% endblock %}

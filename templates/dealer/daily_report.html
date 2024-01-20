@@ -124,6 +124,7 @@
                                             <select class="form-control show-tick ms select2" data-placeholder="Select"
                                                 name="select-customer" id="select-customer">
                                                 <option value="all">All Customers</option>
+                                                <option value="{{request.user}}">Myself</option>
                                                 {% for customer in customers %}
                                                 <option value="{{customer}}">{{customer}}</option>
                                                 {% endfor %}

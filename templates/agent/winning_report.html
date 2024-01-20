@@ -74,6 +74,21 @@
                                         <div class="col-md-6 col-6">
                                             <div class="form-group">
                                                 <select class="form-control show-tick ms select2"
+                                                    data-placeholder="Select" name="customer" id="customer">
+                                                    <option value="all">All Dealers</option>
+                                                    <option value="{{request.user}}">Myself</option>
+                                                    {% for dealer in dealers %}
+                                                    <option value="{{dealer.user.id}}">{{dealer.user}}</option>
+                                                    {% endfor %}
+                                                    {% for cust in customers %}
+                                                    <option value="{{cust}}">{{cust}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <div class="form-group">
+                                                <select class="form-control show-tick ms select2"
                                                     data-placeholder="Select" name="time" id="time">
                                                     <option value="all">All Times</option>
                                                     {% for time in times %}
@@ -88,13 +103,13 @@
                                                 <span>Summary</span>
                                             </label>
                                         </div>
-                                        <div class="col-md-6 col-6">
+                                        <div class="col-md-3 col-3">
                                             <div class="form-group">
                                                 <button type="submit" class="btn btn-primary">Search</button>
 
                                             </div>
                                         </div>
-                                        <div class="col-md-6 col-6">
+                                        <div class="col-md-3 col-3">
                                             <div class="form-group">
                                                 <button class="btn btn-primary" id="pdfButton" name="pdfButton" type="submit">Download</button>
 
@@ -140,6 +155,7 @@
 
                                         </tr>
                                     </thead>
+                                    {% if dealer_only %}
                                     <tbody class="not-summary l-blush">
                                         {% for winning in winnings %}
                                         <tr>
@@ -152,9 +168,15 @@
                                                         <td class="td3">{{ winning_bill.customer }}</td>
                                                     {% endwith %}
                                                 {% endif %}
+                                                <td class="td2">{{winning.LSK}}</td>
+                                                <td class="td3">{{winning.number}}</td>
+                                                <td class="td2">{{winning.count}}</td>
+                                                <td class="td3">{{winning.position}}</td>
+                                                <td class="td2">{{winning.commission|floatformat:2}}</td>
+                                                <td class="td3">{{winning.prize|floatformat:2}}</td>
+                                                <td class="td2">{{winning.total|floatformat:2}}</td>
                                             {% else %}
                                             <td class="td3">{{winning.dealer}}</td>
-                                            {% endif %}
                                             <td class="td2">{{winning.LSK}}</td>
                                             <td class="td3">{{winning.number}}</td>
                                             <td class="td2">{{winning.count}}</td>
@@ -162,9 +184,46 @@
                                             <td class="td2">{{winning.commission|floatformat:2}}</td>
                                             <td class="td3">{{winning.prize|floatformat:2}}</td>
                                             <td class="td2">{{winning.total|floatformat:2}}</td>
+                                            {% endif %}
+                                            
                                         </tr>
                                         {% endfor %}
                                     </tbody>
+                                    {% else %}
+                                    <tbody class="not-summary l-blush">
+                                        {% for winning in winnings %}
+                                        <tr>
+                                            <td class="td2">{{winning.bill.id}}</td>
+                                            {% if winning.agent %}
+                                                {% if winning.bill.customer == '' %}
+                                                    <td class="td3">{{ winning.agent }}</td>
+                                                {% else %}
+                                                    {% with winning_bill=winning.bill %}
+                                                        <td class="td3">{{ winning_bill.customer }}</td>
+                                                    {% endwith %}
+                                                {% endif %}
+                                                <td class="td2">{{winning.LSK}}</td>
+                                                <td class="td3">{{winning.number}}</td>
+                                                <td class="td2">{{winning.count}}</td>
+                                                <td class="td3">{{winning.position}}</td>
+                                                <td class="td2">{{winning.commission|floatformat:2}}</td>
+                                                <td class="td3">{{winning.prize|floatformat:2}}</td>
+                                                <td class="td2">{{winning.total|floatformat:2}}</td>
+                                            {% else %}
+                                            <td class="td3">{{winning.dealer}}</td>
+                                            <td class="td2">{{winning.LSK}}</td>
+                                            <td class="td3">{{winning.number}}</td>
+                                            <td class="td2">{{winning.count}}</td>
+                                            <td class="td3">{{winning.position}}</td>
+                                            <td class="td2">{{winning.commission_admin|floatformat:2}}</td>
+                                            <td class="td3">{{winning.prize_admin|floatformat:2}}</td>
+                                            <td class="td2">{{winning.total_admin|floatformat:2}}</td>
+                                            {% endif %}
+                                            
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    {% endif %}
                                     <tbody style="display: none;" class="summary-row l-blush">
                                         {% for winning in aggr %}
                                         <tr>
@@ -265,8 +324,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var selectTime = document.getElementById("time");
+        var selectCustomer = document.getElementById("customer");
         selectTime.value = "{{ selected_time }}";
-
+        selectCustomer.value = "{{ selected_customer }}";
+        console.log("{{selected_customer}}");
     });
 </script>
 <script>

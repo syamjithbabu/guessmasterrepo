@@ -61,4 +61,5 @@ urlpatterns = [
     path('total-balance',views.total_balance,name="total_balance"),
     path('tickets-report',views.tickets_report,name="tickets_report"),
     path('position-wise-report',views.position_wise_report,name="position_wise_report"),
+    path('fetch-sorted-data/<int:id>/',views.fetch_sorted_data,name="fetch_sorted_data")
 ]

@@ -307,7 +307,7 @@
                 </div>
             </div>
         </div>
-        <button type="submit" onclick="deleteBill()" class="btn btn-primary mb-3">Publish</button>
+        <button type="submit" onclick="pleaseWait()" class="btn btn-primary mb-3">Publish</button>
         </form>
 </div>
 </div>
@@ -355,16 +355,75 @@
     </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                
+
+{% if success %}
+    <div id="success-message" style="display: none;">Result Published!</div>
+{% endif %}
+
+{% if error %}
+    <div id="error-message" style="display: none;">Result not published!</div>
+{% endif %}
 
 <script>
-    function deleteBill(){
-        console.log("working")
+    function pleaseWait() {
         Swal.fire({
-           icon: 'success',
-           title: 'Published!',
-           text: 'Result published successfully.',
-       });
+            title: 'Please wait!',
+            text: 'Creating result..!',
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+            timer: 300000,
+            timerProgressBar: false,
+            onClose: () => {
+                // Actions to perform when the alert is closed
+                // This can include additional logic or redirection if needed
+            }
+        });
     }
-</script>    
-      
+</script>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        var successMessage = document.getElementById('success-message').innerText;
+
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Published!',
+                text: successMessage,
+            });
+        }
+
+        if (errorMessage) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+            });
+        }
+    });
+</script>  
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+    var errorMessage = document.getElementById('error-message').innerText;
+
+    if (errorMessage) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMessage,
+        });
+    }
+
+    });
+
+</script>
+        
 {% endblock %}
